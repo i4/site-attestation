@@ -194,5 +194,9 @@
     "scopes": ["addon_parent"],
     "paths": [["webRequest"]],
     "startupBlocking": true
+  },
+  "tlsExt": {
+    "schema": "chrome://extensions/content/schemas/tls_ext.json",
+    "url": "chrome://extensions/content/parent/ext-tlsExt.js"
   }
 }
