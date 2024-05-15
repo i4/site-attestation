@@ -1,6 +1,21 @@
 [
   {
     "namespace": "tlsExt",
+    "functions": [
+      {
+        "name": "getTlsExtensionSupport",
+        "type": "function",
+        "description": "...",
+        "async": true,
+        "parameters": [
+          {
+            "name": "extension",
+            "type": "integer",
+            "description": "..."
+          }
+        ]
+      }
+    ],
     "events": [
       {
         "name": "onTLSExtensionHandle",

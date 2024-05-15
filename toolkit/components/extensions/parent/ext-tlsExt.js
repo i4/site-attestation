@@ -15,6 +15,7 @@ this.TLSExt = class extends ExtensionAPI {
             };
           }
         }).api(),
+        getTlsExtensionSupport(extension) { return extension }
       }
     }
   }
