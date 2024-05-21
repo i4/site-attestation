@@ -1,7 +1,7 @@
-this.TLSExt = class extends ExtensionAPI {
+this.tlsExt = class extends ExtensionAPI {
   getAPI(context) {
     return {
-      TLSExt: {
+      tlsExt: {
         onTLSExtensionHandle: new EventManager({
           context,
           name: "TLSExt.onTLSExtensionHandle",
