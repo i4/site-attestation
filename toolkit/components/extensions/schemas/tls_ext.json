@@ -1,6 +1,7 @@
 [
   {
     "namespace": "tlsExt",
+    "permissions": ["webRequest"],
     "functions": [
       {
         "name": "getTlsExtensionSupport",
