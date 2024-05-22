@@ -1,6 +1,23 @@
 [
   {
+    "namespace": "manifest",
+    "types": [
+      {
+        "$extend": "PermissionNoPrompt",
+        "choices": [
+          {
+            "type": "string",
+            "enum": [
+              "tlsExt"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "namespace": "tlsExt",
+    "permissions": ["tlsExt"],
     "functions": [
       {
         "name": "getTlsExtensionSupport",
@@ -18,8 +35,8 @@
     ],
     "properties": {
       "SOME_PROPERTY": {
-       "value": 24,
-       "description": "Description of my property here."
+        "value": 24,
+        "description": "Description of my property here."
       }
     }
   }
