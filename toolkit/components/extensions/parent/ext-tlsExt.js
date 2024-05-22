@@ -2,9 +2,9 @@ this.tlsExt = class extends ExtensionAPI {
   getAPI(context) {
     return {
       tlsExt: {
-        onTLSExtensionHandle: new EventManager({
+        onTlsExtensionHandle: new EventManager({
           context,
-          name: "tlsExt.onTLSExtensionHandle",
+          name: "tlsExt.onTlsExtensionHandle",
           register: fire => {
             const callback = value => {
               fire.async(value);
@@ -15,7 +15,7 @@ this.tlsExt = class extends ExtensionAPI {
             };
           }
         }).api(),
-        getTlsExtensionSupport(extension) { return extension }
+        getTlsExtensionSupport(extension) { return extension; }
       }
     }
   }

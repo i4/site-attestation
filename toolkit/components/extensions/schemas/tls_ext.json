@@ -1,13 +1,12 @@
 [
   {
     "namespace": "tlsExt",
-    "permissions": ["tlsExt"],
     "functions": [
       {
         "name": "getTlsExtensionSupport",
         "type": "function",
         "description": "...",
-        "async": true,
+        "async": false,
         "parameters": [
           {
             "name": "extension",
@@ -19,7 +18,7 @@
     ],
     "events": [
       {
-        "name": "onTLSExtensionHandle",
+        "name": "onTlsExtensionHandle",
         "type": "function",
         "description": "...",
         "parameters": [
@@ -30,6 +29,12 @@
           }
         ]
       }
-    ]
+    ],
+    "properties": {
+      "SOME_PROPERTY": {
+       "value": 24,
+       "description": "Description of my property here."
+      }
+    }
   }
 ]
