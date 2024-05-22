@@ -24,29 +24,11 @@
 //   }
 // }
 
-console.log("WIR WERDEN AUSGEFÜHRT!");
-
-// this.tlsExt = class extends ExtensionAPI {
-//   getAPI(context) {
-//     return {
-//       tlsExt: {
-//         getTlsExtensionSupport(extension) {
-//           if (extension < 0) {
-//             throw new ExtensionError("Cannot");
-//           }
-//           return extension;
-//         }
-//       }
-//     }
-//   }
-// }
-
-
 this.tlsExt = class extends ExtensionAPI {
   getAPI(context) {
     return {
       tlsExt: {
-        getSecurityInfo: function (extension) {
+        getTlsExtensionSupport: function (extension) {
           if (extension < 0)
             throw new ExtensionError("Cannot");
           return extension;

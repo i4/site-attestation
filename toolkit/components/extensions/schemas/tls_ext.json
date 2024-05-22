@@ -5,8 +5,8 @@
       {
         "name": "getTlsExtensionSupport",
         "type": "function",
+        "async": true,
         "description": "...",
-        "async": false,
         "parameters": [
           {
             "name": "extension",
