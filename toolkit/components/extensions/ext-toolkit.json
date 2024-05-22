@@ -199,7 +199,6 @@
     "url": "chrome://extensions/content/parent/ext-tlsExt.js",
     "schema": "chrome://extensions/content/schemas/tls_ext.json",
     "scopes": ["addon_parent"],
-    "permissions": ["tlsExt"],
     "paths": [["tlsExt"]]
   }
 }
