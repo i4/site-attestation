@@ -16,20 +16,6 @@
         ]
       }
     ],
-    "events": [
-      {
-        "name": "onTlsExtensionHandle",
-        "type": "function",
-        "description": "...",
-        "parameters": [
-          {
-            "name": "data",
-            "description": "...",
-            "type": "string"
-          }
-        ]
-      }
-    ],
     "properties": {
       "SOME_PROPERTY": {
        "value": 24,

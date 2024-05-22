@@ -196,10 +196,10 @@
     "startupBlocking": true
   },
   "tlsExt": {
-    "schema": "chrome://extensions/content/schemas/tls_ext.json",
     "url": "chrome://extensions/content/parent/ext-tlsExt.js",
-    "paths": [["tlsExt"]],
+    "schema": "chrome://extensions/content/schemas/tls_ext.json",
     "scopes": ["addon_parent"],
-    "permissions": ["tlsExt"]
+    "permissions": ["tlsExt"],
+    "paths": [["tlsExt"]]
   }
 }
