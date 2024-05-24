@@ -1,0 +1,23 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+// This is the base include which defines nsISupports. This class defines
+// the QueryInterface method.
+#include "nsISupports.idl"
+
+// `scriptable` designates that this object will be used with JavaScript
+
+/**
+ * ...
+ */
+[scriptable, uuid(2b7491bc-5188-4018-a093-e792b7b5e07d)]
+interface nsITlsExtensionService : nsISupports {
+  cenum SSLExtensionSupport : 8 {
+    ssl_ext_none,
+    ssl_ext_native,
+    ssl_ext_native_only
+  };
+
+  nsITlsExtensionService_SSLExtensionSupport getExtensionSupport(in unsigned short extension);
+};
