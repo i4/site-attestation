@@ -66,6 +66,7 @@ DIRS += [
     "storage",
     "webidl-api",
     "webrequest",
+    "tlsext"
 ]
 
 IPDL_SOURCES += [

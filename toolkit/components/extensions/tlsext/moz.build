@@ -1,0 +1,18 @@
+
+XPIDL_SOURCES += [
+    "nsITlsExtensionService.idl",
+]
+
+XPIDL_MODULE = "webextensions"
+
+EXPORTS.mozilla.extensions += [
+    "TlsExtensionService.h",
+]
+
+UNIFIED_SOURCES += [
+    "TlsExtensionService.cpp",
+]
+
+XPCOM_MANIFESTS += [
+    "components.conf",
+]
