@@ -16,3 +16,6 @@ EXPORTS.mozilla.extensions += [
 XPCOM_MANIFESTS += [
     "components.conf",
 ]
+
+# Necessary for the .cpp implementation to be compiled
+FINAL_LIBRARY = "xul"
