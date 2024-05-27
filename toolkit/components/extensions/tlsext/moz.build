@@ -5,12 +5,12 @@ XPIDL_SOURCES += [
 
 XPIDL_MODULE = "webextensions"
 
-EXPORTS.mozilla.extensions += [
-    "TlsExtensionService.h",
-]
-
 UNIFIED_SOURCES += [
     "TlsExtensionService.cpp",
+]
+
+EXPORTS.mozilla.extensions += [
+    "TlsExtensionService.h",
 ]
 
 XPCOM_MANIFESTS += [
