@@ -24,15 +24,13 @@
 //   }
 // }
 
+const SSLExtensionSupport = ["ssl_ext_none", "ssl_ext_native", "ssl_ext_native_only"];
+
 this.tlsExt = class extends ExtensionAPI {
   getAPI(context) {
     return {
       tlsExt: {
-        getTlsExtensionSupport: function (extension) {
-          if (extension < 0)
-            throw new ExtensionError("Cannot");
-          return extension;
-        },
+        getTlsExtensionSupport: (extension) => SSLExtensionSupport[Services.tlsExtensions.getExtensionSupport(extension)],
       },
     };
   }
