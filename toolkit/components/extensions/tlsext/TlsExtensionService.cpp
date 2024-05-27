@@ -1,6 +1,6 @@
 #include "mozilla/extensions/TlsExtensionService.h"
 
-#include "mozilla/ClearOnShutdown.h"
+// #include "mozilla/ClearOnShutdown.h"
 
 #include "sslexp.h"
 

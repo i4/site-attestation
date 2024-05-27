@@ -4,10 +4,6 @@
 
 #include "nsITlsExtensionService.h"
 
-#include "mozilla/ClearOnShutdown.h"
-
-#include "sslexp.h"
-
 
 namespace mozilla::extensions {
 
