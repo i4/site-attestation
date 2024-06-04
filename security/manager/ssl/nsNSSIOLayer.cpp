@@ -1263,6 +1263,32 @@ nsresult nsSSLIOLayerNewSocket(int32_t family, const char* host, int32_t port,
   return NS_OK;
 }
 
+PRBool my_SSLExtensionWriter(
+        PRFileDesc *fd,
+        SSLHandshakeType message,
+        PRUint8 *data,
+        unsigned int *len,
+        unsigned int maxLen,
+        void *arg
+) {
+  MOZ_LOG(gPIPNSSLog, LogLevel::Debug,
+            ("Writer aufgerufen!\n"));
+  return PR_TRUE;
+}
+
+SECStatus my_SSLExtensionHandler(
+        PRFileDesc *fd,
+        SSLHandshakeType messageType,
+        const PRUint8 *data,
+        unsigned int len,
+        SSLAlertDescription *alert,
+        void *arg
+) {
+  MOZ_LOG(gPIPNSSLog, LogLevel::Debug,
+            ("Handler aufgerufen!\n"));
+  return SECSuccess;
+}
+
 static PRFileDesc* nsSSLIOLayerImportFD(PRFileDesc* fd,
                                         NSSSocketControl* infoObject,
                                         const char* host, bool haveHTTPSProxy) {
@@ -1304,9 +1330,19 @@ static PRFileDesc* nsSSLIOLayerImportFD(PRFileDesc* fd,
       SECSuccess) {
     return nullptr;
   }
+
+  if (SSL_InstallExtensionHooks(sslSock, 400, my_SSLExtensionWriter, nullptr, my_SSLExtensionHandler, nullptr) != SECSuccess) {
+    MOZ_LOG(gPIPNSSLog, LogLevel::Debug,
+            ("nicht installiert!\n"));
+    return nullptr;
+  }
+
   if (SSL_SetURL(sslSock, host) != SECSuccess) {
     return nullptr;
   }
+
+  MOZ_LOG(gPIPNSSLog, LogLevel::Debug,
+            ("Dies ist ein Test!\n"));
 
   return sslSock;
 }
