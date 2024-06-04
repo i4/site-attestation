@@ -35,6 +35,81 @@
         ]
       }
     ],
+    "events": [
+      {
+        "name": "onTLSExtensionHandle",
+        "type": "function",
+        "description": "...",
+        "parameters": [
+          {
+            "name": "messageSSLHandshakeType",
+            "&ref": "SSLHandshakeType"
+          },
+          {
+            "name": "message",
+            "type": "string"
+          },
+          {
+            "name": "socketDetails",
+            "$ref": "SocketDetails"
+          }
+        ]
+      },
+      {
+        "name": "onTLSExtensionWrite",
+        "type": "function",
+        "description": "...",
+        "parameters": [
+          {
+            "name": "messageSSLHandshakeType",
+            "&ref": "SSLHandshakeType"
+          },
+          {
+            "name": "socketDetails",
+            "$ref": "SocketDetails"
+          }
+        ]
+      }
+    ],
+    "types": [
+      {
+        "id": "SocketDetails",
+        "description": "...",
+        "type": "object",
+        "properties": {
+          "hostName": {
+            "type": "string"
+          }
+        }
+      },
+      {
+        "id": "SSLHandshakeType",
+        "description": "...",
+        "type": "string",
+        "enum": [
+          "ssl_hs_hello_request",
+          "ssl_hs_client_hello",
+          "ssl_hs_server_hello",
+          "ssl_hs_hello_verify_request",
+          "ssl_hs_new_session_ticket",
+          "ssl_hs_end_of_early_data",
+          "ssl_hs_hello_retry_request",
+          "ssl_hs_encrypted_extensions",
+          "ssl_hs_certificate",
+          "ssl_hs_server_key_exchange",
+          "ssl_hs_certificate_request",
+          "ssl_hs_server_hello_done",
+          "ssl_hs_certificate_verify",
+          "ssl_hs_client_key_exchange",
+          "ssl_hs_finished",
+          "ssl_hs_certificate_status",
+          "ssl_hs_key_update",
+          "ssl_hs_next_proto",
+          "ssl_hs_message_hash",
+          "ssl_hs_ech_outer_client_hello"
+        ]
+      }
+    ],
     "properties": {
       "SOME_PROPERTY": {
         "value": 24,
