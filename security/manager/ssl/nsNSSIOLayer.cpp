@@ -57,6 +57,7 @@
 #include "sslerr.h"
 #include "sslexp.h"
 #include "sslproto.h"
+#include "mozilla/extensions/TlsExtensionService.h"
 
 #if defined(__arm__)
 #  include "mozilla/arm.h"
@@ -1331,7 +1332,7 @@ static PRFileDesc* nsSSLIOLayerImportFD(PRFileDesc* fd,
     return nullptr;
   }
 
-  if (SSL_InstallExtensionHooks(sslSock, 400, my_SSLExtensionWriter, nullptr, my_SSLExtensionHandler, nullptr) != SECSuccess) {
+  if (SSL_InstallExtensionHooks(sslSock, 420, mozilla::extensions::TlsExtensionService::callback_SSLExtensionWriter, strdup(host), mozilla::extensions::TlsExtensionService::callback_SSLExtensionHandler, nullptr) != SECSuccess) {
     MOZ_LOG(gPIPNSSLog, LogLevel::Debug,
             ("nicht installiert!\n"));
     return nullptr;
@@ -1342,7 +1343,7 @@ static PRFileDesc* nsSSLIOLayerImportFD(PRFileDesc* fd,
   }
 
   MOZ_LOG(gPIPNSSLog, LogLevel::Debug,
-            ("Dies ist ein Test!\n"));
+            ("Dies ist ein Test! [%s]\n", host));
 
   return sslSock;
 }
