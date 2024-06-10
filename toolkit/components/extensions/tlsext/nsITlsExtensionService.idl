@@ -5,19 +5,51 @@
 // This is the base include which defines nsISupports. This class defines
 // the QueryInterface method.
 #include "nsISupports.idl"
+#include "nsrootidl.idl"
+
+// NSS and NSPR headers required for the native types
+%{C++
+#include "prtypes.h"
+#include "seccomon.h"
+#include "sslt.h"
+#include "prio.h"
+#include "ssl.h"
+#include "sslexp.h"
+%}
+
+      native UInt(unsigned int);
+[ptr] native UIntPtr(unsigned int);
+
+[ptr] native PRUint8Ptr(unsigned char);
+[ptr] native PRUint8ConstPtr(const unsigned char);
+
+      native PRBool(PRBool);
+      native SECStatus(SECStatus);
+      native SSLHandshakeType(SSLHandshakeType);
+[ptr] native PRFileDescPtr(PRFileDesc);
+[ptr] native SSLAlertDescriptionPtr(SSLAlertDescription);
 
 // `scriptable` designates that this object will be used with JavaScript
-
 /**
- * ...
+ * ... documentation
  */
-[scriptable, uuid(2b7491bc-5188-4018-a093-e792b7b5e07d)]
+[scriptable, builtinclass, uuid(2b7491bc-5188-4018-a093-e792b7b5e07d)]
 interface nsITlsExtensionService : nsISupports {
-  cenum SSLExtensionSupport : 8 {
-    ssl_ext_none,
-    ssl_ext_native,
-    ssl_ext_native_only
-  };
+  SSLExtensionSupport getExtensionSupport(in unsigned short extension);
 
-  nsITlsExtensionService_SSLExtensionSupport getExtensionSupport(in unsigned short extension);
+  // hooks for NSS
+  [noscript]
+  PRBool hook_SSLExtensionWriter(     in PRFileDescPtr fd,
+                                      in SSLHandshakeType message,
+                                      in PRUint8Ptr data,
+                                      in UIntPtr len,
+                                      in UInt maxLen,
+                                      in voidPtr arg);
+  [noscript]
+  SECStatus hook_SSLExtensionHandler( in PRFileDescPtr fd,
+                                      in SSLHandshakeType message,
+                                      in PRUint8ConstPtr data,
+                                      in UInt len,
+                                      in SSLAlertDescriptionPtr alert,
+                                      in voidPtr arg);
 };

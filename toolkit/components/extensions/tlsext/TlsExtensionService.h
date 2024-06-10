@@ -13,11 +13,10 @@ class TlsExtensionService final : public nsITlsExtensionService {
     NS_DECL_ISUPPORTS
     NS_DECL_NSITLSEXTENSIONSERVICE
 
-    // static already_AddRefed<TlsExtensionService> GetSingleton();
-
-    TlsExtensionService() = default;
+    static already_AddRefed<TlsExtensionService> GetSingleton();
 
     private:
+    TlsExtensionService() = default;
     ~TlsExtensionService() = default;
 };
 
