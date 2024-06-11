@@ -3,7 +3,11 @@
 #define mozilla_extensions_nsTlsExtensionService_h__
 
 #include "nsITlsExtensionService.h"
-
+#include "prtypes.h"
+#include "seccomon.h"
+#include "sslt.h"
+#include "prio.h"
+#include "ssl.h"
 
 namespace mozilla::extensions {
 
@@ -15,7 +19,7 @@ class TlsExtensionService final : public nsITlsExtensionService {
 
     static already_AddRefed<TlsExtensionService> GetSingleton();
 
-    static PRBool callback_SSLExtensionWriter(
+    static PRBool onNSS_SSLExtensionWriter(
         PRFileDesc *fd,
         SSLHandshakeType messageType,
         PRUint8 *data,
@@ -23,7 +27,7 @@ class TlsExtensionService final : public nsITlsExtensionService {
         unsigned int maxLen,
         void *arg
     );
-    static SECStatus callback_SSLExtensionHandler(
+    static SECStatus onNSS_SSLExtensionHandler(
         PRFileDesc *fd,
         SSLHandshakeType messageType,
         const PRUint8 *data,
@@ -33,6 +37,8 @@ class TlsExtensionService final : public nsITlsExtensionService {
     );
 
     private:
+    PRUint16 defaultExtension = 420;
+
     TlsExtensionService() = default;
     ~TlsExtensionService() = default;
 };

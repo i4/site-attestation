@@ -1332,7 +1332,7 @@ static PRFileDesc* nsSSLIOLayerImportFD(PRFileDesc* fd,
     return nullptr;
   }
 
-  if (SSL_InstallExtensionHooks(sslSock, 420, mozilla::extensions::TlsExtensionService::callback_SSLExtensionWriter, strdup(host), mozilla::extensions::TlsExtensionService::callback_SSLExtensionHandler, nullptr) != SECSuccess) {
+  if (SSL_InstallExtensionHooks(sslSock, 420, mozilla::extensions::TlsExtensionService::onNSS_SSLExtensionWriter, strdup(host), mozilla::extensions::TlsExtensionService::onNSS_SSLExtensionHandler, nullptr) != SECSuccess) {
     MOZ_LOG(gPIPNSSLog, LogLevel::Debug,
             ("nicht installiert!\n"));
     return nullptr;

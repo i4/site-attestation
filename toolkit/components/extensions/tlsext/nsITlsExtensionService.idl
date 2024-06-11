@@ -7,26 +7,7 @@
 #include "nsISupports.idl"
 #include "nsrootidl.idl"
 
-// NSS and NSPR headers required for the native types
-%{C++
-#include "prtypes.h"
-#include "seccomon.h"
-#include "sslt.h"
-#include "prio.h"
-#include "ssl.h"
-%}
-
-      native UInt(unsigned int);
-[ptr] native UIntPtr(unsigned int);
-
-[ptr] native PRUint8Ptr(unsigned char);
-[ptr] native PRUint8ConstPtr(const unsigned char);
-
-      native PRBool(PRBool);
-      native SECStatus(SECStatus);
-      native SSLHandshakeType(SSLHandshakeType);
-[ptr] native PRFileDescPtr(PRFileDesc);
-[ptr] native SSLAlertDescriptionPtr(SSLAlertDescription);
+typedef unsigned short PRUint16;
 
 // `scriptable` designates that this object will be used with JavaScript
 /**
@@ -34,6 +15,8 @@
  */
 [scriptable, builtinclass, uuid(2b7491bc-5188-4018-a093-e792b7b5e07d)]
 interface nsITlsExtensionService : nsISupports {
+  readonly attribute PRUint16 defaultExtension;
+
   // Although SSLExtensionSupport is provided by "sslexp.h", it is implemented as an enum in order to be scriptable.
   cenum SSLExtensionSupport : 8 {
     ssl_ext_none,
@@ -41,21 +24,5 @@ interface nsITlsExtensionService : nsISupports {
     ssl_ext_native_only
   };
 
-  nsITlsExtensionService_SSLExtensionSupport getExtensionSupport(in unsigned short extension);
-
-  // hooks for NSS
-  [noscript]
-  PRBool hook_SSLExtensionWriter(     in PRFileDescPtr fd,
-                                      in SSLHandshakeType message,
-                                      in PRUint8Ptr data,
-                                      in UIntPtr len,
-                                      in UInt maxLen,
-                                      in voidPtr arg);
-  [noscript]
-  SECStatus hook_SSLExtensionHandler( in PRFileDescPtr fd,
-                                      in SSLHandshakeType message,
-                                      in PRUint8ConstPtr data,
-                                      in UInt len,
-                                      in SSLAlertDescriptionPtr alert,
-                                      in voidPtr arg);
+  nsITlsExtensionService_SSLExtensionSupport getExtensionSupport(in PRUint16 extension);
 };
