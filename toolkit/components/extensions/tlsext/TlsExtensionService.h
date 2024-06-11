@@ -17,6 +17,10 @@ class TlsExtensionService final : public nsITlsExtensionService {
     NS_DECL_ISUPPORTS
     NS_DECL_NSITLSEXTENSIONSERVICE
 
+    struct ExtensionCallbackArg {
+        const char* hostname;
+    };
+
     static const PRUint16 DEFAULT_EXTENSION = 420;
 
     static already_AddRefed<TlsExtensionService> GetSingleton();
@@ -27,7 +31,7 @@ class TlsExtensionService final : public nsITlsExtensionService {
         PRUint8 *data,
         unsigned int *len,
         unsigned int maxLen,
-        void *arg
+        void *callbackArg
     );
     static SECStatus onNSS_SSLExtensionHandler(
         PRFileDesc *fd,
@@ -35,7 +39,7 @@ class TlsExtensionService final : public nsITlsExtensionService {
         const PRUint8 *data,
         unsigned int len,
         SSLAlertDescription *alert,
-        void *arg
+        void *callbackArg
     );
 
     private:

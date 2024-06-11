@@ -1,7 +1,5 @@
 #include "mozilla/extensions/TlsExtensionService.h"
 
-// #include "mozilla/ClearOnShutdown.h"
-
 #include "mozilla/Logging.h"
 #include "sslexp.h"
 #include "mozilla/ClearOnShutdown.h"
@@ -25,21 +23,17 @@ TlsExtensionService::GetSingleton() {
 
 /* static */
 PRBool
-TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType messageType, PRUint8 *data, unsigned int *len, unsigned int maxLen, void *arg) {
-    // NSSSocketControl infoObject = static_cast<NSSSocketControl>(arg);
-    // char* host = infoObject->GetHostName();
-    // TODO
-    char* host = (char*) arg;
+TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType messageType, PRUint8 *data, unsigned int *len, unsigned int maxLen, void *callbackArg) {
+    auto* arg = static_cast<ExtensionCallbackArg*>(callbackArg);
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Writer Hook was called! [%s]\n", host));
-    free(host);
+            ("Writer Hook was called! [%s]\n", arg->hostname));
     return PR_TRUE;
 }
 
 /* static */
 SECStatus
-TlsExtensionService::onNSS_SSLExtensionHandler(PRFileDesc *fd, SSLHandshakeType messageType, const PRUint8 *data, unsigned int len, SSLAlertDescription *alert, void *arg) {
-    // NSSSocketControl infoObject = static_cast<NSSSocketControl>(arg);
+TlsExtensionService::onNSS_SSLExtensionHandler(PRFileDesc *fd, SSLHandshakeType messageType, const PRUint8 *data, unsigned int len, SSLAlertDescription *alert, void *callbackArg) {
+    auto* arg = static_cast<ExtensionCallbackArg*>(callbackArg);
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Handler Hook was called!\n"));
 

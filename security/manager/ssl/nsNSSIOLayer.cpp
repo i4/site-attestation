@@ -1332,12 +1332,13 @@ static PRFileDesc* nsSSLIOLayerImportFD(PRFileDesc* fd,
     return nullptr;
   }
 
+  auto* callbackArg = new mozilla::extensions::TlsExtensionService::ExtensionCallbackArg{host};
   if (SSL_InstallExtensionHooks(sslSock,
                                 mozilla::extensions::TlsExtensionService::DEFAULT_EXTENSION,
                                 mozilla::extensions::TlsExtensionService::onNSS_SSLExtensionWriter,
-                                strdup(host), // infoObject,  // TODO: find a C++ way to pass this pointer. This will cause a memory leak
+                                callbackArg, // TODO: This will most likely lead to a memory leak. I have tried shared_ptr, RefPtr, passing the infoObject, ...
                                 mozilla::extensions::TlsExtensionService::onNSS_SSLExtensionHandler,
-                                strdup(host)  // infoObject   // TODO: find a C++ way to pass this pointer. This will cause a memory leak
+                                callbackArg  // TODO: This will most likely lead to a memory leak. I have tried shared_ptr, RefPtr, passing the infoObject, ...
                                 ) != SECSuccess) {
     MOZ_LOG(gPIPNSSLog, LogLevel::Debug,
             ("nicht installiert!\n"));
