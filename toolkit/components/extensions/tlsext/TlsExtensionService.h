@@ -17,6 +17,8 @@ class TlsExtensionService final : public nsITlsExtensionService {
     NS_DECL_ISUPPORTS
     NS_DECL_NSITLSEXTENSIONSERVICE
 
+    static const PRUint16 DEFAULT_EXTENSION = 420;
+
     static already_AddRefed<TlsExtensionService> GetSingleton();
 
     static PRBool onNSS_SSLExtensionWriter(
@@ -37,8 +39,6 @@ class TlsExtensionService final : public nsITlsExtensionService {
     );
 
     private:
-    PRUint16 defaultExtension = 420;
-
     TlsExtensionService() = default;
     ~TlsExtensionService() = default;
 };

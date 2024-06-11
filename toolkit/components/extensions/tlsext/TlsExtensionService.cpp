@@ -26,6 +26,9 @@ TlsExtensionService::GetSingleton() {
 /* static */
 PRBool
 TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType messageType, PRUint8 *data, unsigned int *len, unsigned int maxLen, void *arg) {
+    // NSSSocketControl infoObject = static_cast<NSSSocketControl>(arg);
+    // char* host = infoObject->GetHostName();
+    // TODO
     char* host = (char*) arg;
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Writer Hook was called! [%s]\n", host));
@@ -36,6 +39,7 @@ TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType m
 /* static */
 SECStatus
 TlsExtensionService::onNSS_SSLExtensionHandler(PRFileDesc *fd, SSLHandshakeType messageType, const PRUint8 *data, unsigned int len, SSLAlertDescription *alert, void *arg) {
+    // NSSSocketControl infoObject = static_cast<NSSSocketControl>(arg);
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Handler Hook was called!\n"));
 
@@ -50,7 +54,7 @@ TlsExtensionService::GetExtensionSupport(uint16_t extension, SSLExtensionSupport
 
 NS_IMETHODIMP
 TlsExtensionService::GetDefaultExtension(PRUint16 *aDefaultExtension) {
-    *aDefaultExtension = defaultExtension;
+    *aDefaultExtension = DEFAULT_EXTENSION;
     return NS_OK;
 }
 }

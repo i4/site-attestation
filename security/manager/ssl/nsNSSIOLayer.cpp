@@ -1332,7 +1332,13 @@ static PRFileDesc* nsSSLIOLayerImportFD(PRFileDesc* fd,
     return nullptr;
   }
 
-  if (SSL_InstallExtensionHooks(sslSock, 420, mozilla::extensions::TlsExtensionService::onNSS_SSLExtensionWriter, strdup(host), mozilla::extensions::TlsExtensionService::onNSS_SSLExtensionHandler, nullptr) != SECSuccess) {
+  if (SSL_InstallExtensionHooks(sslSock,
+                                mozilla::extensions::TlsExtensionService::DEFAULT_EXTENSION,
+                                mozilla::extensions::TlsExtensionService::onNSS_SSLExtensionWriter,
+                                strdup(host), // infoObject,  // TODO: find a C++ way to pass this pointer. This will cause a memory leak
+                                mozilla::extensions::TlsExtensionService::onNSS_SSLExtensionHandler,
+                                strdup(host)  // infoObject   // TODO: find a C++ way to pass this pointer. This will cause a memory leak
+                                ) != SECSuccess) {
     MOZ_LOG(gPIPNSSLog, LogLevel::Debug,
             ("nicht installiert!\n"));
     return nullptr;
