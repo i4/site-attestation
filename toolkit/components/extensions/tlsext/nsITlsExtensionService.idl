@@ -15,7 +15,7 @@ typedef unsigned short PRUint16;
  */
 [scriptable, builtinclass, uuid(2b7491bc-5188-4018-a093-e792b7b5e07d)]
 interface nsITlsExtensionService : nsISupports {
-  readonly attribute PRUint16 defaultExtension;
+  const PRUint16 DEFAULT_EXTENSION = 420;
 
   // Although SSLExtensionSupport is provided by "sslexp.h", it is implemented as an enum in order to be scriptable.
   cenum SSLExtensionSupport : 8 {

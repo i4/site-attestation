@@ -25,8 +25,6 @@ class TlsExtensionService final : public nsITlsExtensionService {
         // ~ExtensionCallbackArg();
     };
 
-    static const PRUint16 DEFAULT_EXTENSION = 420;
-
     static already_AddRefed<TlsExtensionService> GetSingleton();
 
     static PRBool onNSS_SSLExtensionWriter(

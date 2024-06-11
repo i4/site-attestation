@@ -24,9 +24,11 @@ TlsExtensionService::GetSingleton() {
 /* static */
 PRBool
 TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType messageType, PRUint8 *data, unsigned int *len, unsigned int maxLen, void *callbackArg) {
-    auto* arg = static_cast<ExtensionCallbackArg*>(callbackArg);
-    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Writer Hook was called! [%s]\n", arg->hostname));
+    // auto* arg = static_cast<ExtensionCallbackArg*>(callbackArg);
+    // MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+    //         ("Writer Hook was called! [%s]\n", SSL_RevealURL(fd)));
+
+    // SSL_GetSessionID(fd);
 
     return PR_TRUE;
 }
@@ -34,7 +36,7 @@ TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType m
 /* static */
 SECStatus
 TlsExtensionService::onNSS_SSLExtensionHandler(PRFileDesc *fd, SSLHandshakeType messageType, const PRUint8 *data, unsigned int len, SSLAlertDescription *alert, void *callbackArg) {
-    auto* arg = static_cast<ExtensionCallbackArg*>(callbackArg);
+    // auto* arg = static_cast<ExtensionCallbackArg*>(callbackArg);
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Handler Hook was called!\n"));
 
@@ -47,12 +49,6 @@ TlsExtensionService::onNSS_SSLExtensionHandler(PRFileDesc *fd, SSLHandshakeType 
 NS_IMETHODIMP
 TlsExtensionService::GetExtensionSupport(uint16_t extension, SSLExtensionSupport *_retval) {
     SSL_GetExtensionSupport(extension, _retval);
-    return NS_OK;
-}
-
-NS_IMETHODIMP
-TlsExtensionService::GetDefaultExtension(PRUint16 *aDefaultExtension) {
-    *aDefaultExtension = DEFAULT_EXTENSION;
     return NS_OK;
 }
 }
