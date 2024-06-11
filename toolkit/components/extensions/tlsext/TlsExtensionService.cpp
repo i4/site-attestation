@@ -27,6 +27,7 @@ TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType m
     auto* arg = static_cast<ExtensionCallbackArg*>(callbackArg);
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Writer Hook was called! [%s]\n", arg->hostname));
+
     return PR_TRUE;
 }
 
@@ -39,6 +40,9 @@ TlsExtensionService::onNSS_SSLExtensionHandler(PRFileDesc *fd, SSLHandshakeType 
 
     return SECSuccess;
 }
+
+// TlsExtensionService::ExtensionCallbackArg::ExtensionCallbackArg(const char* hostname): hostname(strdup(hostname)) {}
+// TlsExtensionService::ExtensionCallbackArg::~ExtensionCallbackArg() { free(hostname); }
 
 NS_IMETHODIMP
 TlsExtensionService::GetExtensionSupport(uint16_t extension, SSLExtensionSupport *_retval) {

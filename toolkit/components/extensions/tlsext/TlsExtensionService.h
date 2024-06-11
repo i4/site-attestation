@@ -2,6 +2,7 @@
 #ifndef mozilla_extensions_nsTlsExtensionService_h__
 #define mozilla_extensions_nsTlsExtensionService_h__
 
+#include <unordered_set>
 #include "nsITlsExtensionService.h"
 #include "prtypes.h"
 #include "seccomon.h"
@@ -19,6 +20,9 @@ class TlsExtensionService final : public nsITlsExtensionService {
 
     struct ExtensionCallbackArg {
         const char* hostname;
+
+        // ExtensionCallbackArg(const char* hostname);
+        // ~ExtensionCallbackArg();
     };
 
     static const PRUint16 DEFAULT_EXTENSION = 420;
@@ -43,6 +47,8 @@ class TlsExtensionService final : public nsITlsExtensionService {
     );
 
     private:
+    // std::unordered_set<ExtensionCallbackArg*> callbackArgs();
+
     TlsExtensionService() = default;
     ~TlsExtensionService() = default;
 };
