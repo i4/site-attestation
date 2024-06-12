@@ -9,25 +9,6 @@
 
 typedef unsigned short PRUint16;
 
-// `scriptable` designates that this object will be used with JavaScript
-/**
- * ... documentation
- */
-[scriptable, builtinclass, uuid(2b7491bc-5188-4018-a093-e792b7b5e07d)]
-interface nsITlsExtensionService : nsISupports {
-  const PRUint16 DEFAULT_EXTENSION = 420;
-
-  // Although SSLExtensionSupport is provided by "sslexp.h", it is implemented as an enum in order to be scriptable.
-  // from NSS sslexp.h
-  cenum SSLExtensionSupport : 8 {
-    ssl_ext_none        = 0,
-    ssl_ext_native      = 1,
-    ssl_ext_native_only = 2
-  };
-
-  nsITlsExtensionService_SSLExtensionSupport getExtensionSupport(in PRUint16 extension);
-};
-
 [scriptable, uuid(d4834e5a-41db-4f97-a45d-d4dc53057553)]
 interface nsITlsExtensionObserver : nsISupports {
   // from NSS seccommon.h
@@ -61,14 +42,36 @@ interface nsITlsExtensionObserver : nsISupports {
     ssl_hs_ech_outer_client_hello = 257, /* Not a real message. */
   };
 
-  boolean onWriteTlsExtension( in string TlsSessionId,
+  string onWriteTlsExtension(in string tlsSessionId,
                               in string url,
                               in nsITlsExtensionObserver_SSLHandshakeType messageType,
-                              out string data,
-                              in unsigned long maxLen);
+                              in unsigned long maxDataLen);
 
   nsITlsExtensionObserver_SECStatus onHandleTlsExtension( in string TlsSessionId,
                                                           in string url,
                                                           in nsITlsExtensionObserver_SSLHandshakeType messageType,
                                                           in string data);
+};
+
+// `scriptable` designates that this object will be used with JavaScript
+/**
+ * ... documentation
+ */
+[scriptable, builtinclass, uuid(2b7491bc-5188-4018-a093-e792b7b5e07d)]
+interface nsITlsExtensionService : nsISupports {
+  const PRUint16 DEFAULT_EXTENSION = 420;
+
+  // Although SSLExtensionSupport is provided by "sslexp.h", it is implemented as an enum in order to be scriptable.
+  // from NSS sslexp.h
+  cenum SSLExtensionSupport : 8 {
+    ssl_ext_none        = 0,
+    ssl_ext_native      = 1,
+    ssl_ext_native_only = 2
+  };
+
+  nsITlsExtensionService_SSLExtensionSupport getExtensionSupport(in PRUint16 extension);
+
+  void addObserver(in nsITlsExtensionObserver observer);
+  boolean removeObserver(in nsITlsExtensionObserver observer);
+  boolean hasObserver(in nsITlsExtensionObserver observer);
 };

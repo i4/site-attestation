@@ -2,6 +2,7 @@
 #ifndef mozilla_extensions_nsTlsExtensionService_h__
 #define mozilla_extensions_nsTlsExtensionService_h__
 
+#include <list>
 #include <unordered_set>
 #include "nsITlsExtensionService.h"
 #include "prtypes.h"
@@ -46,6 +47,7 @@ class TlsExtensionService final : public nsITlsExtensionService {
 
     private:
     // std::unordered_set<ExtensionCallbackArg*> callbackArgs();
+    std::list<nsITlsExtensionObserver*> observers;
 
     TlsExtensionService() = default;
     ~TlsExtensionService() = default;

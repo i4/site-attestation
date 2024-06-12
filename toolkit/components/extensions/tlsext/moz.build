@@ -17,5 +17,9 @@ XPCOM_MANIFESTS += [
     "components.conf",
 ]
 
+EXTRA_JS_MODULES += [
+    "TlsExtensionObserver.sys.mjs",
+]
+
 # Necessary for the .cpp implementation to be compiled
 FINAL_LIBRARY = "xul"

@@ -51,4 +51,22 @@ TlsExtensionService::GetExtensionSupport(uint16_t extension, SSLExtensionSupport
     SSL_GetExtensionSupport(extension, _retval);
     return NS_OK;
 }
+
+NS_IMETHODIMP
+TlsExtensionService::AddObserver(nsITlsExtensionObserver *observer) {
+    observers.push_front(observer);
+    return NS_OK;
+}
+
+NS_IMETHODIMP
+TlsExtensionService::RemoveObserver(nsITlsExtensionObserver *observer, bool *_retval) {
+    observers.remove(observer);
+    return NS_OK;
+}
+
+NS_IMETHODIMP
+TlsExtensionService::HasObserver(nsITlsExtensionObserver *observer, bool *_retval) {
+    *_retval = std::find(observers.begin(), observers.end(), observer) != observers.end();
+    return NS_OK;
+}
 }
