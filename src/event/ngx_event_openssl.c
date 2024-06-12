@@ -296,6 +296,8 @@ ngx_ssl_init(ngx_log_t *log)
 static char* cb_add_buffer;
 #define EXT_RATLS 420
 #define MEASUREMENT_BUF_SIZE UINT8_MAX
+char * ra_infile = "/tmp/ra_in";
+char * ra_outfile = "/tmp/ra_out";
 
 static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                         unsigned int context,
@@ -324,22 +326,12 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                 exit(EXIT_FAILURE);
             }
 
-            // an array that will hold two file descriptors
-            int fds[2];
-            // populates fds with two file descriptors
-            pipe(fds);
+
             // create child process that is a clone of the parent
             pid_t pid = fork();
 
             if (pid == 0) { // child
-                dup2(fds[1], STDOUT_FILENO);
-
-                // file descriptor no longer needed in child since stdout is a copy
-                close(fds[1]);
-
-                close(fds[0]);
-
-                char *argv[] = {(char *)"openssl", "rand", "-base64", "16", NULL};
+                char *argv[] = {(char *)"cp", ra_infile, ra_outfile, NULL};
                 execvp(argv[0], argv);
 
                 exit(0);
@@ -348,25 +340,35 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                 exit(EXIT_FAILURE);
             }
 
+            int status;
+            pid_t wpid = waitpid(pid, &status, 0); // collect zombie
+            if (wpid == -1 && WIFEXITED(status)) {
+                perror("waitpid");
+                exit(EXIT_FAILURE);
+            }
+
             // if we reach here, we are in parent process
             // file descriptor unused in parent
-            close(fds[1]);
-            cb_add_buffer = malloc(MEASUREMENT_BUF_SIZE * sizeof(char));
+            cb_add_buffer = malloc((MEASUREMENT_BUF_SIZE + 1) * sizeof(char));
             if (!cb_add_buffer) {
                 perror("malloc");
                 exit(EXIT_FAILURE);
             }
 
-            read(fds[0], cb_add_buffer, MEASUREMENT_BUF_SIZE - 1);
-
-            // send EOF so child can continue (child blocks until all input has been processed):
-            close(fds[0]);
-            int status;
-            pid_t wpid = waitpid(pid, &status, 0); // collect zombie
-            if (wpid != pid && WIFEXITED(status)) {
-                perror("waitpid");
+            FILE* outfile = fopen(ra_outfile, "r");
+            if (!outfile) {
+                perror("fopen");
                 exit(EXIT_FAILURE);
             }
+
+            char* fgots = fgets(cb_add_buffer, MEASUREMENT_BUF_SIZE, outfile);
+            if (!fgots) {
+                free(cb_add_buffer);
+                perror("fgets");
+                exit(EXIT_FAILURE);
+            }
+
+            fclose(outfile);
 
             printf("TLS::ServerCertificate: %s\n", cb_add_buffer);
 
@@ -396,7 +398,17 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
         size_t chainidx,
         int *al, void *parseArg) {
     if (extType == EXT_RATLS) {
-        printf("%s\n", in);
+        printf("NONCE: %s\n", in);
+
+        FILE* infile = fopen(ra_infile, "w");
+        if (infile == NULL) {
+            perror("fopen");
+            exit(EXIT_FAILURE);
+        }
+
+        fprintf(infile, "%s", in);
+        fclose(infile);
+
     }
     return 1;
 }
