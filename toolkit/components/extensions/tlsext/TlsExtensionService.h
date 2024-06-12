@@ -3,13 +3,13 @@
 #define mozilla_extensions_nsTlsExtensionService_h__
 
 #include <list>
-#include <unordered_set>
 #include "nsITlsExtensionService.h"
 #include "prtypes.h"
 #include "seccomon.h"
 #include "sslt.h"
 #include "prio.h"
 #include "ssl.h"
+#include "prlock.h"
 
 namespace mozilla::extensions {
 
@@ -45,12 +45,31 @@ class TlsExtensionService final : public nsITlsExtensionService {
         void *callbackArg
     );
 
+    PRBool callWriterObservers(
+        PRFileDesc *fd,
+        SSLHandshakeType messageType,
+        PRUint8 *data,
+        unsigned int *len,
+        unsigned int maxLen,
+        void *callbackArg
+    );
+
+    SECStatus callHandlerObservers(
+        PRFileDesc *fd,
+        SSLHandshakeType messageType,
+        const PRUint8 *data,
+        unsigned int len,
+        SSLAlertDescription *alert,
+        void *callbackArg
+    );
+
     private:
     // std::unordered_set<ExtensionCallbackArg*> callbackArgs();
     std::list<nsITlsExtensionObserver*> observers;
+    PRLock* observersLock;
 
-    TlsExtensionService() = default;
-    ~TlsExtensionService() = default;
+    TlsExtensionService();
+    ~TlsExtensionService();
 };
 
 }
