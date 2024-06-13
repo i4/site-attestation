@@ -326,7 +326,6 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                 exit(EXIT_FAILURE);
             }
 
-
             // create child process that is a clone of the parent
             pid_t pid = fork();
 
