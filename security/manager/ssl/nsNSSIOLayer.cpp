@@ -21,6 +21,7 @@
 #include "keyhi.h"
 #include "mozilla/Base64.h"
 #include "mozilla/Casting.h"
+#include "mozilla/Components.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/Logging.h"
 #include "mozilla/Preferences.h"
@@ -1332,16 +1333,8 @@ static PRFileDesc* nsSSLIOLayerImportFD(PRFileDesc* fd,
     return nullptr;
   }
 
-  // auto* callbackArg = new mozilla::extensions::TlsExtensionService::ExtensionCallbackArg{host};
-  if (SSL_InstallExtensionHooks(sslSock,
-                                mozilla::extensions::TlsExtensionService::DEFAULT_EXTENSION,
-                                mozilla::extensions::TlsExtensionService::onNSS_SSLExtensionWriter,
-                                nullptr, // callbackArg, // TODO: This will most likely lead to a memory leak. I have tried shared_ptr, RefPtr, passing the infoObject, ...
-                                mozilla::extensions::TlsExtensionService::onNSS_SSLExtensionHandler,
-                                nullptr  // callbackArg  // TODO: This will most likely lead to a memory leak. I have tried shared_ptr, RefPtr, passing the infoObject, ...
-                                ) != SECSuccess) {
-    MOZ_LOG(gPIPNSSLog, LogLevel::Debug,
-            ("nicht installiert!\n"));
+  auto* tlsExtensionService = mozilla::extensions::TlsExtensionService::GetSingleton().take();
+  if (tlsExtensionService->InstallObserverHooks(sslSock, host) != SECSuccess) {
     return nullptr;
   }
 

@@ -7,6 +7,7 @@
 namespace mozilla::extensions {
 
 LazyLogModule gTLSEXTLog("tlsext");
+using TlsExtObserverInfo = struct TlsExtObserverInfo;
 
 NS_IMPL_ISUPPORTS(TlsExtensionService, nsITlsExtensionService)
 
@@ -24,26 +25,82 @@ TlsExtensionService::GetSingleton() {
 /* static */
 PRBool
 TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType messageType, PRUint8 *data, unsigned int *len, unsigned int maxLen, void *callbackArg) {
-    // auto* arg = static_cast<ExtensionCallbackArg*>(callbackArg);
-    // MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-    //         ("Writer Hook was called! [%s]\n", SSL_RevealURL(fd)));
-    // SSL_GetSessionID(fd);
-    GetSingleton().take()->callWriterObservers(fd, messageType, data, len, maxLen, callbackArg);
+    auto* obsInfo = static_cast<TlsExtObserverInfo*>(callbackArg);
+    nsITlsExtensionObserver* obs = obsInfo->observer;
+
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Writer Hook was called! [%s]\n", obsInfo->hostname));
+
+    char* dataString;
+    if (NS_OK != obs->OnWriteTlsExtension(
+        "tlsSessionId",
+        obsInfo->hostname,
+        (nsITlsExtensionObserver::SSLHandshakeType) messageType, // this cast is legal, because the enum has the same structure
+        maxLen,
+        &dataString)) {
+        return PR_FALSE;
+    }
+
+    unsigned int dataLen = strlen(dataString);
+    if (dataLen > maxLen) return PR_FALSE;
+
+    strcpy((char*) data, dataString);
+    *len = dataLen;
+
     return PR_TRUE;
 }
 
 /* static */
 SECStatus
 TlsExtensionService::onNSS_SSLExtensionHandler(PRFileDesc *fd, SSLHandshakeType messageType, const PRUint8 *data, unsigned int len, SSLAlertDescription *alert, void *callbackArg) {
-    // auto* arg = static_cast<ExtensionCallbackArg*>(callbackArg);
-    // MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-    //         ("Handler Hook was called!\n"));
-    GetSingleton().take()->callHandlerObservers(fd, messageType, data, len, alert, callbackArg);
+    auto* obsInfo = static_cast<TlsExtObserverInfo*>(callbackArg);
+    nsITlsExtensionObserver* obs = obsInfo->observer;
+
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Writer Hook was called! [%s]\n", obsInfo->hostname));
+
+    nsITlsExtensionObserver::SECStatus secStatus;
+    if (NS_OK != obs->OnHandleTlsExtension(
+        "tlsSessionId",
+        obsInfo->hostname,
+        (nsITlsExtensionObserver::SSLHandshakeType) messageType, // this cast is legal, because the enum has the same structure
+        (const char*) data, // TODO: narrowing conversion, this should be unsigned char* instead of char*
+        &secStatus)) {
+        return SECSuccess;
+    }
+
+    switch (secStatus) {
+        case nsITlsExtensionObserver::SECWouldBlock:
+            return SECWouldBlock;
+        case nsITlsExtensionObserver::SECFailure:
+            return SECFailure;
+        case nsITlsExtensionObserver::SECSuccess:
+            return SECSuccess;
+        // default:
+            // TODO throw not implemented
+    }
+
     return SECSuccess;
 }
 
-// TlsExtensionService::ExtensionCallbackArg::ExtensionCallbackArg(const char* hostname): hostname(strdup(hostname)) {}
-// TlsExtensionService::ExtensionCallbackArg::~ExtensionCallbackArg() { free(hostname); }
+SECStatus
+TlsExtensionService::InstallObserverHooks(PRFileDesc* sslSock, const char* host) {
+    PR_Lock(observersLock);
+    auto observersCopy(observers);
+    PR_Unlock(observersLock);
+
+    for (const auto& [extension, obsInfo] : observersCopy) {
+        if (!std::regex_match(host, *obsInfo->urlPattern)) continue;
+        if (SECSuccess != SSL_InstallExtensionHooks(
+            sslSock, extension,
+            onNSS_SSLExtensionWriter, obsInfo,
+            onNSS_SSLExtensionHandler, obsInfo)) {
+                return SECFailure;
+        }
+    }
+
+    return SECSuccess;
+}
 
 TlsExtensionService::TlsExtensionService() {
     observersLock = PR_NewLock();
@@ -51,50 +108,11 @@ TlsExtensionService::TlsExtensionService() {
 
 TlsExtensionService::~TlsExtensionService() {
     PR_DestroyLock(observersLock);
+    // TODO free all Observers, patterns etc
 }
 
-// TODO: overthink the lock, is it required? (Since race conditions are basically irrelevant)
-
-PRBool
-TlsExtensionService::callWriterObservers(PRFileDesc *fd,
-        SSLHandshakeType messageType,
-        PRUint8 *data,
-        unsigned int *len,
-        unsigned int maxLen,
-        void *callbackArg) {
-
-    PR_Lock(observersLock);
-    for (auto const& o : observers) {
-        char* dataString;
-        auto obsRet = o->OnWriteTlsExtension("id", "url", (nsITlsExtensionObserver::SSLHandshakeType) messageType, maxLen, &dataString);
-        if (obsRet != NS_OK) continue;
-
-        unsigned int dataLen = strlen(dataString);
-        if (dataLen > maxLen) continue;
-
-        strcpy((char*) data, dataString);
-        *len = dataLen;
-        return PR_TRUE;
-    }
-    PR_Unlock(observersLock);
-
-    return PR_FALSE;
-}
-
-SECStatus
-TlsExtensionService::callHandlerObservers(PRFileDesc *fd,
-        SSLHandshakeType messageType,
-        const PRUint8 *data,
-        unsigned int len,
-        SSLAlertDescription *alert,
-        void *callbackArg) {
-    PR_Lock(observersLock);
-    for (auto const& o : observers) {
-
-    }
-    PR_Unlock(observersLock);
-    return SECSuccess;
-}
+std::map<PRUint16, TlsExtensionService::TlsExtObserverInfo*>
+TlsExtensionService::GetObservers() { return observers; }
 
 NS_IMETHODIMP
 TlsExtensionService::GetExtensionSupport(uint16_t extension, SSLExtensionSupport *_retval) {
@@ -103,25 +121,31 @@ TlsExtensionService::GetExtensionSupport(uint16_t extension, SSLExtensionSupport
 }
 
 NS_IMETHODIMP
-TlsExtensionService::AddObserver(nsITlsExtensionObserver *observer) {
+TlsExtensionService::AddObserver(const char * urlPattern, PRUint16 extension, nsITlsExtensionObserver *observer) {
+    auto *obsInfo = new TlsExtObserverInfo {
+        .urlPattern = new std::regex(urlPattern),
+        .extension = extension,
+        .observer = observer,
+    };
     PR_Lock(observersLock);
-    observers.push_front(observer);
+    observers.insert({extension, obsInfo});
     PR_Unlock(observersLock);
     return NS_OK;
 }
 
 NS_IMETHODIMP
-TlsExtensionService::RemoveObserver(nsITlsExtensionObserver *observer, bool *_retval) {
+TlsExtensionService::RemoveObserver(PRUint16 extension) {
     PR_Lock(observersLock);
-    observers.remove(observer);
+    observers.erase(extension);
     PR_Unlock(observersLock);
     return NS_OK;
 }
 
 NS_IMETHODIMP
-TlsExtensionService::HasObserver(nsITlsExtensionObserver *observer, bool *_retval) {
+TlsExtensionService::HasObserver(PRUint16 extension, bool *_retval) {
     PR_Lock(observersLock);
-    *_retval = std::find(observers.begin(), observers.end(), observer) != observers.end();
+    std::map<PRUint16, TlsExtObserverInfo*>::iterator it = observers.find(extension);
+    *_retval = it != observers.end();
     PR_Unlock(observersLock);
     return NS_OK;
 }

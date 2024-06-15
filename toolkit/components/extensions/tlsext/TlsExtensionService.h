@@ -3,6 +3,9 @@
 #define mozilla_extensions_nsTlsExtensionService_h__
 
 #include <list>
+#include <map>
+#include <regex>
+
 #include "nsITlsExtensionService.h"
 #include "prtypes.h"
 #include "seccomon.h"
@@ -19,11 +22,11 @@ class TlsExtensionService final : public nsITlsExtensionService {
     NS_DECL_ISUPPORTS
     NS_DECL_NSITLSEXTENSIONSERVICE
 
-    struct ExtensionCallbackArg {
-        const char* hostname;
-
-        // ExtensionCallbackArg(const char* hostname);
-        // ~ExtensionCallbackArg();
+    using TlsExtObserverInfo = struct TlsExtObserverInfo {
+        std::regex* urlPattern;
+        PRUint16 extension;
+        nsITlsExtensionObserver* observer;
+        char* hostname;
     };
 
     static already_AddRefed<TlsExtensionService> GetSingleton();
@@ -45,27 +48,12 @@ class TlsExtensionService final : public nsITlsExtensionService {
         void *callbackArg
     );
 
-    PRBool callWriterObservers(
-        PRFileDesc *fd,
-        SSLHandshakeType messageType,
-        PRUint8 *data,
-        unsigned int *len,
-        unsigned int maxLen,
-        void *callbackArg
-    );
+    SECStatus InstallObserverHooks(PRFileDesc* sslSock, const char* host);
 
-    SECStatus callHandlerObservers(
-        PRFileDesc *fd,
-        SSLHandshakeType messageType,
-        const PRUint8 *data,
-        unsigned int len,
-        SSLAlertDescription *alert,
-        void *callbackArg
-    );
+    std::map<PRUint16, TlsExtObserverInfo*> GetObservers();
 
     private:
-    // std::unordered_set<ExtensionCallbackArg*> callbackArgs();
-    std::list<nsITlsExtensionObserver*> observers;
+    std::map<PRUint16, TlsExtObserverInfo*> observers;
     PRLock* observersLock;
 
     TlsExtensionService();
