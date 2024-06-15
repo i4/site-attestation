@@ -37,8 +37,9 @@
     ],
     "events": [
       {
-        "name": "onTLSExtensionHandle",
+        "name": "onHandleTlsExtension",
         "type": "function",
+        "async": true,
         "description": "...",
         "parameters": [
           {
@@ -46,18 +47,19 @@
             "&ref": "SSLHandshakeType"
           },
           {
-            "name": "message",
+            "name": "data",
             "type": "string"
           },
           {
-            "name": "socketDetails",
+            "name": "details",
             "$ref": "SocketDetails"
           }
         ]
       },
       {
-        "name": "onTLSExtensionWrite",
+        "name": "onWriteTlsExtension",
         "type": "function",
+        "async": true,
         "description": "...",
         "parameters": [
           {
@@ -65,20 +67,26 @@
             "&ref": "SSLHandshakeType"
           },
           {
-            "name": "socketDetails",
-            "$ref": "SocketDetails"
+            "name": "details",
+            "$ref": "ExtensionDetails"
           }
         ]
       }
     ],
     "types": [
       {
-        "id": "SocketDetails",
+        "id": "ExtensionDetails",
         "description": "...",
         "type": "object",
         "properties": {
-          "hostName": {
+          "sessionId": {
             "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "extension": {
+            "type": "number"
           }
         }
       },

@@ -8,10 +8,12 @@ export function TlsExtensionObserver() {
 
 // implement addListener functions here
 TlsExtensionObserver.prototype = {
-    onWriteTlsExtension(tlsSessionId, url, messageType, maxDataLen) {
-
+    setWriteTlsExtensionCallback(callback) {
+        this.onWriteTlsExtension = callback;
     },
-    onHandleTlsExtension(tlsSessionId, url, messageType, data) {
-
+    setHandleTlsExtensionCallback(callback) {
+        this.onHandleTlsExtension = callback;
     },
+    onWriteTlsExtension(tlsSessionId, url, messageType, maxDataLen) { },
+    onHandleTlsExtension(tlsSessionId, url, messageType, data) { },
 }

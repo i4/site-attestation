@@ -27,10 +27,21 @@
 const SSLExtensionSupport = ["ssl_ext_none", "ssl_ext_native", "ssl_ext_native_only"];
 
 this.tlsExt = class extends ExtensionAPI {
+
+
   getAPI(context) {
     return {
       tlsExt: {
         getTlsExtensionSupport: (extension) => SSLExtensionSupport[Services.tlsExtensions.getExtensionSupport(extension)],
+        // onHandleTlsExtension: new EventManager({
+        //   context,
+        //   name: "tlsExt.onHandleTlsExtension",
+        //   register: fire => {
+        //   }
+        // }).api(),
+        // onWriteTlsExtension: new EventManager({
+
+        // }).api(),
       },
     };
   }
