@@ -54,7 +54,23 @@
             "name": "details",
             "$ref": "SocketDetails"
           }
-        ]
+        ],
+        "extraParameters": [
+          {
+            "name": "urlPattern",
+            "description": "...",
+            "type": "string"
+          },
+          {
+            "name": "extension",
+            "description": "...",
+            "type": "number"
+          }
+        ],
+        "returns": {
+          "type": "string",
+          "description": "..."
+        }
       },
       {
         "name": "onWriteTlsExtension",
@@ -70,7 +86,23 @@
             "name": "details",
             "$ref": "ExtensionDetails"
           }
-        ]
+        ],
+        "extraParameters": [
+          {
+            "name": "urlPattern",
+            "description": "...",
+            "type": "string"
+          },
+          {
+            "name": "extension",
+            "description": "...",
+            "type": "number"
+          }
+        ],
+        "returns": {
+          "type": "string",
+          "description": "..."
+        }
       }
     ],
     "types": [
@@ -115,6 +147,16 @@
           "ssl_hs_next_proto",
           "ssl_hs_message_hash",
           "ssl_hs_ech_outer_client_hello"
+        ]
+      },
+      {
+        "id": "SECStatus",
+        "description": "...",
+        "type": "number",
+        "enum": [
+          "SECWouldBlock",
+          "SECFailure",
+          "SECSuccess"
         ]
       }
     ],

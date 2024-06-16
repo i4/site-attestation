@@ -33,15 +33,28 @@ this.tlsExt = class extends ExtensionAPI {
     return {
       tlsExt: {
         getTlsExtensionSupport: (extension) => SSLExtensionSupport[Services.tlsExtensions.getExtensionSupport(extension)],
-        // onHandleTlsExtension: new EventManager({
-        //   context,
-        //   name: "tlsExt.onHandleTlsExtension",
-        //   register: fire => {
-        //   }
-        // }).api(),
-        // onWriteTlsExtension: new EventManager({
 
-        // }).api(),
+        onHandleTlsExtension: new EventManager({
+          context,
+          name: "tlsExt.onHandleTlsExtension",
+          register: (fire, urlPattern, extension) => {
+            const observer = new Services.tlsExtensionsObserver.constructor();
+            observer.setHandleTlsExtensionCallback(fire);
+            Services.tlsExtensions.addObserver(urlPattern, extension, observer);
+            return () => { };
+          }
+        }).api(),
+
+        onWriteTlsExtension: new EventManager({
+          context,
+          name: "tlsExt.onWriteTlsExtension",
+          register: (fire, urlPattern, extension) => {
+            const observer = new Services.tlsExtensionsObserver.constructor();
+            observer.setWriteTlsExtensionCallback(fire);
+            Services.tlsExtensions.addObserver(urlPattern, extension, observer);
+            return () => { };
+          }
+        }).api(),
       },
     };
   }
