@@ -4,8 +4,10 @@
  */
 export function TlsExtensionObserver() {
     // init
+    console.log("testing");
     this.handleFire = null;
     this.writeFire = null;
+    return this;
 }
 
 // implement addListener functions here

@@ -26,8 +26,12 @@
 
 const SSLExtensionSupport = ["ssl_ext_none", "ssl_ext_native", "ssl_ext_native_only"];
 
-this.tlsExt = class extends ExtensionAPI {
+function createObserver() {
+  const tlsExtensionObserverCID = "@mozilla.org/extensions/tls-extension-observer;1";
+  return Cc[tlsExtensionObserverCID].createInstance(Ci.nsITlsExtensionObserver);
+}
 
+this.tlsExt = class extends ExtensionAPI {
 
   getAPI(context) {
     return {
@@ -38,10 +42,12 @@ this.tlsExt = class extends ExtensionAPI {
           context,
           name: "tlsExt.onHandleTlsExtension",
           register: (fire, urlPattern, extension) => {
-            const observer = new Services.tlsExtensionsObserver.constructor();
+            const observer = createObserver();
             observer.setHandleTlsExtensionCallback(fire);
             Services.tlsExtensions.addObserver(urlPattern, extension, observer);
-            return () => { };
+            return () => {
+              // TODO cleanup
+            };
           }
         }).api(),
 
@@ -49,10 +55,12 @@ this.tlsExt = class extends ExtensionAPI {
           context,
           name: "tlsExt.onWriteTlsExtension",
           register: (fire, urlPattern, extension) => {
-            const observer = new Services.tlsExtensionsObserver.constructor();
+            const observer = createObserver();
             observer.setWriteTlsExtensionCallback(fire);
             Services.tlsExtensions.addObserver(urlPattern, extension, observer);
-            return () => { };
+            return () => {
+              // TODO cleanup
+            };
           }
         }).api(),
       },
