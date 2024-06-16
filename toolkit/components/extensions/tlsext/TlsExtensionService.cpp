@@ -41,6 +41,8 @@ TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType m
         return PR_FALSE;
     }
 
+    if (dataString == nullptr) return PR_FALSE;
+
     unsigned int dataLen = strlen(dataString);
     if (dataLen > maxLen) return PR_FALSE;
 

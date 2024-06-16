@@ -39,12 +39,11 @@
       {
         "name": "onHandleTlsExtension",
         "type": "function",
-        "async": true,
         "description": "...",
         "parameters": [
           {
             "name": "messageSSLHandshakeType",
-            "&ref": "SSLHandshakeType"
+            "$ref": "SSLHandshakeType"
           },
           {
             "name": "data",
@@ -52,7 +51,7 @@
           },
           {
             "name": "details",
-            "$ref": "SocketDetails"
+            "$ref": "ExtensionDetails"
           }
         ],
         "extraParameters": [
@@ -75,12 +74,11 @@
       {
         "name": "onWriteTlsExtension",
         "type": "function",
-        "async": true,
         "description": "...",
         "parameters": [
           {
             "name": "messageSSLHandshakeType",
-            "&ref": "SSLHandshakeType"
+            "$ref": "SSLHandshakeType"
           },
           {
             "name": "details",

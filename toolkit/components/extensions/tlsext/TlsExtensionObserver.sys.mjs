@@ -19,13 +19,14 @@ TlsExtensionObserver.prototype = {
         this.handleFire = callback;
     },
 
-    onWriteTlsExtension(tlsSessionId, url, messageType, maxDataLen) {
+    async onWriteTlsExtension(tlsSessionId, url, messageType, maxDataLen) {
         if (this.writeFire !== null)
-            this.writeFire.async(); // TODO parse return, pass arguments
+            return await this.writeFire.async(); // TODO parse return, pass arguments
         return null;
     },
-    onHandleTlsExtension(tlsSessionId, url, messageType, data) {
+    async onHandleTlsExtension(tlsSessionId, url, messageType, data) {
         if (this.handleFire !== null)
-            this.handleFire.async();
+            return await this.handleFire.async();
+        return 1; // TODO return SECFailure, but how to access the ns Interface enums?
     },
 }
