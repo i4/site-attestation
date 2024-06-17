@@ -1,3 +1,4 @@
+import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
 /**
  * @class
@@ -12,7 +13,15 @@ export function TlsExtensionObserver() {
 
 // implement addListener functions here
 TlsExtensionObserver.prototype = {
-    classID: Components.ID("{d4834e5a-41db-4f97-a45d-d4dc53057553}"),
+    classID: Components.ID("{62d09cd3-c717-4cff-a04f-4e0facc11cd5}"),
+    // contractID: "@mozilla.org/extensions/tls-extension-observer;1",
+
+    // nsIMIMEInfo: Ci.nsIMIMEInfo,
+
+    QueryInterface: ChromeUtils.generateQI([
+        // Components.interfaces.nsITlsExtensionObserver
+        "nsITlsExtensionObserver"
+    ]),
 
     setWriteTlsExtensionCallback(callback) {
         this.writeFire = callback;
