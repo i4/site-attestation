@@ -31,8 +31,8 @@ TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType m
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Writer Hook was called! [%s]\n", obsInfo->hostname));
 
-    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Observer is [%p]\n", obsInfo->observer));
+    // MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+    //         ("Observer is [%p]\n", obsInfo->observer));
 
     char* dataString;
     if (NS_OK != obs->OnWriteTlsExtension(
@@ -69,8 +69,8 @@ TlsExtensionService::onNSS_SSLExtensionHandler(PRFileDesc *fd, SSLHandshakeType 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Handler Hook was called! [%s]\n", obsInfo->hostname));
 
-    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Observer is [%p]\n", obsInfo->observer));
+    // MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+    //         ("Observer is [%p]\n", obsInfo->observer));
 
     nsITlsExtensionObserver::SECStatus secStatus;
     if (NS_OK != obs->OnHandleTlsExtension(
@@ -143,14 +143,17 @@ TlsExtensionService::AddObserver(const char * urlPattern, PRUint16 extension, ns
     observer->OnWriteTlsExtension("test", "test", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &test);
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Observer callback went through")); // if this does not work, its still either the object has to be stored or call from socket to main thread is bad.
+            ("Observer callback went through")); // if this does not work, its still either the object has to be stored or call from socket to main thread is bad. // works
 
-    observer->AddRef(); // is this required?
+    NS_ADDREF(observer); // this might not be required
+    // observer->AddRef(); // is this required?
     auto *obsInfo = new TlsExtObserverInfo {
         .urlPattern = new std::regex(urlPattern),
         .extension = extension,
         .observer = observer,
     };
+    // obsInfo->observer->AddRef();
+    NS_ADDREF(obsInfo->observer);
     PR_Lock(observersLock);
     observers.insert({extension, obsInfo});
     PR_Unlock(observersLock);

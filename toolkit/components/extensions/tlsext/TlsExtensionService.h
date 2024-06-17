@@ -13,6 +13,7 @@
 #include "prio.h"
 #include "ssl.h"
 #include "prlock.h"
+#include "nsCOMPtr.h"
 
 namespace mozilla::extensions {
 
@@ -25,7 +26,7 @@ class TlsExtensionService final : public nsITlsExtensionService {
     using TlsExtObserverInfo = struct TlsExtObserverInfo {
         std::regex* urlPattern;
         PRUint16 extension;
-        nsITlsExtensionObserver* observer;
+        nsCOMPtr<nsITlsExtensionObserver> observer;
         char* hostname;
     };
 
