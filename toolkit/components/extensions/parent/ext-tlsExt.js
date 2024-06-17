@@ -24,12 +24,28 @@
 //   }
 // }
 
+ChromeUtils.defineESModuleGetters(this, {
+  TlsExtensionObserver: "resource://gre/modules/TlsExtensionObserver.sys.mjs",
+});
+
 const SSLExtensionSupport = ["ssl_ext_none", "ssl_ext_native", "ssl_ext_native_only"];
 
 function createObserver() {
-  const tlsExtensionObserverCID = "@mozilla.org/extensions/tls-extension-observer;1";
-  return Cc[tlsExtensionObserverCID].createInstance(Ci.nsITlsExtensionObserver);
+  // const tlsExtensionObserverCID = "@mozilla.org/extensions/tls-extension-observer;1";
+  // return Cc[tlsExtensionObserverCID].createInstance(Ci.nsITlsExtensionObserver);
+  // return Services.tlsExtensionsObserver.QueryInterface(Ci.nsITlsExtensionObserver);
+  return new TlsExtensionObserver();
 }
+
+// function addHandleObserver() {
+//   // TODO
+// }
+
+// function addWriteObserver() {
+//   let observer = {
+
+//   }
+// }
 
 this.tlsExt = class extends ExtensionAPI {
 
@@ -46,7 +62,7 @@ this.tlsExt = class extends ExtensionAPI {
             observer.setHandleTlsExtensionCallback(fire);
             Services.tlsExtensions.addObserver(urlPattern, extension, observer);
             return () => {
-              // TODO cleanup
+              Services.tlsExtensions.removeObserver(extension);
             };
           }
         }).api(),
@@ -57,9 +73,10 @@ this.tlsExt = class extends ExtensionAPI {
           register: (fire, urlPattern, extension) => {
             const observer = createObserver();
             observer.setWriteTlsExtensionCallback(fire);
+            console.log(observer);
             Services.tlsExtensions.addObserver(urlPattern, extension, observer);
             return () => {
-              // TODO cleanup
+              Services.tlsExtensions.removeObserver(extension);
             };
           }
         }).api(),

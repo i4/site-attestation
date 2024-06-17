@@ -25,17 +25,21 @@ TlsExtensionObserver.prototype = {
 
     setWriteTlsExtensionCallback(callback) {
         this.writeFire = callback;
+        console.log("writer set");
     },
     setHandleTlsExtensionCallback(callback) {
         this.handleFire = callback;
+        console.log("handler set");
     },
 
     async onWriteTlsExtension(tlsSessionId, url, messageType, maxDataLen) {
+        console.log("writer called");
         if (this.writeFire !== null)
             return await this.writeFire.async(); // TODO parse return, pass arguments
         return null;
     },
     async onHandleTlsExtension(tlsSessionId, url, messageType, data) {
+        console.log("handler called");
         if (this.handleFire !== null)
             return await this.handleFire.async();
         return 1; // TODO return SECFailure, but how to access the ns Interface enums?
