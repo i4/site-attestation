@@ -26,38 +26,46 @@ TlsExtensionService::GetSingleton() {
 PRBool
 TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType messageType, PRUint8 *data, unsigned int *len, unsigned int maxLen, void *callbackArg) {
     auto* obsInfo = static_cast<TlsExtObserverInfo*>(callbackArg);
-    nsITlsExtensionObserver* obs = obsInfo->observer;
+    nsCOMPtr<nsITlsExtensionObserver> obs = obsInfo->observer;
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Writer Hook was called! [%s]\n", obsInfo->hostname));
 
+
+    auto* tlsExtensionService = mozilla::extensions::TlsExtensionService::GetSingleton().take();
+    tlsExtensionService->CallObserver(420);
+
+    // char* test;
+    // obs->OnWriteTlsExtension("test", "test", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &test);
+
     // MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
     //         ("Observer is [%p]\n", obsInfo->observer));
 
-    char* dataString;
-    if (NS_OK != obs->OnWriteTlsExtension(
-        "tlsSessionId",
-        obsInfo->hostname,
-        (nsITlsExtensionObserver::SSLHandshakeType) messageType, // this cast is legal, because the enum has the same structure
-        maxLen,
-        &dataString)) {
-            MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("NS not OK\n"));
-            return PR_FALSE;
-    }
+    // char* dataString;
+    // if (NS_OK != obs->OnWriteTlsExtension(
+    //     "tlsSessionId",
+    //     obsInfo->hostname,
+    //     (nsITlsExtensionObserver::SSLHandshakeType) messageType, // this cast is legal, because the enum has the same structure
+    //     maxLen,
+    //     &dataString)) {
+    //         MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+    //         ("NS not OK\n"));
+    //         return PR_FALSE;
+    // }
 
-    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("NS OK\n"));
+    // MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+    //         ("NS OK\n"));
 
-    if (dataString == nullptr) return PR_FALSE;
+    // if (dataString == nullptr) return PR_FALSE;
 
-    unsigned int dataLen = strlen(dataString);
-    if (dataLen > maxLen) return PR_FALSE;
+    // unsigned int dataLen = strlen(dataString);
+    // if (dataLen > maxLen) return PR_FALSE;
 
-    strcpy((char*) data, dataString);
-    *len = dataLen;
+    // strcpy((char*) data, dataString);
+    // *len = dataLen;
 
-    return PR_TRUE;
+    // return PR_TRUE;]
+    return PR_FALSE;
 }
 
 /* static */
