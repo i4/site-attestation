@@ -18,7 +18,7 @@ XPCOM_MANIFESTS += [
 ]
 
 EXTRA_JS_MODULES += [
-    "TlsExtensionObserver.sys.mjs",
+    # "TlsExtensionObserver.sys.mjs",
 ]
 
 # Necessary for the .cpp implementation to be compiled

@@ -31,6 +31,9 @@ TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType m
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Writer Hook was called! [%s]\n", obsInfo->hostname));
 
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Observer is [%p]\n", obsInfo->observer));
+
     char* dataString;
     if (NS_OK != obs->OnWriteTlsExtension(
         "tlsSessionId",
@@ -38,8 +41,13 @@ TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType m
         (nsITlsExtensionObserver::SSLHandshakeType) messageType, // this cast is legal, because the enum has the same structure
         maxLen,
         &dataString)) {
-        return PR_FALSE;
+            MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("NS not OK\n"));
+            return PR_FALSE;
     }
+
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("NS OK\n"));
 
     if (dataString == nullptr) return PR_FALSE;
 
@@ -59,7 +67,10 @@ TlsExtensionService::onNSS_SSLExtensionHandler(PRFileDesc *fd, SSLHandshakeType 
     nsITlsExtensionObserver* obs = obsInfo->observer;
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Writer Hook was called! [%s]\n", obsInfo->hostname));
+            ("Handler Hook was called! [%s]\n", obsInfo->hostname));
+
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Observer is [%p]\n", obsInfo->observer));
 
     nsITlsExtensionObserver::SECStatus secStatus;
     if (NS_OK != obs->OnHandleTlsExtension(
@@ -99,6 +110,7 @@ TlsExtensionService::InstallObserverHooks(PRFileDesc* sslSock, const char* host)
             onNSS_SSLExtensionHandler, obsInfo)) {
                 return SECFailure;
         }
+        observers[extension]->hostname = const_cast<char*>(host); // TODO: is this thread safe?
     }
 
     return SECSuccess;
@@ -124,6 +136,10 @@ TlsExtensionService::GetExtensionSupport(uint16_t extension, SSLExtensionSupport
 
 NS_IMETHODIMP
 TlsExtensionService::AddObserver(const char * urlPattern, PRUint16 extension, nsITlsExtensionObserver *observer) {
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Observer was added to C++"));
+
+    observer->AddRef(); // is this required?
     auto *obsInfo = new TlsExtObserverInfo {
         .urlPattern = new std::regex(urlPattern),
         .extension = extension,

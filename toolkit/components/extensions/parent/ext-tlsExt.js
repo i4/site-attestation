@@ -24,28 +24,42 @@
 //   }
 // }
 
-ChromeUtils.defineESModuleGetters(this, {
-  TlsExtensionObserver: "resource://gre/modules/TlsExtensionObserver.sys.mjs",
-});
+// ChromeUtils.defineESModuleGetters(this, {
+//   TlsExtensionObserver: "resource://gre/modules/TlsExtensionObserver.sys.mjs",
+// });
 
 const SSLExtensionSupport = ["ssl_ext_none", "ssl_ext_native", "ssl_ext_native_only"];
 
-function createObserver() {
-  // const tlsExtensionObserverCID = "@mozilla.org/extensions/tls-extension-observer;1";
-  // return Cc[tlsExtensionObserverCID].createInstance(Ci.nsITlsExtensionObserver);
-  // return Services.tlsExtensionsObserver.QueryInterface(Ci.nsITlsExtensionObserver);
-  return new TlsExtensionObserver();
+// function createObserver() {
+//   // const tlsExtensionObserverCID = "@mozilla.org/extensions/tls-extension-observer;1";
+//   // return Cc[tlsExtensionObserverCID].createInstance(Ci.nsITlsExtensionObserver);
+//   // return Services.tlsExtensionsObserver.QueryInterface(Ci.nsITlsExtensionObserver);
+//   return new TlsExtensionObserver();
+// }
+
+function createHandleObserver() {
+  // TODO
 }
 
-// function addHandleObserver() {
-//   // TODO
-// }
-
-// function addWriteObserver() {
-//   let observer = {
-
-//   }
-// }
+function createWriteObserver(fire) {
+  console.log("test callback");
+  fire.async();
+  let observer = new Object({
+    classID: Components.ID("{62d09cd3-c717-4cff-a04f-4e0facc11cd5}"),
+    contractID: "@mozilla.org/extensions/tls-extension-observer;1",
+    QueryInterface: ChromeUtils.generateQI(["nsITlsExtensionObserver"]),
+    async onWriteTlsExtension(tlsSessionId, url, messageType, maxDataLen) {
+      console.log("writer called");
+      if (fire !== null)
+        return await fire.async(); // TODO parse return, pass arguments
+      return null;
+    },
+    async onHandleTlsExtension(tlsSessionId, url, messageType, data) {
+      return 1; // TODO return SECFailure, but how to access the ns Interface enums?
+    },
+  });
+  return observer;
+}
 
 this.tlsExt = class extends ExtensionAPI {
 
@@ -71,10 +85,16 @@ this.tlsExt = class extends ExtensionAPI {
           context,
           name: "tlsExt.onWriteTlsExtension",
           register: (fire, urlPattern, extension) => {
-            const observer = createObserver();
-            observer.setWriteTlsExtensionCallback(fire);
+            // const observer = createObserver();
+            // observer.setWriteTlsExtensionCallback(fire);
+
+            console.log("prior has");
+            console.log(Services.tlsExtensions.hasObserver(extension));
+            const observer = createWriteObserver(fire);
             console.log(observer);
             Services.tlsExtensions.addObserver(urlPattern, extension, observer);
+            console.log("posterior has");
+            console.log(Services.tlsExtensions.hasObserver(extension));
             return () => {
               Services.tlsExtensions.removeObserver(extension);
             };
