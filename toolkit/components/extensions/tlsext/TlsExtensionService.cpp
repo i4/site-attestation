@@ -139,6 +139,12 @@ TlsExtensionService::AddObserver(const char * urlPattern, PRUint16 extension, ns
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Observer was added to C++"));
 
+    char* test;
+    observer->OnWriteTlsExtension("test", "test", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &test);
+
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Observer callback went through")); // if this does not work, its still either the object has to be stored or call from socket to main thread is bad.
+
     observer->AddRef(); // is this required?
     auto *obsInfo = new TlsExtObserverInfo {
         .urlPattern = new std::regex(urlPattern),
