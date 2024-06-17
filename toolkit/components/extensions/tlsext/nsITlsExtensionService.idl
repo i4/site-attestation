@@ -74,4 +74,5 @@ interface nsITlsExtensionService : nsISupports {
   void addObserver(in string urlPattern, in PRUint16 extension, in nsITlsExtensionObserver observer);
   void removeObserver(in PRUint16 extension);
   boolean hasObserver(in PRUint16 extension);
+  void callObserver(in PRUint16 extension);
 };

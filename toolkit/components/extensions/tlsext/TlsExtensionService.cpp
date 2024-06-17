@@ -176,4 +176,13 @@ TlsExtensionService::HasObserver(PRUint16 extension, bool *_retval) {
     PR_Unlock(observersLock);
     return NS_OK;
 }
+
+NS_IMETHODIMP
+TlsExtensionService::CallObserver(PRUint16 extension) {
+    PR_Lock(observersLock);
+    char* test;
+    observers[extension]->observer->OnWriteTlsExtension("test", "test", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &test);
+    PR_Unlock(observersLock);
+    return NS_OK;
+}
 }
