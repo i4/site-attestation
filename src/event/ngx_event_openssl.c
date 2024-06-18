@@ -293,11 +293,16 @@ ngx_ssl_init(ngx_log_t *log)
     return NGX_OK;
 }
 
+static int RA_SESSION_FLAG_INDEX = -1;
 static char* cb_add_buffer;
 #define EXT_RATLS 420
-#define MEASUREMENT_BUF_SIZE UINT8_MAX
-char * ra_infile = "/tmp/ra_in";
-char * ra_outfile = "/tmp/ra_out";
+#define MEASUREMENT_BUF_SIZE UINT16_MAX
+
+typedef struct {
+    char * infile;
+    char * outfile;
+    char * attestation_report_buffer;
+} RAContext;
 
 static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                         unsigned int context,
@@ -319,18 +324,24 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             *out = (unsigned char*) cb_add_buffer;
             *outlen = 17;
         } else if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
+            RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
-            cb_add_buffer = malloc(17 * sizeof(char));
-            if (!cb_add_buffer) {
-                perror("malloc");
+            EVP_PKEY* pkey = X509_get_pubkey(x);
+
+            FILE* in = fopen(ctx->infile, "a");
+            if (!in) {
+                perror("fopen");
                 exit(EXIT_FAILURE);
             }
+            fprintf(in, "\n");
+            PEM_write_PUBKEY(in, pkey);
+            fflush(in);
+            fclose(in);
 
-            // create child process that is a clone of the parent
             pid_t pid = fork();
-
             if (pid == 0) { // child
-                char *argv[] = {(char *)"cp", ra_infile, ra_outfile, NULL};
+                // char *argv[] = {(char *)"snpguest", "report", ctx->outfile, ctx->infile, NULL};
+                char *argv[] = {(char *)"cp", ctx->infile, ctx->outfile, NULL};
                 execvp(argv[0], argv);
 
                 exit(0);
@@ -346,45 +357,50 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                 exit(EXIT_FAILURE);
             }
 
-            // if we reach here, we are in parent process
-            // file descriptor unused in parent
-            cb_add_buffer = malloc((MEASUREMENT_BUF_SIZE + 1) * sizeof(char));
-            if (!cb_add_buffer) {
+            ctx->attestation_report_buffer = malloc((MEASUREMENT_BUF_SIZE + 1) * sizeof(char));
+            if (!ctx->attestation_report_buffer) {
                 perror("malloc");
                 exit(EXIT_FAILURE);
             }
 
-            FILE* outfile = fopen(ra_outfile, "r");
+            FILE* outfile = fopen(ctx->outfile, "r");
             if (!outfile) {
                 perror("fopen");
                 exit(EXIT_FAILURE);
             }
 
-            char* fgots = fgets(cb_add_buffer, MEASUREMENT_BUF_SIZE, outfile);
-            if (!fgots) {
-                free(cb_add_buffer);
-                perror("fgets");
-                exit(EXIT_FAILURE);
+            size_t cur_size = 0;
+            while(fgets(ctx->attestation_report_buffer + cur_size, MEASUREMENT_BUF_SIZE - cur_size, outfile) != NULL) {
+                cur_size = strlen(ctx->attestation_report_buffer);
             }
 
             fclose(outfile);
 
-            printf("TLS::ServerCertificate: %s\n", cb_add_buffer);
+            printf("TLS::ServerCertificate:\n%s\n", ctx->attestation_report_buffer);
 
-            *out = (unsigned char*) cb_add_buffer;
-            *outlen = 17;
+            *out = (unsigned char*) ctx->attestation_report_buffer;
+            *outlen = strlen(ctx->attestation_report_buffer);
         }
     }
     return 1;
 }
 
 
-static void callbackFreeExtensionRAServer(SSL *s, unsigned int extType,
+static void callbackFreeExtensionRAServer(SSL *ssl, unsigned int extType,
         unsigned int context,
         const unsigned char *out,
         void *add_arg) {
     if (extType == EXT_RATLS) {
-        free(cb_add_buffer);
+
+        if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
+            free(cb_add_buffer);
+
+            RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
+            free(ctx->infile);
+            free(ctx->outfile);
+            free(ctx->attestation_report_buffer);
+            free(ctx);
+        }
     }
     return;
 }
@@ -397,9 +413,42 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
         size_t chainidx,
         int *al, void *parseArg) {
     if (extType == EXT_RATLS) {
-        printf("NONCE: %s\n", in);
+        RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
-        FILE* infile = fopen(ra_infile, "w");
+        if (!ctx) {
+            ctx = (RAContext*) malloc(sizeof(RAContext));
+            if (!ctx) {
+                perror("malloc");
+                exit(EXIT_FAILURE);
+            }
+            SSL_set_ex_data(ssl, RA_SESSION_FLAG_INDEX, ctx);
+        }
+
+        size_t hex_len = 2 * inlen * sizeof(char);
+
+        // prefix: "/tmp/in-" = 8, plus nullbyte = 9
+        ctx->infile = malloc(hex_len + 9 * sizeof(char));
+        if (!ctx->infile){
+            perror("malloc"); 
+            exit(EXIT_FAILURE);
+        }
+
+        // prefix: "/tmp/out-" = 9, plus nullbyte = 10
+        ctx->outfile = malloc(hex_len + 10 * sizeof(char));
+        if (!ctx->infile){
+            perror("malloc"); 
+            exit(EXIT_FAILURE);
+        }
+
+        snprintf(ctx->outfile, 10, "/tmp/out-");
+        snprintf(ctx->infile, 9,"/tmp/in-");
+
+        for (size_t i = 0; i < inlen; i++) {
+            snprintf(&(ctx->outfile[9 + i]), 3, "%02X", in[i]);
+            snprintf(&(ctx->infile[8 + i]), 3, "%02X", in[i]);
+        }
+
+        FILE* infile = fopen(ctx->infile, "w");
         if (infile == NULL) {
             perror("fopen");
             exit(EXIT_FAILURE);
@@ -408,8 +457,14 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
         fprintf(infile, "%s", in);
         fclose(infile);
 
+        // int EVP_PKEY_get_raw_public_key(const EVP_PKEY *pkey, unsigned char *pub,
+        //                         size_t *len);
+
+        // X509_get_pubkey();
+
+        return 1;
     }
-    return 1;
+    return 0;
 }
 
 
@@ -547,7 +602,7 @@ ngx_ssl_create(ngx_ssl_t *ssl, ngx_uint_t protocols, void *data)
 
     SSL_CTX_set_info_callback(ssl->ctx, ngx_ssl_info_callback);
 
-    // TODO: SSL_CTX_add_custom_ex();
+    RA_SESSION_FLAG_INDEX = SSL_get_ex_new_index(0, "remote attestation session index", NULL, NULL, NULL);
     SSL_CTX_add_custom_ext(ssl->ctx
                            , EXT_RATLS, SSL_EXT_CLIENT_HELLO | SSL_EXT_TLS1_2_SERVER_HELLO |
                            SSL_EXT_TLS1_3_SERVER_HELLO |
