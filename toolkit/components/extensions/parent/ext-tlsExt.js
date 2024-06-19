@@ -1,33 +1,3 @@
-// this.tlsExt = class extends ExtensionAPI {
-//   getAPI(context) {
-//     return {
-//       tlsExt: {
-//         getTlsExtensionSupport(extension) {
-//           throw new ExtensionError("Dies ist ein Test");
-//           return extension;
-//         },
-//         onTlsExtensionHandle: new EventManager({
-//           context,
-//           name: "tlsExt.onTlsExtensionHandle",
-//           register: fire => {
-//             const callback = value => {
-//               fire.async(value);
-//             };
-//             RegisterSomeInternalCallback(callback);
-//             return () => {
-//               UnregisterInternalCallback(callback);
-//             };
-//           }
-//         }).api(),
-//       }
-//     }
-//   }
-// }
-
-// ChromeUtils.defineESModuleGetters(this, {
-//   TlsExtensionObserver: "resource://gre/modules/TlsExtensionObserver.sys.mjs",
-// });
-
 const SSLExtensionSupport = ["ssl_ext_none", "ssl_ext_native", "ssl_ext_native_only"];
 
 // function createObserver() {
@@ -48,6 +18,7 @@ function createWriteObserver(fire) {
     classID: Components.ID("{62d09cd3-c717-4cff-a04f-4e0facc11cd5}"),
     contractID: "@mozilla.org/extensions/tls-extension-observer;1",
     QueryInterface: ChromeUtils.generateQI(["nsITlsExtensionObserver"]),
+
     async onWriteTlsExtension(tlsSessionId, url, messageType, maxDataLen) {
       console.log("writer called");
       if (fire !== null)

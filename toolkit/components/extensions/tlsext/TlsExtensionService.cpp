@@ -25,18 +25,33 @@ TlsExtensionService::GetSingleton() {
 /* static */
 PRBool
 TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType messageType, PRUint8 *data, unsigned int *len, unsigned int maxLen, void *callbackArg) {
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Writer Hook was called!\n"));
+
     auto* obsInfo = static_cast<TlsExtObserverInfo*>(callbackArg);
-    nsCOMPtr<nsITlsExtensionObserver> obs = obsInfo->observer;
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Writer Hook was called! [%s]\n", obsInfo->hostname));
+            ("Writer Hook static cast went through!\n"));
+
+    // nsCOMPtr<nsITlsExtensionObserver> obs = obsInfo->observer;
+
+    // MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+    //         ("Writer Hook ncCOMPtr went through!\n"));
+
+    // TODO: liegt es an den casts dass es crasht? Probieren sie zu entfernen und dann mit CallObservers probieren
+
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Writer Hook host is known! [%s]\n", obsInfo->hostname));
 
 
-    auto* tlsExtensionService = mozilla::extensions::TlsExtensionService::GetSingleton().take();
-    tlsExtensionService->CallObserver(420);
+    RefPtr<ObserverRunner> obsRun = new ObserverRunner(obsInfo);
+    NS_DispatchToMainThread(obsRun); // TODO
+
+    // auto* tlsExtensionService = mozilla::extensions::TlsExtensionService::GetSingleton().take();
+    // tlsExtensionService->CallObserver(420);
 
     // char* test;
-    // obs->OnWriteTlsExtension("test", "test", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &test);
+    // obsInfo->observer->OnWriteTlsExtension("test", "test", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &test);
 
     // MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
     //         ("Observer is [%p]\n", obsInfo->observer));
@@ -191,6 +206,17 @@ TlsExtensionService::CallObserver(PRUint16 extension) {
     char* test;
     observers[extension]->observer->OnWriteTlsExtension("test", "test", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &test);
     PR_Unlock(observersLock);
+    return NS_OK;
+}
+
+TlsExtensionService::ObserverRunner::ObserverRunner(TlsExtObserverInfo* obsInfo):
+    mozilla::Runnable("RunObserver"),
+    obsInfo(obsInfo) {}
+
+NS_IMETHODIMP
+TlsExtensionService::ObserverRunner::Run() {
+    char* test;
+    obsInfo->observer->OnWriteTlsExtension("test", "ObserverTest", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &test);
     return NS_OK;
 }
 }

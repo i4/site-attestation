@@ -14,6 +14,7 @@
 #include "ssl.h"
 #include "prlock.h"
 #include "nsCOMPtr.h"
+#include "nsThreadUtils.h"
 
 namespace mozilla::extensions {
 
@@ -52,6 +53,15 @@ class TlsExtensionService final : public nsITlsExtensionService {
     SECStatus InstallObserverHooks(PRFileDesc* sslSock, const char* host);
 
     std::map<PRUint16, TlsExtObserverInfo*> GetObservers();
+
+    class ObserverRunner : public mozilla::Runnable {
+        public:
+        ObserverRunner(TlsExtObserverInfo* obsInfo);
+        NS_IMETHOD Run() override;
+
+        private:
+        TlsExtObserverInfo* obsInfo;
+    };
 
     private:
     std::map<PRUint16, TlsExtObserverInfo*> observers;
