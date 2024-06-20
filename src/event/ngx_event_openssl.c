@@ -339,12 +339,12 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             fclose(in);
 
             // create the file, snpguest doesn't do that on its own.
-            FILE* out = fopen(ctx->outfile, "w+");
-            if (!out) {
+            FILE* touch_outfile = fopen(ctx->outfile, "w+");
+            if (!touch_outfile) {
                 perror("fopen");
                 exit(EXIT_FAILURE);
             }
-            fclose(out);
+            fclose(touch_outfile);
 
             pid_t pid = fork();
             if (pid == 0) { // child
