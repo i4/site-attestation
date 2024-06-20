@@ -348,7 +348,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             pid_t pid = fork();
             if (pid == 0) { // child
-                char *argv[] = {(char *)"snpguest", "report", ctx->infile, ctx->outfile, NULL};
+                char *argv[] = {(char *)"/home/ubuntu/snpguest/target/debug/snpguest", "report", ctx->infile, ctx->outfile, NULL};
                 // char *argv[] = {(char *)"cp", ctx->infile, ctx->outfile, NULL};
                 execvp(argv[0], argv);
 
