@@ -344,7 +344,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                 perror("fopen");
                 exit(EXIT_FAILURE);
             }
-            fclose();
+            fclose(out);
 
             pid_t pid = fork();
             if (pid == 0) { // child
