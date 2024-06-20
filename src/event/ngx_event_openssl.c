@@ -338,10 +338,18 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             fflush(in);
             fclose(in);
 
+            // create the file, snpguest doesn't do that on its own.
+            FILE* out = fopen(ctx->outfile, "w+");
+            if (!out) {
+                perror("fopen");
+                exit(EXIT_FAILURE);
+            }
+            fclose();
+
             pid_t pid = fork();
             if (pid == 0) { // child
-                // char *argv[] = {(char *)"snpguest", "report", ctx->outfile, ctx->infile, NULL};
-                char *argv[] = {(char *)"cp", ctx->infile, ctx->outfile, NULL};
+                char *argv[] = {(char *)"snpguest", "report", ctx->infile, ctx->outfile, NULL};
+                // char *argv[] = {(char *)"cp", ctx->infile, ctx->outfile, NULL};
                 execvp(argv[0], argv);
 
                 exit(0);
