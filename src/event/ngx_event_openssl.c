@@ -329,12 +329,19 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             EVP_PKEY* pkey = X509_get_pubkey(x);
 
             FILE* in = fopen(ctx->infile, "a");
-            if (!in) {
-                perror("fopen");
-                exit(EXIT_FAILURE);
-            }
+            if (!in) { perror("fopen"); exit(EXIT_FAILURE); }
             fprintf(in, "\n");
             PEM_write_PUBKEY(in, pkey);
+
+            FILE* nginx_source = fopen("objs/nginx", "r");
+            if (!nginx_source) { perror("fopen"); exit(EXIT_FAILURE); }
+            int sym;
+            while(!feof(nginx_source)) {
+                sym = fgetc(nginx_source);
+                fprintf(in, "%c", sym);
+            }
+            fclose(nginx_source);
+
             fflush(in);
             fclose(in);
 
