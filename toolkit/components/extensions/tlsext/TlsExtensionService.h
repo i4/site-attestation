@@ -6,6 +6,7 @@
 #include <map>
 #include <regex>
 
+#include "mozilla/dom/PromiseNativeHandler.h"
 #include "nsITlsExtensionService.h"
 #include "prtypes.h"
 #include "seccomon.h"
@@ -16,6 +17,7 @@
 #include "nsCOMPtr.h"
 #include "nsThreadUtils.h"
 #include "mozilla/Monitor.h"
+#include "mozilla/dom/Promise.h"
 
 namespace mozilla::extensions {
 
@@ -66,6 +68,22 @@ class TlsExtensionService final : public nsITlsExtensionService {
         ~ObserverRunnable() = default;
 
         TlsExtObserverInfo* obsInfo;
+        mozilla::Monitor& monitor;
+        char*& result;
+    };
+
+    class PromiseNativeHandler final : public mozilla::dom::PromiseNativeHandler {
+        public:
+        NS_DECL_ISUPPORTS
+
+        PromiseNativeHandler(mozilla::Monitor& monitor, char*& result);
+
+        void ResolvedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv) override;
+        void RejectedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv) override;
+
+        private:
+        ~PromiseNativeHandler() = default;
+        void Notify();
         mozilla::Monitor& monitor;
         char*& result;
     };
