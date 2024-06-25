@@ -15,6 +15,7 @@
 #include "prlock.h"
 #include "nsCOMPtr.h"
 #include "nsThreadUtils.h"
+#include "mozilla/Monitor.h"
 
 namespace mozilla::extensions {
 
@@ -54,13 +55,19 @@ class TlsExtensionService final : public nsITlsExtensionService {
 
     std::map<PRUint16, TlsExtObserverInfo*> GetObservers();
 
-    class ObserverRunner : public mozilla::Runnable {
+    class ObserverRunnable : public mozilla::Runnable {
         public:
-        ObserverRunner(TlsExtObserverInfo* obsInfo);
-        NS_IMETHOD Run() override;
+        NS_DECL_ISUPPORTS
+        NS_DECL_NSIRUNNABLE
+
+        ObserverRunnable(TlsExtObserverInfo* obsInfo, mozilla::Monitor& monitor, char*& result);
 
         private:
+        ~ObserverRunnable() = default;
+
         TlsExtObserverInfo* obsInfo;
+        mozilla::Monitor& monitor;
+        char*& result;
     };
 
     private:

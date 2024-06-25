@@ -43,9 +43,22 @@ TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType m
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Writer Hook host is known! [%s]\n", obsInfo->hostname));
 
-
-    RefPtr<ObserverRunner> obsRun = new ObserverRunner(obsInfo);
+    mozilla::Monitor monitor("ObservableRunnerMonitor");
+    char* result = nullptr; // TODO this might need to be a doubke pointer
+    RefPtr<ObserverRunnable> obsRun = new ObserverRunnable(obsInfo, monitor, result);
     NS_DispatchToMainThread(obsRun); // TODO
+
+    {
+        mozilla::MonitorAutoLock lock(monitor);
+        while (!result) { // wait until the result is written
+            MOZ_LOG(gTLSEXTLog, LogLevel::Debug, ("Waiting Loop!\n"));
+            monitor.Wait();
+        }
+    }
+
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Result came back! [%s]\n", result));
+
 
     // auto* tlsExtensionService = mozilla::extensions::TlsExtensionService::GetSingleton().take();
     // tlsExtensionService->CallObserver(420);
@@ -209,14 +222,19 @@ TlsExtensionService::CallObserver(PRUint16 extension) {
     return NS_OK;
 }
 
-TlsExtensionService::ObserverRunner::ObserverRunner(TlsExtObserverInfo* obsInfo):
+NS_IMPL_ISUPPORTS(TlsExtensionService::ObserverRunnable, nsIRunnable)
+
+TlsExtensionService::ObserverRunnable::ObserverRunnable(TlsExtObserverInfo* obsInfo, mozilla::Monitor& monitor, char*& result):
     mozilla::Runnable("RunObserver"),
-    obsInfo(obsInfo) {}
+    obsInfo(obsInfo),
+    monitor(monitor),
+    result(result) {}
 
 NS_IMETHODIMP
-TlsExtensionService::ObserverRunner::Run() {
-    char* test;
-    obsInfo->observer->OnWriteTlsExtension("test", "ObserverTest", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &test);
+TlsExtensionService::ObserverRunnable::Run() {
+    mozilla::MonitorAutoLock lock(monitor); // TODO is this required?
+    obsInfo->observer->OnWriteTlsExtension("test", "ObserverTest", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &result);
+    monitor.Notify();
     return NS_OK;
 }
 }
