@@ -19,10 +19,10 @@ function createWriteObserver(fire) {
     contractID: "@mozilla.org/extensions/tls-extension-observer;1",
     QueryInterface: ChromeUtils.generateQI(["nsITlsExtensionObserver"]),
 
-    async onWriteTlsExtension(tlsSessionId, url, messageType, maxDataLen) {
+    onWriteTlsExtension(tlsSessionId, url, messageType, maxDataLen) {
       console.log("writer called");
       if (fire !== null)
-        return await fire.async(); // TODO parse return, pass arguments
+        return "Ein Test ohne Fire call" //await fire.async(); // TODO parse return, pass arguments
       return null;
     },
     async onHandleTlsExtension(tlsSessionId, url, messageType, data) {

@@ -39,6 +39,7 @@
       {
         "name": "onHandleTlsExtension",
         "type": "function",
+        "async": false,
         "description": "...",
         "parameters": [
           {
