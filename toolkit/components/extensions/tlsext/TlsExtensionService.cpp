@@ -3,6 +3,7 @@
 #include "mozilla/Logging.h"
 #include "sslexp.h"
 #include "mozilla/ClearOnShutdown.h"
+#include "mozilla/dom/Promise.h"
 
 namespace mozilla::extensions {
 
@@ -175,8 +176,8 @@ TlsExtensionService::AddObserver(const char * urlPattern, PRUint16 extension, ns
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Observer was added to C++"));
 
-    char* test;
-    observer->OnWriteTlsExtension("test", "test", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &test);
+    // char* test;
+    // observer->OnWriteTlsExtension("test", "test", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &test);
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Observer callback went through")); // if this does not work, its still either the object has to be stored or call from socket to main thread is bad. // works
@@ -216,8 +217,8 @@ TlsExtensionService::HasObserver(PRUint16 extension, bool *_retval) {
 NS_IMETHODIMP
 TlsExtensionService::CallObserver(PRUint16 extension) {
     PR_Lock(observersLock);
-    char* test;
-    observers[extension]->observer->OnWriteTlsExtension("test", "test", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &test);
+    mozilla::dom::Promise* promise;
+    observers[extension]->observer->OnWriteTlsExtension("test", "test", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &promise);
     PR_Unlock(observersLock);
     return NS_OK;
 }
@@ -233,7 +234,10 @@ TlsExtensionService::ObserverRunnable::ObserverRunnable(TlsExtObserverInfo* obsI
 NS_IMETHODIMP
 TlsExtensionService::ObserverRunnable::Run() {
     mozilla::MonitorAutoLock lock(monitor); // TODO is this required?
-    obsInfo->observer->OnWriteTlsExtension("test", "ObserverTest", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &result);
+    mozilla::dom::Promise* promise;
+    obsInfo->observer->OnWriteTlsExtension("test", "ObserverTest", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &promise);
+    // TODO: write result
+    // promise.AppendNativeHandler
     monitor.Notify();
     return NS_OK;
 }

@@ -42,7 +42,7 @@ interface nsITlsExtensionObserver : nsISupports {
     ssl_hs_ech_outer_client_hello = 257, /* Not a real message. */
   };
 
-  string onWriteTlsExtension( in string tlsSessionId,
+  Promise onWriteTlsExtension( in string tlsSessionId,
                               in string url,
                               in nsITlsExtensionObserver_SSLHandshakeType messageType,
                               in unsigned long maxDataLen);

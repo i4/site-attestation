@@ -21,8 +21,11 @@ function createWriteObserver(fire) {
 
     onWriteTlsExtension(tlsSessionId, url, messageType, maxDataLen) {
       console.log("writer called");
-      if (fire !== null)
-        return "Ein Test ohne Fire call" //await fire.async(); // TODO parse return, pass arguments
+      if (fire !== null) {
+        let promise = fire.async();
+        promise.then(console.log);
+        return promise; // TODO parse return, pass arguments
+      }
       return null;
     },
     async onHandleTlsExtension(tlsSessionId, url, messageType, data) {
