@@ -40,38 +40,39 @@ TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType m
     // prepare task for main thread
     mozilla::Monitor monitor("ObservableRunnerMonitor");
     char* result = nullptr;
-    RefPtr<TlsExtWriterObsRunnable> obsRun = new TlsExtWriterObsRunnable(
-        fd, messageType, maxLen,
-        obsInfo, monitor,
-        result
-    );
+    // RefPtr<TlsExtWriterObsRunnable> obsRun = new TlsExtWriterObsRunnable(
+    //     fd, messageType, maxLen,
+    //     obsInfo, monitor,
+    //     result
+    // );
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Created TlsExtWriterObsRunnable!\n"));
 
-    NS_DispatchToMainThread(obsRun);
+    // NS_DispatchToMainThread(obsRun);
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Dispatched to main thread!\n"));
 
-    {
-        mozilla::MonitorAutoLock lock(monitor);
-        while (!result) { // wait until the result is written
-            MOZ_LOG(gTLSEXTLog, LogLevel::Debug, ("Waiting Loop!\n"));
-            monitor.Wait();
-        }
-    }
+    // {
+    //     MOZ_LOG(gTLSEXTLog, LogLevel::Debug, ("Locking!\n"));
+    //     mozilla::MonitorAutoLock lock(monitor);
+    //     while (!result) { // wait until the result is written   // TODO result = null is meant to be false
+    //         MOZ_LOG(gTLSEXTLog, LogLevel::Debug, ("Waiting Loop!\n"));
+    //         // monitor.Wait();
+    //     }
+    // }
 
-    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Result came back! [%s]\n", result));
+    // MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+    //         ("Result came back! [%s]\n", result));
 
-    if (result == nullptr) return PR_FALSE;
+    // if (result == nullptr) return PR_FALSE;
 
-    unsigned int dataLen = strlen(result);
-    if (dataLen > maxLen) return PR_FALSE;
+    // unsigned int dataLen = strlen(result);
+    // if (dataLen > maxLen) return PR_FALSE;
 
-    strcpy((char*) data, result);
-    *len = dataLen;
+    // strcpy((char*) data, result);
+    // *len = dataLen;
 
     return PR_TRUE;
 }
@@ -123,6 +124,14 @@ TlsExtensionService::~TlsExtensionService() {
     // TODO free all Observers, patterns etc
 }
 
+PRBool noop_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType message, PRUint8 *data, unsigned int *len, unsigned int maxLen, void *arg) {
+    return PR_FALSE;
+}
+
+SECStatus noop_SSLExtensionHandler(PRFileDesc *fd, SSLHandshakeType messageType, const PRUint8 *data, unsigned int len, SSLAlertDescription *alert, void *arg) {
+    return SECSuccess;
+}
+
 SECStatus
 TlsExtensionService::InstallObserverHooks(PRFileDesc* sslSock, const char* host) {
     // writers
@@ -135,8 +144,11 @@ TlsExtensionService::InstallObserverHooks(PRFileDesc* sslSock, const char* host)
         if (SECSuccess != SSL_InstallExtensionHooks(
             sslSock, extension,
             onNSS_SSLExtensionWriter, obsInfo,
-            nullptr, nullptr)) {                        // leave this free, since the map only contains writer-observers
+            noop_SSLExtensionHandler, nullptr)) {
+                MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+                    ("SSL_InstallExtensionHooks for writers failed!\n"));
                 return SECFailure;
+
         }
         obsInfo->hostname = const_cast<char*>(host); // TODO: is this thread safe?
     }
@@ -150,8 +162,10 @@ TlsExtensionService::InstallObserverHooks(PRFileDesc* sslSock, const char* host)
         if (!std::regex_match(host, *obsInfo->urlPattern)) continue;
         if (SECSuccess != SSL_InstallExtensionHooks(
             sslSock, extension,
-            nullptr, nullptr,                           // leave this free, since the map only contains handler-observers
+            noop_SSLExtensionWriter, nullptr,
             onNSS_SSLExtensionHandler, obsInfo)) {
+                MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+                    ("SSL_InstallExtensionHooks for handlers failed!\n"));
                 return SECFailure;
         }
         obsInfo->hostname = const_cast<char*>(host); // TODO: is this thread safe?
@@ -164,10 +178,7 @@ TlsExtensionService::InstallObserverHooks(PRFileDesc* sslSock, const char* host)
 }
 
 std::map<PRUint16, TlsExtObserverInfo*>
-TlsExtensionService::GetWriterObservers() { return writerObservers; }
-
-std::map<PRUint16, TlsExtObserverInfo*>
-TlsExtensionService::GetHandlerObservers() { return handlerObservers; }
+TlsExtensionService::GetObservers() { return observers; }
 
 NS_IMETHODIMP
 TlsExtensionService::GetExtensionSupport(uint16_t extension, SSLExtensionSupport *_retval) {
@@ -193,6 +204,7 @@ TlsExtensionService::AddWriterObserver(const char * urlPattern, PRUint16 extensi
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Writer-Observer successfully inserted"));
+
     return NS_OK;
 }
 
@@ -248,48 +260,47 @@ TlsExtensionService::HasHandlerObserver(PRUint16 extension, bool *_retval) {
     return NS_OK;
 }
 
-NS_IMETHODIMP   // TODO: remove
-TlsExtensionService::CallWriterObserver(PRUint16 extension) {
-    PR_Lock(writerLock);
-    // mozilla::dom::Promise* promise;
-    // writerObservers[extension]->observer->OnWriteTlsExtension("test", "test", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &promise);
+// NS_IMETHODIMP   // TODO: remove // TODO will never work since its on the same thread
+// TlsExtensionService::CallWriterObserver(PRUint16 extension) {
+//     // PR_Lock(writerLock);
+//     // mozilla::dom::Promise* promise;
+//     // writerObservers[extension]->observer->OnWriteTlsExtension("test", "test", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &promise);
 
-    auto* obsInfo = writerObservers[extension];
+//     auto* obsInfo = writerObservers[extension];
+//     // PR_Unlock(writerLock);
 
-    // prepare task for main thread
-    mozilla::Monitor monitor("ObservableRunnerMonitor");
-    char* result = nullptr;
-    RefPtr<TlsExtWriterObsRunnable> obsRun = new TlsExtWriterObsRunnable(
-        nullptr, SSLHandshakeType::ssl_hs_client_hello, 1000,
-        obsInfo, monitor,
-        result
-    );
+//     // prepare task for main thread
+//     mozilla::Monitor monitor("ObservableRunnerMonitor");
+//     char* result = nullptr;
+//     RefPtr<TlsExtWriterObsRunnable> obsRun = new TlsExtWriterObsRunnable(
+//         nullptr, SSLHandshakeType::ssl_hs_client_hello, 1000,
+//         obsInfo, monitor,
+//         result
+//     );
 
-    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Created TlsExtWriterObsRunnable!\n"));
+//     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+//             ("Created TlsExtWriterObsRunnable!\n"));
 
-    nsresult rv = NS_DispatchToMainThread(obsRun);
-    if (NS_FAILED(rv)) {
-        MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Dispatch failed!\n"));
-        return rv;
-    }
+//     nsresult rv = NS_DispatchToMainThread(obsRun);
+//     if (NS_FAILED(rv)) {
+//         MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+//             ("Dispatch failed!\n"));
+//         return rv;
+//     }
 
-    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Dispatched to main thread!\n"));
+//     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+//             ("Dispatched to main thread!\n"));
 
-    {
-        mozilla::MonitorAutoLock lock(monitor);
-        while (!result) { // wait until the result is written
-            MOZ_LOG(gTLSEXTLog, LogLevel::Debug, ("Waiting Loop!\n"));
-            monitor.Wait();
-        }
-    }
+//     {
+//         mozilla::MonitorAutoLock lock(monitor);
+//         while (!result) { // wait until the result is written
+//             MOZ_LOG(gTLSEXTLog, LogLevel::Debug, ("Waiting Loop!\n"));
+//             monitor.Wait();
+//         }
+//     }
 
-    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Result came back! [%s]\n", result));
-
-    PR_Unlock(writerLock);
-    return NS_OK;
-}
+//     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+//             ("Result came back! [%s]\n", result));
+//     return NS_OK;
+// }
 }

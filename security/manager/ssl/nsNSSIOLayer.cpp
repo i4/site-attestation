@@ -1291,6 +1291,8 @@ SECStatus my_SSLExtensionHandler(
   return SECSuccess;
 }
 
+LazyLogModule gTLSEXTLog("tlsext"); // TODO remove
+
 static PRFileDesc* nsSSLIOLayerImportFD(PRFileDesc* fd,
                                         NSSSocketControl* infoObject,
                                         const char* host, bool haveHTTPSProxy) {
@@ -1335,6 +1337,8 @@ static PRFileDesc* nsSSLIOLayerImportFD(PRFileDesc* fd,
 
   auto* tlsExtensionService = mozilla::extensions::TlsExtensionService::GetSingleton().take();
   if (tlsExtensionService->InstallObserverHooks(sslSock, host) != SECSuccess) {
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("NSS Install failed!\n"));
     return nullptr;
   }
 
