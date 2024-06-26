@@ -34,45 +34,45 @@ TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType m
             ("Writer Hook static cast went through!\n"));
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Writer Hook host is known! [%s]\n", obsInfo->hostname));
+            ("Writer Hook host is known! [%s]\n", obsInfo->hostname)); // TODO hostname should not written to the struct anymore
 
 
     // prepare task for main thread
     mozilla::Monitor monitor("ObservableRunnerMonitor");
     char* result = nullptr;
-    // RefPtr<TlsExtWriterObsRunnable> obsRun = new TlsExtWriterObsRunnable(
-    //     fd, messageType, maxLen,
-    //     obsInfo, monitor,
-    //     result
-    // );
+    RefPtr<TlsExtWriterObsRunnable> obsRun = new TlsExtWriterObsRunnable(
+        fd, messageType, maxLen,
+        obsInfo, monitor,
+        result
+    );
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Created TlsExtWriterObsRunnable!\n"));
 
-    // NS_DispatchToMainThread(obsRun);
+    NS_DispatchToMainThread(obsRun);
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Dispatched to main thread!\n"));
 
-    // {
-    //     MOZ_LOG(gTLSEXTLog, LogLevel::Debug, ("Locking!\n"));
-    //     mozilla::MonitorAutoLock lock(monitor);
-    //     while (!result) { // wait until the result is written   // TODO result = null is meant to be false
-    //         MOZ_LOG(gTLSEXTLog, LogLevel::Debug, ("Waiting Loop!\n"));
-    //         // monitor.Wait();
-    //     }
-    // }
+    {
+        MOZ_LOG(gTLSEXTLog, LogLevel::Debug, ("Locking!\n"));
+        mozilla::MonitorAutoLock lock(monitor);
+        while (!result) { // wait until the result is written   // TODO result = null is meant to be false
+            MOZ_LOG(gTLSEXTLog, LogLevel::Debug, ("Waiting Loop!\n"));
+            monitor.Wait();
+        }
+    }
 
-    // MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-    //         ("Result came back! [%s]\n", result));
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Result came back! [%s]\n", result));
 
-    // if (result == nullptr) return PR_FALSE;
+    if (result == nullptr) return PR_FALSE;
 
-    // unsigned int dataLen = strlen(result);
-    // if (dataLen > maxLen) return PR_FALSE;
+    unsigned int dataLen = strlen(result);
+    if (dataLen > maxLen) return PR_FALSE;
 
-    // strcpy((char*) data, result);
-    // *len = dataLen;
+    strcpy((char*) data, result);
+    *len = dataLen;
 
     return PR_TRUE;
 }
@@ -114,13 +114,11 @@ TlsExtensionService::onNSS_SSLExtensionHandler(PRFileDesc *fd, SSLHandshakeType 
 }
 
 TlsExtensionService::TlsExtensionService() {
-    writerLock = PR_NewLock();
-    handlerLock = PR_NewLock();
+    observersLock = PR_NewLock();
 }
 
 TlsExtensionService::~TlsExtensionService() {
-    PR_DestroyLock(writerLock);
-    PR_DestroyLock(handlerLock);
+    PR_DestroyLock(observersLock);
     // TODO free all Observers, patterns etc
 }
 
@@ -135,40 +133,38 @@ SECStatus noop_SSLExtensionHandler(PRFileDesc *fd, SSLHandshakeType messageType,
 SECStatus
 TlsExtensionService::InstallObserverHooks(PRFileDesc* sslSock, const char* host) {
     // writers
-    PR_Lock(writerLock);
-    auto writersCopy(writerObservers);
-    PR_Unlock(writerLock);
+    PR_Lock(observersLock);
+    auto observersCopy(observers);
+    PR_Unlock(observersLock);
 
-    for (const auto& [extension, obsInfo] : writersCopy) {
-        if (!std::regex_match(host, *obsInfo->urlPattern)) continue;
+    for (const auto& [extension, obsInfo] : observersCopy) {
+        auto* writerFunc = noop_SSLExtensionWriter;
+        auto* handlerFunc = noop_SSLExtensionHandler;
+
+        MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Checking regex for extension [%u]!\n", extension));
+
+        if (obsInfo->writerObserver &&
+            obsInfo->writerUrlPattern &&
+            std::regex_match(host, *obsInfo->writerUrlPattern)) writerFunc = onNSS_SSLExtensionWriter;
+        if (obsInfo->handlerObserver &&
+            obsInfo->handlerUrlPattern &&
+            std::regex_match(host, *obsInfo->handlerUrlPattern)) handlerFunc = onNSS_SSLExtensionHandler;
+
+        // if (writerFunc == noop_SSLExtensionWriter && handlerFunc == noop_SSLExtensionHandler) continue; // TODO should never happen
+
         if (SECSuccess != SSL_InstallExtensionHooks(
             sslSock, extension,
-            onNSS_SSLExtensionWriter, obsInfo,
-            noop_SSLExtensionHandler, nullptr)) {
+            writerFunc, obsInfo,
+            handlerFunc, obsInfo)) {
+
                 MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-                    ("SSL_InstallExtensionHooks for writers failed!\n"));
+                    ("SSL_InstallExtensionHooks failed!\n"));
+
                 return SECFailure;
 
         }
-        obsInfo->hostname = const_cast<char*>(host); // TODO: is this thread safe?
-    }
-
-    // handlers
-    PR_Lock(handlerLock);
-    auto handlersCopy(handlerObservers);
-    PR_Unlock(handlerLock);
-
-    for (const auto& [extension, obsInfo] : handlersCopy) {
-        if (!std::regex_match(host, *obsInfo->urlPattern)) continue;
-        if (SECSuccess != SSL_InstallExtensionHooks(
-            sslSock, extension,
-            noop_SSLExtensionWriter, nullptr,
-            onNSS_SSLExtensionHandler, obsInfo)) {
-                MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-                    ("SSL_InstallExtensionHooks for handlers failed!\n"));
-                return SECFailure;
-        }
-        obsInfo->hostname = const_cast<char*>(host); // TODO: is this thread safe?
+        obsInfo->hostname = const_cast<char*>(host); // TODO: this is wrong
     }
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
@@ -186,25 +182,33 @@ TlsExtensionService::GetExtensionSupport(uint16_t extension, SSLExtensionSupport
     return NS_OK;
 }
 
+TlsExtObserverInfo*
+TlsExtensionService::GetOrCreateObserver(PRUint16 extension) {
+    PR_Lock(observersLock);
+    auto it = observers.find(extension);
+    if (it != observers.end()) {
+        // Key exists, return the associated pointer.
+        PR_Unlock(observersLock);
+        return it->second;
+    }
+    PR_Unlock(observersLock);
+
+    return new TlsExtObserverInfo(extension);
+}
+
 NS_IMETHODIMP
 TlsExtensionService::AddWriterObserver(const char * urlPattern, PRUint16 extension, nsITlsExtensionWriterObserver *observer) {
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Writer-Observer was added to C++"));
+    NS_ADDREF(observer);
 
-    auto *obsInfo = new TlsExtObserverInfo {
-        .urlPattern = new std::regex(urlPattern),
-        .extension = extension,
-        .observer = observer,
-    };
-    NS_ADDREF(obsInfo->observer); // TODO this might not be required // TODO: release
+    auto* obsInfo = GetOrCreateObserver(extension);
+    obsInfo->writerUrlPattern = new std::regex(urlPattern);
+    obsInfo->writerObserver = observer;
 
-    PR_Lock(writerLock);
-    writerObservers.insert({extension, obsInfo});
-    PR_Unlock(writerLock);
-
-    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Writer-Observer successfully inserted"));
-
+    PR_Lock(observersLock);
+    observers.insert({extension, obsInfo});
+    PR_Unlock(observersLock);
     return NS_OK;
 }
 
@@ -212,51 +216,59 @@ NS_IMETHODIMP
 TlsExtensionService::AddHandlerObserver(const char * urlPattern, PRUint16 extension, nsITlsExtensionHandlerObserver *observer) {
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Handler-Observer was added to C++"));
+    NS_ADDREF(observer);
 
-    auto *obsInfo = new TlsExtObserverInfo {
-        .urlPattern = new std::regex(urlPattern),
-        .extension = extension,
-        .observer = observer,
-    };
-    NS_ADDREF(obsInfo->observer); // TODO this might not be required // TODO: release
+    auto* obsInfo = GetOrCreateObserver(extension);
+    obsInfo->handlerUrlPattern = new std::regex(urlPattern);
+    obsInfo->handlerObserver = observer;
 
-    PR_Lock(handlerLock);
-    handlerObservers.insert({extension, obsInfo});
-    PR_Unlock(handlerLock);
+    PR_Lock(observersLock);
+    observers.insert({extension, obsInfo});
+    PR_Unlock(observersLock);
     return NS_OK;
+}
+
+void
+TlsExtensionService::RemoveObserver(PRUint16 extension) {
+    PR_Lock(observersLock);
+    auto* obsInfo = observers[extension];
+    if (obsInfo->writerObserver == nullptr && obsInfo->handlerObserver) observers.erase(extension);
+    PR_Unlock(observersLock);
 }
 
 NS_IMETHODIMP
 TlsExtensionService::RemoveWriterObserver(PRUint16 extension) {
-    PR_Lock(writerLock);
-    writerObservers.erase(extension);
-    PR_Unlock(writerLock);
+    PR_Lock(observersLock);
+    observers[extension]->writerObserver = nullptr;
+    PR_Unlock(observersLock);
+    RemoveObserver(extension);
     return NS_OK;
 }
 
 NS_IMETHODIMP
 TlsExtensionService::RemoveHandlerObserver(PRUint16 extension) {
-    PR_Lock(handlerLock);
-    handlerObservers.erase(extension);
-    PR_Unlock(handlerLock);
+    PR_Lock(observersLock);
+    observers[extension]->handlerObserver = nullptr;
+    PR_Unlock(observersLock);
+    RemoveObserver(extension);
     return NS_OK;
 }
 
 NS_IMETHODIMP
 TlsExtensionService::HasWriterObserver(PRUint16 extension, bool *_retval) {
-    PR_Lock(writerLock);
-    std::map<PRUint16, TlsExtObserverInfo*>::iterator it = writerObservers.find(extension);
-    *_retval = it != writerObservers.end();
-    PR_Unlock(writerLock);
+    PR_Lock(observersLock);
+    std::map<PRUint16, TlsExtObserverInfo*>::iterator it = observers.find(extension);
+    *_retval = it != observers.end() && it->second->writerObserver;
+    PR_Unlock(observersLock);
     return NS_OK;
 }
 
 NS_IMETHODIMP
 TlsExtensionService::HasHandlerObserver(PRUint16 extension, bool *_retval) {
-    PR_Lock(handlerLock);
-    std::map<PRUint16, TlsExtObserverInfo*>::iterator it = handlerObservers.find(extension);
-    *_retval = it != handlerObservers.end();
-    PR_Unlock(handlerLock);
+    PR_Lock(observersLock);
+    std::map<PRUint16, TlsExtObserverInfo*>::iterator it = observers.find(extension);
+    *_retval = it != observers.end() && it->second->handlerObserver;
+    PR_Unlock(observersLock);
     return NS_OK;
 }
 

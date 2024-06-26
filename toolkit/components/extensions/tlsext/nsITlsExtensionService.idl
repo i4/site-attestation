@@ -88,5 +88,5 @@ interface nsITlsExtensionService : nsISupports {
   boolean hasHandlerObserver(in PRUint16 extension);
 
   // for debugging
-  void callWriterObserver(in PRUint16 extension);
+  // void callWriterObserver(in PRUint16 extension);
 };

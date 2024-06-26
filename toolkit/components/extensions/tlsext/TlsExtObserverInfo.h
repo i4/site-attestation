@@ -9,10 +9,14 @@
 
 namespace mozilla::extensions {
 struct TlsExtObserverInfo {
-    std::regex* urlPattern;
+    TlsExtObserverInfo(PRUint16 extension): writerUrlPattern(nullptr), handlerUrlPattern(nullptr), extension(extension), writerObserver(nullptr), handlerObserver(nullptr) {}
+
+    std::regex* writerUrlPattern;
+    std::regex* handlerUrlPattern;
     PRUint16 extension;
-    nsCOMPtr<nsITlsExtensionObserver> observer;
-    char* hostname;
+    nsCOMPtr<nsITlsExtensionWriterObserver> writerObserver;
+    nsCOMPtr<nsITlsExtensionHandlerObserver> handlerObserver;
+    char* hostname{}; // TODO this is wrong, obsInfo can caver multiple hostnames => can not be stored in here
 };
 }
 

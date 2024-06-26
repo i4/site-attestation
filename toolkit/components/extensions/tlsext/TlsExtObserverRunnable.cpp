@@ -26,15 +26,10 @@ TlsExtWriterObsRunnable::Run() {
 
     // run the actual callback
     mozilla::dom::Promise* promise;
-    auto* observer = static_cast<nsITlsExtensionWriterObserver*>(obsInfo->observer.get());  // this tries to cast the generic observer into its more specific type // TODO does this work?
-
-    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Static cast went through!\n"));
-
-    nsresult rv = observer->OnWriteTlsExtension(
+    nsresult rv = obsInfo->writerObserver->OnWriteTlsExtension(
         obsInfo->extension,
         "sessionID",
-        obsInfo->hostname,
+        obsInfo->hostname,        // TODO this is wrong
         (nsITlsExtensionObserver::SSLHandshakeType) messageType,
         maxLen,
         &promise);
@@ -78,11 +73,10 @@ NS_IMETHODIMP
 TlsExtHandlerObsRunnable::Run() {
     // run the actual callback
     mozilla::dom::Promise* promise;
-    auto* observer = static_cast<nsITlsExtensionHandlerObserver*>(obsInfo->observer.get());  // this tries to cast the generic observer into its more specific type // TODO does this work?
-    nsresult rv = observer->OnHandleTlsExtension(
+    nsresult rv = obsInfo->handlerObserver->OnHandleTlsExtension(
         obsInfo->extension,
         "sessionID",
-        obsInfo->hostname,
+        obsInfo->hostname,  // TODO this is wrong
         (nsITlsExtensionObserver::SSLHandshakeType) messageType,
         (const char*) data,     // TODO C++ style cast
         &promise);
