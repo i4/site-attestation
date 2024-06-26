@@ -34,20 +34,15 @@ TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType m
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Writer Hook static cast went through!\n"));
 
-    // nsCOMPtr<nsITlsExtensionObserver> obs = obsInfo->observer;
-
-    // MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-    //         ("Writer Hook ncCOMPtr went through!\n"));
-
-    // TODO: liegt es an den casts dass es crasht? Probieren sie zu entfernen und dann mit CallObservers probieren
-
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Writer Hook host is known! [%s]\n", obsInfo->hostname));
 
+
+    // prepare task for main thread
     mozilla::Monitor monitor("ObservableRunnerMonitor");
-    char* result = nullptr; // TODO this might need to be a doubke pointer
+    char* result = nullptr;
     RefPtr<TlsExtObserverRunnable> obsRun = new TlsExtObserverRunnable(obsInfo, monitor, result);
-    NS_DispatchToMainThread(obsRun); // TODO
+    NS_DispatchToMainThread(obsRun);
 
     {
         mozilla::MonitorAutoLock lock(monitor);
@@ -60,41 +55,15 @@ TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType m
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Result came back! [%s]\n", result));
 
+    if (result == nullptr) return PR_FALSE;
 
-    // auto* tlsExtensionService = mozilla::extensions::TlsExtensionService::GetSingleton().take();
-    // tlsExtensionService->CallObserver(420);
+    unsigned int dataLen = strlen(result);
+    if (dataLen > maxLen) return PR_FALSE;
 
-    // char* test;
-    // obsInfo->observer->OnWriteTlsExtension("test", "test", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &test);
+    strcpy((char*) data, result);
+    *len = dataLen;
 
-    // MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-    //         ("Observer is [%p]\n", obsInfo->observer));
-
-    // char* dataString;
-    // if (NS_OK != obs->OnWriteTlsExtension(
-    //     "tlsSessionId",
-    //     obsInfo->hostname,
-    //     (nsITlsExtensionObserver::SSLHandshakeType) messageType, // this cast is legal, because the enum has the same structure
-    //     maxLen,
-    //     &dataString)) {
-    //         MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-    //         ("NS not OK\n"));
-    //         return PR_FALSE;
-    // }
-
-    // MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-    //         ("NS OK\n"));
-
-    // if (dataString == nullptr) return PR_FALSE;
-
-    // unsigned int dataLen = strlen(dataString);
-    // if (dataLen > maxLen) return PR_FALSE;
-
-    // strcpy((char*) data, dataString);
-    // *len = dataLen;
-
-    // return PR_TRUE;]
-    return PR_FALSE;
+    return PR_TRUE;
 }
 
 /* static */
@@ -133,6 +102,15 @@ TlsExtensionService::onNSS_SSLExtensionHandler(PRFileDesc *fd, SSLHandshakeType 
     return SECSuccess;
 }
 
+TlsExtensionService::TlsExtensionService() {
+    observersLock = PR_NewLock();
+}
+
+TlsExtensionService::~TlsExtensionService() {
+    PR_DestroyLock(observersLock);
+    // TODO free all Observers, patterns etc
+}
+
 SECStatus
 TlsExtensionService::InstallObserverHooks(PRFileDesc* sslSock, const char* host) {
     PR_Lock(observersLock);
@@ -143,23 +121,14 @@ TlsExtensionService::InstallObserverHooks(PRFileDesc* sslSock, const char* host)
         if (!std::regex_match(host, *obsInfo->urlPattern)) continue;
         if (SECSuccess != SSL_InstallExtensionHooks(
             sslSock, extension,
-            onNSS_SSLExtensionWriter, obsInfo,
+            onNSS_SSLExtensionWriter, obsInfo,          // TODO: if the Observer only handles or writes, pass nullptr for the other
             onNSS_SSLExtensionHandler, obsInfo)) {
                 return SECFailure;
         }
-        observers[extension]->hostname = const_cast<char*>(host); // TODO: is this thread safe?
+        observersCopy[extension]->hostname = const_cast<char*>(host); // TODO: is this thread safe?
     }
 
     return SECSuccess;
-}
-
-TlsExtensionService::TlsExtensionService() {
-    observersLock = PR_NewLock();
-}
-
-TlsExtensionService::~TlsExtensionService() {
-    PR_DestroyLock(observersLock);
-    // TODO free all Observers, patterns etc
 }
 
 std::map<PRUint16, TlsExtObserverInfo*>
@@ -176,21 +145,13 @@ TlsExtensionService::AddObserver(const char * urlPattern, PRUint16 extension, ns
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Observer was added to C++"));
 
-    // char* test;
-    // observer->OnWriteTlsExtension("test", "test", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &test);
-
-    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Observer callback went through")); // if this does not work, its still either the object has to be stored or call from socket to main thread is bad. // works
-
-    NS_ADDREF(observer); // this might not be required
-    // observer->AddRef(); // is this required?
     auto *obsInfo = new TlsExtObserverInfo {
         .urlPattern = new std::regex(urlPattern),
         .extension = extension,
         .observer = observer,
     };
-    // obsInfo->observer->AddRef();
-    NS_ADDREF(obsInfo->observer);
+    NS_ADDREF(obsInfo->observer); // TODO this might not be required // TODO: release
+
     PR_Lock(observersLock);
     observers.insert({extension, obsInfo});
     PR_Unlock(observersLock);
@@ -214,7 +175,7 @@ TlsExtensionService::HasObserver(PRUint16 extension, bool *_retval) {
     return NS_OK;
 }
 
-NS_IMETHODIMP
+NS_IMETHODIMP   // TODO: remove
 TlsExtensionService::CallObserver(PRUint16 extension) {
     PR_Lock(observersLock);
     mozilla::dom::Promise* promise;

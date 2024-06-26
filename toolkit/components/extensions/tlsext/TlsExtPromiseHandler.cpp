@@ -11,8 +11,10 @@ TlsExtPromiseHandler::ResolvedCallback(JSContext* aCx, JS::Handle<JS::Value> aVa
     if (aValue.isString()) {
         nsAutoJSString jsString;
         if (jsString.init(aCx, aValue.toString())) {
-            result = ToNewCString(jsString);
+            result = ToNewCString(jsString); // needs to be freed
         }
+    } else {
+        result = nullptr;
     }
     Notify();
 }
