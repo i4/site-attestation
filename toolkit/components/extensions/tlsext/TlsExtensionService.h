@@ -1,10 +1,9 @@
 
-#ifndef mozilla_extensions_nsTlsExtensionService_h__
-#define mozilla_extensions_nsTlsExtensionService_h__
+#ifndef mozilla_extensions_TlsExtensionService_h__
+#define mozilla_extensions_TlsExtensionService_h__
 
 #include <map>
 
-#include "mozilla/dom/PromiseNativeHandler.h"
 #include "nsITlsExtensionService.h"
 #include "prtypes.h"
 #include "seccomon.h"
@@ -12,9 +11,6 @@
 #include "prio.h"
 #include "ssl.h"
 #include "prlock.h"
-#include "nsThreadUtils.h"
-#include "mozilla/Monitor.h"
-#include "mozilla/dom/Promise.h"
 #include "mozilla/extensions/TlsExtObserverInfo.h"
 
 namespace mozilla::extensions {
@@ -48,37 +44,6 @@ class TlsExtensionService final : public nsITlsExtensionService {
 
     std::map<PRUint16, TlsExtObserverInfo*> GetObservers();
 
-    class ObserverRunnable : public mozilla::Runnable {
-        public:
-        NS_DECL_ISUPPORTS
-        NS_DECL_NSIRUNNABLE
-
-        ObserverRunnable(TlsExtObserverInfo* obsInfo, mozilla::Monitor& monitor, char*& result);
-
-        private:
-        ~ObserverRunnable() = default;
-
-        TlsExtObserverInfo* obsInfo;
-        mozilla::Monitor& monitor;
-        char*& result;
-    };
-
-    class PromiseNativeHandler final : public mozilla::dom::PromiseNativeHandler {
-        public:
-        NS_DECL_ISUPPORTS
-
-        PromiseNativeHandler(mozilla::Monitor& monitor, char*& result);
-
-        void ResolvedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv) override;
-        void RejectedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv) override;
-
-        private:
-        ~PromiseNativeHandler() = default;
-        void Notify();
-        mozilla::Monitor& monitor;
-        char*& result;
-    };
-
     private:
     std::map<PRUint16, TlsExtObserverInfo*> observers;
     PRLock* observersLock;
@@ -86,8 +51,6 @@ class TlsExtensionService final : public nsITlsExtensionService {
     TlsExtensionService();
     ~TlsExtensionService();
 };
-
 }
-
 
 #endif

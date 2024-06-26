@@ -1,3 +1,6 @@
+#ifndef mozilla_extensions_TlsExtOserverInfo_h__
+#define mozilla_extensions_TlsExtOserverInfo_h__
+
 #include <regex>
 
 #include "nsCOMPtr.h"
@@ -12,3 +15,5 @@ struct TlsExtObserverInfo {
     char* hostname;
 };
 }
+
+#endif

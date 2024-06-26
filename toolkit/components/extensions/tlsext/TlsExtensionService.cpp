@@ -4,6 +4,7 @@
 #include "sslexp.h"
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/dom/Promise.h"
+#include "mozilla/extensions/TlsExtObserverRunnable.h"
 
 namespace mozilla::extensions {
 
@@ -45,7 +46,7 @@ TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType m
 
     mozilla::Monitor monitor("ObservableRunnerMonitor");
     char* result = nullptr; // TODO this might need to be a doubke pointer
-    RefPtr<ObserverRunnable> obsRun = new ObserverRunnable(obsInfo, monitor, result);
+    RefPtr<TlsExtObserverRunnable> obsRun = new TlsExtObserverRunnable(obsInfo, monitor, result);
     NS_DispatchToMainThread(obsRun); // TODO
 
     {
@@ -221,60 +222,4 @@ TlsExtensionService::CallObserver(PRUint16 extension) {
     PR_Unlock(observersLock);
     return NS_OK;
 }
-
-// ObserverRunnable
-NS_IMPL_ISUPPORTS(TlsExtensionService::ObserverRunnable, nsIRunnable)
-
-TlsExtensionService::ObserverRunnable::ObserverRunnable(TlsExtObserverInfo* obsInfo, mozilla::Monitor& monitor, char*& result):
-    mozilla::Runnable("RunObserver"),
-    obsInfo(obsInfo),
-    monitor(monitor),
-    result(result) {}
-
-NS_IMETHODIMP
-TlsExtensionService::ObserverRunnable::Run() {
-    mozilla::MonitorAutoLock lock(monitor); // TODO is this required?
-    mozilla::dom::Promise* promise;
-    nsresult rv = obsInfo->observer->OnWriteTlsExtension("test", "ObserverTest", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &promise);
-    if (NS_FAILED(rv) || !promise) {
-        monitor.Notify();
-        return rv;
-    }
-
-    RefPtr<PromiseNativeHandler> handler = new PromiseNativeHandler(monitor, result);
-    promise->AppendNativeHandler(handler);
-
-    // monitor.Notify(); // TODO done in the handler?
-    return NS_OK;
-}
-
-// PromiseNativeHandler
-NS_IMPL_ISUPPORTS(TlsExtensionService::PromiseNativeHandler, nsISupports)
-
-TlsExtensionService::PromiseNativeHandler::PromiseNativeHandler(mozilla::Monitor& monitor, char*& result): monitor(monitor), result(result) {
-}
-
-void
-TlsExtensionService::PromiseNativeHandler::ResolvedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv) {
-    if (aValue.isString()) {
-        nsAutoJSString jsString;
-        if (jsString.init(aCx, aValue.toString())) {
-            result = ToNewCString(jsString);
-        }
-    }
-    Notify();
-}
-
-void
-TlsExtensionService::PromiseNativeHandler::RejectedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv) {
-    result = nullptr; // TODO Handle rejection as needed
-    Notify();
-}
-
-void
-TlsExtensionService::PromiseNativeHandler::Notify() {
-    mozilla::MonitorAutoLock lock(monitor);
-    monitor.Notify();
-}
-
 }

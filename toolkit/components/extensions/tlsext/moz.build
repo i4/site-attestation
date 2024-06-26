@@ -7,11 +7,15 @@ XPIDL_MODULE = "webextensions"
 
 UNIFIED_SOURCES += [
     "TlsExtensionService.cpp",
+    "TlsExtObserverRunnable.cpp",
+    "TlsExtPromiseHandler.cpp"
 ]
 
 EXPORTS.mozilla.extensions += [
     "TlsExtensionService.h",
-    "TlsExtObserverInfo.h"
+    "TlsExtObserverInfo.h",
+    "TlsExtObserverRunnable.h",
+    "TlsExtPromiseHandler.h"
 ]
 
 XPCOM_MANIFESTS += [
