@@ -8,7 +8,6 @@
 namespace mozilla::extensions {
 
 LazyLogModule gTLSEXTLog("tlsext");
-using TlsExtObserverInfo = struct TlsExtObserverInfo;
 
 NS_IMPL_ISUPPORTS(TlsExtensionService, nsITlsExtensionService)
 
@@ -162,7 +161,7 @@ TlsExtensionService::~TlsExtensionService() {
     // TODO free all Observers, patterns etc
 }
 
-std::map<PRUint16, TlsExtensionService::TlsExtObserverInfo*>
+std::map<PRUint16, TlsExtObserverInfo*>
 TlsExtensionService::GetObservers() { return observers; }
 
 NS_IMETHODIMP

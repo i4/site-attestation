@@ -11,6 +11,7 @@ UNIFIED_SOURCES += [
 
 EXPORTS.mozilla.extensions += [
     "TlsExtensionService.h",
+    "TlsExtObserverInfo.h"
 ]
 
 XPCOM_MANIFESTS += [
