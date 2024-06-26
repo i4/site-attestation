@@ -4,21 +4,64 @@
 #include "mozilla/Monitor.h"
 #include "nsThreadUtils.h"
 #include "mozilla/extensions/TlsExtObserverInfo.h"
+#include "prio.h"
+#include "ssl.h"
+#include "sslt.h"
 
 namespace mozilla::extensions {
 class TlsExtObserverRunnable : public mozilla::Runnable {
+    protected:
+    TlsExtObserverRunnable(PRFileDesc *fd, SSLHandshakeType messageType, // obsInfo is callbackArg
+        TlsExtObserverInfo* obsInfo, mozilla::Monitor& monitor): //char*& result
+        mozilla::Runnable("TlsExtObserverRunnable"),
+        fd(fd),
+        messageType(messageType),
+        obsInfo(obsInfo),
+        monitor(monitor) {};
+    ~TlsExtObserverRunnable() = default;
+    PRFileDesc *fd;
+    SSLHandshakeType messageType;
+
+    TlsExtObserverInfo* obsInfo;
+    mozilla::Monitor& monitor;
+};
+
+class TlsExtWriterObsRunnable : public TlsExtObserverRunnable {
     public:
     NS_DECL_ISUPPORTS
     NS_DECL_NSIRUNNABLE
 
-    TlsExtObserverRunnable(TlsExtObserverInfo* obsInfo, mozilla::Monitor& monitor, char*& result);
+    TlsExtWriterObsRunnable(
+        PRFileDesc *fd, SSLHandshakeType messageType, unsigned int maxLen, // obsInfo is (callback)arg
+        TlsExtObserverInfo* obsInfo, mozilla::Monitor& monitor,
+        char*& result);
 
     private:
-    ~TlsExtObserverRunnable() = default;
+    ~TlsExtWriterObsRunnable() {};
 
-    TlsExtObserverInfo* obsInfo;
-    mozilla::Monitor& monitor;
+    unsigned int maxLen;
+
     char*& result;
+};
+
+class TlsExtHandlerObsRunnable : public TlsExtObserverRunnable {
+    public:
+    NS_DECL_ISUPPORTS
+    NS_DECL_NSIRUNNABLE
+
+    TlsExtHandlerObsRunnable(
+        PRFileDesc *fd, SSLHandshakeType messageType, const PRUint8 *data, unsigned int len, SSLAlertDescription *alert, // obsInfo is (callback)arg
+        TlsExtObserverInfo* obsInfo, mozilla::Monitor& monitor,
+        SECStatus& result);
+
+    private:
+    ~TlsExtHandlerObsRunnable() {};
+
+    const PRUint8 *data;
+    unsigned int len;
+    SSLAlertDescription *alert;
+
+    SECStatus& result;
 };
 }
 

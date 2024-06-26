@@ -4,22 +4,44 @@
 #include "mozilla/Monitor.h"
 #include "mozilla/dom/Promise.h"
 #include "mozilla/dom/PromiseNativeHandler.h"
+#include "seccomon.h"
 
 namespace mozilla::extensions {
-class TlsExtPromiseHandler final : public mozilla::dom::PromiseNativeHandler {
+class TlsExtPromiseHandler : public mozilla::dom::PromiseNativeHandler {
     public:
     NS_DECL_ISUPPORTS
 
-    TlsExtPromiseHandler(mozilla::Monitor& monitor, char*& result);
+    TlsExtPromiseHandler(mozilla::Monitor& monitor): monitor(monitor) {};
 
-    void ResolvedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv) override;
-    void RejectedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv) override;
+    virtual void ResolvedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv) override = 0;
+    virtual void RejectedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv) override = 0;
 
-    private:
+    protected:
     ~TlsExtPromiseHandler() = default;
     void Notify();
     mozilla::Monitor& monitor;
+};
+
+class TlsExtWriterPromiseHandler : public TlsExtPromiseHandler {
+    public:
+    TlsExtWriterPromiseHandler(mozilla::Monitor& monitor, char*& result);
+
+    void ResolvedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv);
+    void RejectedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv);
+
+    private:
     char*& result;
+};
+
+class TlsExtHandlerPromiseHandler : public TlsExtPromiseHandler {
+    public:
+    TlsExtHandlerPromiseHandler(mozilla::Monitor& monitor, SECStatus& result);
+
+    void ResolvedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv);
+    void RejectedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv);
+
+    private:
+    SECStatus& result;
 };
 }
 

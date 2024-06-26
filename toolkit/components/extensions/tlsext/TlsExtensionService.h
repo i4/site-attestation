@@ -42,11 +42,15 @@ class TlsExtensionService final : public nsITlsExtensionService {
 
     SECStatus InstallObserverHooks(PRFileDesc* sslSock, const char* host);
 
-    std::map<PRUint16, TlsExtObserverInfo*> GetObservers();
+    std::map<PRUint16, TlsExtObserverInfo*> GetWriterObservers();
+    std::map<PRUint16, TlsExtObserverInfo*> GetHandlerObservers();
 
     private:
-    std::map<PRUint16, TlsExtObserverInfo*> observers;
-    PRLock* observersLock;
+    std::map<PRUint16, TlsExtObserverInfo*> writerObservers;
+    PRLock* writerLock;
+
+    std::map<PRUint16, TlsExtObserverInfo*> handlerObservers;
+    PRLock* handlerLock;
 
     TlsExtensionService();
     ~TlsExtensionService();

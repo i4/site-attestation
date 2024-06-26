@@ -2,35 +2,86 @@
 #include "mozilla/extensions/TlsExtPromiseHandler.h"
 
 namespace mozilla::extensions {
-NS_IMPL_ISUPPORTS(TlsExtObserverRunnable, nsIRunnable)
 
-TlsExtObserverRunnable::TlsExtObserverRunnable(TlsExtObserverInfo* obsInfo, mozilla::Monitor& monitor, char*& result):
-    mozilla::Runnable("RunObserver"),
-    obsInfo(obsInfo),
-    monitor(monitor),
+extern LazyLogModule gTLSEXTLog;
+
+NS_IMPL_ISUPPORTS(TlsExtWriterObsRunnable, nsIRunnable)
+NS_IMPL_ISUPPORTS(TlsExtHandlerObsRunnable, nsIRunnable)
+
+TlsExtWriterObsRunnable::TlsExtWriterObsRunnable(
+        PRFileDesc *fd, SSLHandshakeType messageType, unsigned int maxLen, // obsInfo is (callback)arg
+        TlsExtObserverInfo* obsInfo, mozilla::Monitor& monitor,
+        char*& result):
+    TlsExtObserverRunnable(fd, messageType, obsInfo, monitor),
+    maxLen(maxLen),
     result(result) {}
 
 NS_IMETHODIMP
-TlsExtObserverRunnable::Run() {
-    // char* dataString;
-    // if (NS_OK != obs->OnWriteTlsExtension(
-    //     "tlsSessionId",
-    //     obsInfo->hostname,
-    //     (nsITlsExtensionObserver::SSLHandshakeType) messageType, // this cast is legal, because the enum has the same structure
-    //     maxLen,
-    //     &dataString)) {
-    //         MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-    //         ("NS not OK\n"));
-    //         return PR_FALSE;
-    // }
+TlsExtWriterObsRunnable::Run() {
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Reached WriterObsRunnable!\n"));
 
     // run the actual callback
     mozilla::dom::Promise* promise;
-    nsresult rv = obsInfo->observer->OnWriteTlsExtension(
+    auto* observer = static_cast<nsITlsExtensionWriterObserver*>(obsInfo->observer.get());  // this tries to cast the generic observer into its more specific type // TODO does this work?
+
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Static cast went through!\n"));
+
+    nsresult rv = observer->OnWriteTlsExtension(
+        obsInfo->extension,
         "sessionID",
         obsInfo->hostname,
-        nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, // TODO get messagetype, maxlen, fd and the rest of the important data into the runnable (via constructor)?
-        1000,
+        (nsITlsExtensionObserver::SSLHandshakeType) messageType,
+        maxLen,
+        &promise);
+
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Call went through!\n"));
+
+    if (NS_FAILED(rv) || !promise) {
+        MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Failed!\n"));
+        mozilla::MonitorAutoLock lock(monitor);
+        monitor.Notify();
+        return rv;
+    }
+
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Did not fail!\n"));
+
+    // resolve the promise that came back from the web extension
+    RefPtr<TlsExtWriterPromiseHandler> handler = new TlsExtWriterPromiseHandler(monitor, result);
+    promise->AppendNativeHandler(handler);
+
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Created and Added Promise Handler!\n"));
+
+    // monitor.Notify(); is done in the handler
+    return NS_OK;
+}
+
+TlsExtHandlerObsRunnable::TlsExtHandlerObsRunnable(
+        PRFileDesc *fd, SSLHandshakeType messageType, const PRUint8 *data, unsigned int len, SSLAlertDescription *alert, // obsInfo is (callback)arg
+        TlsExtObserverInfo* obsInfo, mozilla::Monitor& monitor,
+        SECStatus& result):
+    TlsExtObserverRunnable(fd, messageType, obsInfo, monitor),
+    data(data),
+    len(len),
+    alert(alert),
+    result(result) {}
+
+NS_IMETHODIMP
+TlsExtHandlerObsRunnable::Run() {
+    // run the actual callback
+    mozilla::dom::Promise* promise;
+    auto* observer = static_cast<nsITlsExtensionHandlerObserver*>(obsInfo->observer.get());  // this tries to cast the generic observer into its more specific type // TODO does this work?
+    nsresult rv = observer->OnHandleTlsExtension(
+        obsInfo->extension,
+        "sessionID",
+        obsInfo->hostname,
+        (nsITlsExtensionObserver::SSLHandshakeType) messageType,
+        (const char*) data,     // TODO C++ style cast
         &promise);
 
     if (NS_FAILED(rv) || !promise) {
@@ -40,7 +91,7 @@ TlsExtObserverRunnable::Run() {
     }
 
     // resolve the promise that came back from the web extension
-    RefPtr<TlsExtPromiseHandler> handler = new TlsExtPromiseHandler(monitor, result);
+    RefPtr<TlsExtHandlerPromiseHandler> handler = new TlsExtHandlerPromiseHandler(monitor, result);
     promise->AppendNativeHandler(handler);
 
     // monitor.Notify(); is done in the handler

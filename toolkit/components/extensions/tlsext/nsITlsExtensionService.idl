@@ -41,16 +41,24 @@ interface nsITlsExtensionObserver : nsISupports {
     ssl_hs_message_hash = 254,           /* Not a real message. */
     ssl_hs_ech_outer_client_hello = 257, /* Not a real message. */
   };
+};
 
-  Promise onWriteTlsExtension( in string tlsSessionId,
-                              in string url,
-                              in nsITlsExtensionObserver_SSLHandshakeType messageType,
-                              in unsigned long maxDataLen);
+[scriptable, function, uuid(d2f656a4-6bc7-4d2e-92f2-d3a6ad05b0d1)]
+interface nsITlsExtensionWriterObserver : nsITlsExtensionObserver {
+  Promise onWriteTlsExtension(  in PRUint16 extension,  // TODO return value should be unsigned
+                                in string tlsSessionId,
+                                in string url,
+                                in nsITlsExtensionObserver_SSLHandshakeType messageType,
+                                in unsigned long maxDataLen);
+};
 
-  nsITlsExtensionObserver_SECStatus onHandleTlsExtension( in string tlsSessionId,
-                                                          in string url,
-                                                          in nsITlsExtensionObserver_SSLHandshakeType messageType,
-                                                          in string data);
+[scriptable, function, uuid(09be1269-301d-469d-99d9-bf9721571aa9)]
+interface nsITlsExtensionHandlerObserver : nsITlsExtensionObserver {
+  Promise onHandleTlsExtension( in PRUint16 extension,
+                                in string tlsSessionId,
+                                in string url,
+                                in nsITlsExtensionObserver_SSLHandshakeType messageType,
+                                in string data);        // TODO data should be unsigned
 };
 
 // `scriptable` designates that this object will be used with JavaScript
@@ -71,8 +79,14 @@ interface nsITlsExtensionService : nsISupports {
 
   nsITlsExtensionService_SSLExtensionSupport getExtensionSupport(in PRUint16 extension);
 
-  void addObserver(in string urlPattern, in PRUint16 extension, in nsITlsExtensionObserver observer);
-  void removeObserver(in PRUint16 extension);
-  boolean hasObserver(in PRUint16 extension);
-  void callObserver(in PRUint16 extension);
+  void addWriterObserver(in string urlPattern, in PRUint16 extension, in nsITlsExtensionWriterObserver observer);
+  void removeWriterObserver(in PRUint16 extension);
+  boolean hasWriterObserver(in PRUint16 extension);
+
+  void addHandlerObserver(in string urlPattern, in PRUint16 extension, in nsITlsExtensionHandlerObserver observer);
+  void removeHandlerObserver(in PRUint16 extension);
+  boolean hasHandlerObserver(in PRUint16 extension);
+
+  // for debugging
+  void callWriterObserver(in PRUint16 extension);
 };
