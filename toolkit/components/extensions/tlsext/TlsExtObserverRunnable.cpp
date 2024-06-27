@@ -55,7 +55,7 @@ TlsExtWriterObsRunnable::Run() {
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Created and Added Promise Handler!\n"));
 
-    monitor.Notify(); // is done in the handler
+    // monitor.Notify(); // is done in the handler
     return NS_OK;
 }
 
