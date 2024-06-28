@@ -466,10 +466,13 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             snprintf(ctx->hashfileenv, strlen(prefix) + 1, "%s", prefix);
             ctx->hashfile = ctx->hashfileenv+9;
 
+            printf("hex: ");
             for (size_t i = 0; i < inlen; i++) {
                 snprintf(&(ctx->outfile[strlen(ctx->outfile) + i]), 3, "%02X", in[i]);
                 snprintf(&(ctx->hashfile[strlen(ctx->hashfile) + i]), 3, "%02X", in[i]);
+                printf("%02X", in[i]);
             }
+            printf("\n");
 
             printf("NONCE: %s\nHash: %s\nHashEnv: %s\nOut: %s\nOutEnv: %s\n", ctx->nonce, ctx->hashfile, ctx->hashfileenv, ctx->outfile, ctx->outfileenv);
 
