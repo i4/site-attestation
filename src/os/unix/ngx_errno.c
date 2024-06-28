@@ -8,7 +8,6 @@
 #include <ngx_config.h>
 #include <ngx_core.h>
 
-#include <string.h>
 
 static ngx_str_t   ngx_unknown_error = ngx_string("Unknown error");
 
@@ -28,7 +27,7 @@ ngx_strerror(ngx_err_t err, u_char *errstr, size_t size)
     size_t       len;
     const char  *msg;
 
-    msg = (char*) strerrordesc_np(err);
+    msg = strerrordesc_np(err);
 
     if (msg == NULL) {
         msg = (char *) ngx_unknown_error.data;
