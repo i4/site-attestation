@@ -356,6 +356,8 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             FILE* touch_outfile = sfopen(ctx->outfile, "w+");
             fclose(touch_outfile);
 
+            printf("PRE FORK\n");
+
             pid_t pid = fork();
             if (pid == 0) { // child
 
