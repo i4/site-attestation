@@ -300,6 +300,7 @@ static char* cb_add_buffer;
 
 typedef struct {
     char * infile;
+    char * hashfile;
     char * outfile;
     char * attestation_report_buffer;
 } RAContext;
@@ -326,24 +327,15 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
         } else if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
-            EVP_PKEY* pkey = X509_get_pubkey(x);
+            // EVP_PKEY* pkey = X509_get_pubkey(x);
 
-            FILE* in = fopen(ctx->infile, "a");
-            if (!in) { perror("fopen"); exit(EXIT_FAILURE); }
-            fprintf(in, "\n");
-            PEM_write_PUBKEY(in, pkey);
+            // FILE* in = fopen(ctx->infile, "a");
+            // if (!in) { perror("fopen"); exit(EXIT_FAILURE); }
+            // fprintf(in, "\n");
+            // PEM_write_PUBKEY(in, pkey);
 
-            FILE* nginx_source = fopen("objs/nginx", "r");
-            if (!nginx_source) { perror("fopen"); exit(EXIT_FAILURE); }
-            int sym;
-            while(!feof(nginx_source)) {
-                sym = fgetc(nginx_source);
-                fprintf(in, "%c", sym);
-            }
-            fclose(nginx_source);
-
-            fflush(in);
-            fclose(in);
+            // fflush(in);
+            // fclose(in);
 
             // create the file, snpguest doesn't do that on its own.
             FILE* touch_outfile = fopen(ctx->outfile, "w+");
@@ -356,9 +348,15 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             pid_t pid = fork();
             if (pid == 0) { // child
 
-                char *argv[] = {(char *)"/home/ubuntu/snpguest/target/debug/snpguest", "report", ctx->outfile, ctx->infile, NULL};
-                printf("cmdline: %s %s %s %s\n", argv[0], argv[1], argv[2], argv[3]);
-                // char *argv[] = {(char *)"cp", ctx->infile, ctx->outfile, NULL};
+                // char *argv[] = {(char *)"/bin/sh", "-c", "create-hash.sh", ctx->outfile, ctx->infile, NULL};
+                char *argv[] = {(char *)"create-hash.sh", ctx->infile, ctx->hashfile, ctx->outfile, NULL};
+
+                printf("cmdline:");
+                for(int i = 0; argv[i] != NULL; i++) {
+                    printf(" %s", argv[i]);
+                }
+                printf("\n");
+
                 execvp(argv[0], argv);
 
                 exit(0);
@@ -443,26 +441,34 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
 
         size_t hex_len = 2 * inlen * sizeof(char);
 
-        // prefix: "/tmp/in-" = 8, plus nullbyte = 9
-        ctx->infile = malloc(hex_len + 9 * sizeof(char));
+        // prefix: "requests/" = 9, plus nullbyte = 10
+        ctx->infile = malloc(hex_len + 11 * sizeof(char));
         if (!ctx->infile){
             perror("malloc"); 
             exit(EXIT_FAILURE);
         }
+        snprintf(ctx->infile, 10,"requests/");
 
-        // prefix: "/tmp/out-" = 9, plus nullbyte = 10
+        // prefix: "reports/" = 9, plus nullbyte = 10
         ctx->outfile = malloc(hex_len + 10 * sizeof(char));
         if (!ctx->infile){
             perror("malloc"); 
             exit(EXIT_FAILURE);
         }
+        snprintf(ctx->outfile, 10, "reports/");
 
-        snprintf(ctx->outfile, 10, "/tmp/out-");
-        snprintf(ctx->infile, 9,"/tmp/in-");
+        // prefix: "hashes/" = 7, plus nullbyte = 8
+        ctx->hashfile = malloc(hex_len + 8 * sizeof(char));
+        if (!ctx->hashfile){
+            perror("malloc"); 
+            exit(EXIT_FAILURE);
+        }
+        snprintf(ctx->hashfile, 8, "hashes/");
 
         for (size_t i = 0; i < inlen; i++) {
             snprintf(&(ctx->outfile[9 + i]), 3, "%02X", in[i]);
             snprintf(&(ctx->infile[8 + i]), 3, "%02X", in[i]);
+            snprintf(&(ctx->hashfile[7 + i]), 3, "%02X", in[i]);
         }
 
         FILE* infile = fopen(ctx->infile, "w");
@@ -473,11 +479,6 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
 
         fprintf(infile, "%s", in);
         fclose(infile);
-
-        // int EVP_PKEY_get_raw_public_key(const EVP_PKEY *pkey, unsigned char *pub,
-        //                         size_t *len);
-
-        // X509_get_pubkey();
 
         return 1;
     }
