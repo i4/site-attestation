@@ -2,6 +2,7 @@
 
 git pull origin filein-fileout
 git checkout origin/filein-fileout
+mkdir requests reports hashes
+
 make
-sudo rm /tmp/in-* /tmp/out-*
 sudo objs/nginx
