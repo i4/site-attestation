@@ -450,6 +450,7 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
         int *al, void *parseArg) {
     if (extType == EXT_RATLS) {
         if (context == SSL_EXT_CLIENT_HELLO) {
+            printf("Got ClientHello\n");
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
             if (!ctx) {
@@ -478,6 +479,7 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
                 snprintf(&(ctx->outfile[strlen(ctx->outfile)]), 3, "%02X", in[i]);
                 snprintf(&(ctx->hashfile[strlen(ctx->hashfile)]), 3, "%02X", in[i]);
             }
+            printf("Finished ClientHello\n");
 
             return 1;
         }
