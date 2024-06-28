@@ -8,6 +8,7 @@
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <ngx_event.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 
@@ -294,16 +295,36 @@ ngx_ssl_init(ngx_log_t *log)
 }
 
 static int RA_SESSION_FLAG_INDEX = -1;
-static char* cb_add_buffer;
+// static char* pubkey;
 #define EXT_RATLS 420
 #define MEASUREMENT_BUF_SIZE UINT16_MAX
 
 typedef struct {
-    char * infile;
     char * hashfile;
     char * outfile;
+    char * nonce;
+    char * hashfileenv;
+    char * outfileenv;
     char * attestation_report_buffer;
 } RAContext;
+
+static char* smalloc(size_t s) {
+    char *ret = malloc(s);
+    if (!ret) {
+        perror("malloc");
+        exit(EXIT_FAILURE);
+    }
+    return ret;
+}
+
+static FILE* sfopen(char * fname, char * mode) {
+    FILE* f = fopen(fname, mode);
+    if (!f) {
+        perror("fopen");
+        exit(EXIT_FAILURE);
+    }
+    return f;
+}
 
 static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                         unsigned int context,
@@ -313,42 +334,36 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                         int *al, void *addArg) {
     if (extType == EXT_RATLS) {
 
-        if (context == SSL_EXT_TLS1_3_SERVER_HELLO) {
-            cb_add_buffer = malloc(17 * sizeof(char));
-            if (!cb_add_buffer) {
-                perror("malloc");
-                exit(EXIT_FAILURE);
-            }
-
-            strcpy(cb_add_buffer, "TLS::ServerHello");
-            printf("TLS::ServerHello\n");
-            *out = (unsigned char*) cb_add_buffer;
-            *outlen = 17;
-        } else if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
+        if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
-            // EVP_PKEY* pkey = X509_get_pubkey(x);
+            // if (!pubkey) {
+            //     pubkey = malloc(256 * sizeof(char));
+            //     if (!pubkey) {perror("malloc"); exit(EXIT_FAILURE);}
 
-            // FILE* in = fopen(ctx->infile, "a");
-            // if (!in) { perror("fopen"); exit(EXIT_FAILURE); }
-            // fprintf(in, "\n");
-            // PEM_write_PUBKEY(in, pkey);
+            //     EVP_PKEY* pkey = X509_get_pubkey(x);
 
-            // fflush(in);
-            // fclose(in);
+            //     fprintf(in, "\n");
+            //     snprintf(pubkey, 256, )
+
+            //     PEM_write_PUBKEY(in, pkey);
+
+            //     fflush(in);
+            //     fclose(in);
+            // }
 
             // create the file, snpguest doesn't do that on its own.
-            FILE* touch_outfile = fopen(ctx->outfile, "w+");
-            if (!touch_outfile) {
-                perror("fopen");
-                exit(EXIT_FAILURE);
-            }
+            FILE* touch_outfile = sfopen(ctx->outfile, "w+");
             fclose(touch_outfile);
 
             pid_t pid = fork();
             if (pid == 0) { // child
 
-                char *argv[] = {(char *)"/bin/sh", "-c", "create-hash.sh", ctx->infile, ctx->hashfile, ctx->outfile, NULL};
+                putenv(ctx->nonce);
+                putenv(ctx->hashfileenv);
+                putenv(ctx->outfileenv);
+
+                char *argv[] = {(char *)"/bin/sh", "-c", "create-hash.sh", NULL};
 
                 printf("cmdline:");
                 for(int i = 0; argv[i] != NULL; i++) {
@@ -407,11 +422,10 @@ static void callbackFreeExtensionRAServer(SSL *ssl, unsigned int extType,
     if (extType == EXT_RATLS) {
 
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
-            free(cb_add_buffer);
 
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
-            free(ctx->infile);
             free(ctx->outfile);
+            free(ctx->hashfile);
             free(ctx->attestation_report_buffer);
             free(ctx);
         }
@@ -427,59 +441,40 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
         size_t chainidx,
         int *al, void *parseArg) {
     if (extType == EXT_RATLS) {
-        RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
+        if (context == SSL_EXT_CLIENT_HELLO) {
+            RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
-        if (!ctx) {
-            ctx = (RAContext*) malloc(sizeof(RAContext));
             if (!ctx) {
-                perror("malloc");
-                exit(EXIT_FAILURE);
+                ctx = (RAContext*) smalloc(sizeof(RAContext));
+                SSL_set_ex_data(ssl, RA_SESSION_FLAG_INDEX, ctx);
             }
-            SSL_set_ex_data(ssl, RA_SESSION_FLAG_INDEX, ctx);
+
+            char * prefix = "NONCE=";
+            size_t nonce_len = strlen(prefix) + inlen + 1;
+            ctx->nonce = smalloc(nonce_len);
+            snprintf(ctx->nonce, nonce_len, "NONCE=%s", in);
+
+            size_t hex_len = 2 * inlen * sizeof(char);
+
+            prefix = "OUTFILE=reports/";
+            ctx->outfileenv = smalloc(hex_len + strlen(prefix) + sizeof(char));
+            snprintf(ctx->outfileenv, strlen(prefix) + 1, prefix);
+            ctx->outfile = ctx->outfileenv+8;
+
+            prefix = "HASHFILE=hashes/";
+            ctx->hashfileenv = smalloc(hex_len + strlen(prefix) + sizeof(char));
+            snprintf(ctx->hashfileenv, strlen(prefix) + 1, prefix);
+            ctx->hashfile = ctx->hashfileenv+9;
+
+            for (size_t i = 0; i < inlen; i++) {
+                snprintf(&(ctx->outfile[strlen(ctx->outfile) + i]), 3, "%02X", in[i]);
+                snprintf(&(ctx->hashfile[strlen(ctx->hashfile) + i]), 3, "%02X", in[i]);
+            }
+
+            printf("NONCE: %s\nHash: %s\nHashEnv: %s\nOut: %s\nOutEnv: %s", ctx->nonce, ctx->hashfile, ctx->hashfileenv, ctx->outfile, ctx->outfileenv);
+
+            return 1;
         }
-
-        size_t hex_len = 2 * inlen * sizeof(char);
-
-        // prefix: "requests/" = 9, plus nullbyte = 10
-        ctx->infile = malloc(hex_len + 11 * sizeof(char));
-        if (!ctx->infile){
-            perror("malloc"); 
-            exit(EXIT_FAILURE);
-        }
-        snprintf(ctx->infile, 10,"requests/");
-
-        // prefix: "reports/" = 9, plus nullbyte = 10
-        ctx->outfile = malloc(hex_len + 10 * sizeof(char));
-        if (!ctx->infile){
-            perror("malloc"); 
-            exit(EXIT_FAILURE);
-        }
-        snprintf(ctx->outfile, 10, "reports/");
-
-        // prefix: "hashes/" = 7, plus nullbyte = 8
-        ctx->hashfile = malloc(hex_len + 8 * sizeof(char));
-        if (!ctx->hashfile){
-            perror("malloc"); 
-            exit(EXIT_FAILURE);
-        }
-        snprintf(ctx->hashfile, 8, "hashes/");
-
-        for (size_t i = 0; i < inlen; i++) {
-            snprintf(&(ctx->outfile[9 + i]), 3, "%02X", in[i]);
-            snprintf(&(ctx->infile[8 + i]), 3, "%02X", in[i]);
-            snprintf(&(ctx->hashfile[7 + i]), 3, "%02X", in[i]);
-        }
-
-        FILE* infile = fopen(ctx->infile, "w");
-        if (infile == NULL) {
-            perror("fopen");
-            exit(EXIT_FAILURE);
-        }
-
-        fprintf(infile, "%s", in);
-        fclose(infile);
-
-        return 1;
     }
     return 0;
 }
