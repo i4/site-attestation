@@ -363,6 +363,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                 putenv(ctx->hashfileenv);
                 putenv(ctx->outfileenv);
 
+                printf("PRE SYSTEM\n");
                 int retsys = system("/home/ubuntu/nginx/create-hash.sh");
                 if (retsys == -1 || errno != 0) {
                     perror("system");
