@@ -363,8 +363,9 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                 putenv(ctx->hashfileenv);
                 putenv(ctx->outfileenv);
 
-                char *argv[] = {(char *)"/bin/sh", "-c", "create-hash.sh", NULL};
+                system("sh /home/ubuntu/nginx/create-hash.sh");
 
+                char *argv[] = {(char *)"/bin/sh", "-c", "create-hash.sh", NULL};
                 printf("cmdline:");
                 for(int i = 0; argv[i] != NULL; i++) {
                     printf(" %s", argv[i]);
@@ -466,15 +467,10 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             snprintf(ctx->hashfileenv, strlen(prefix) + 1, "%s", prefix);
             ctx->hashfile = ctx->hashfileenv+9;
 
-            printf("hex: ");
             for (size_t i = 0; i < inlen; i++) {
                 snprintf(&(ctx->outfile[strlen(ctx->outfile)]), 3, "%02X", in[i]);
                 snprintf(&(ctx->hashfile[strlen(ctx->hashfile)]), 3, "%02X", in[i]);
-                printf("%02X", in[i]);
             }
-            printf("\n");
-
-            printf("NONCE: %s\nHash: %s\nHashEnv: %s\nOut: %s\nOutEnv: %s\n", ctx->nonce, ctx->hashfile, ctx->hashfileenv, ctx->outfile, ctx->outfileenv);
 
             return 1;
         }
