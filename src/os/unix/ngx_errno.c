@@ -8,6 +8,7 @@
 #include <ngx_config.h>
 #include <ngx_core.h>
 
+#include <string.h>
 
 static ngx_str_t   ngx_unknown_error = ngx_string("Unknown error");
 
