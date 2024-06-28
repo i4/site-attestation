@@ -458,12 +458,12 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
 
             prefix = "OUTFILE=reports/";
             ctx->outfileenv = smalloc(hex_len + strlen(prefix) + sizeof(char));
-            snprintf(ctx->outfileenv, strlen(prefix) + 1, prefix);
+            snprintf(ctx->outfileenv, strlen(prefix) + 1, "%s", prefix);
             ctx->outfile = ctx->outfileenv+8;
 
             prefix = "HASHFILE=hashes/";
             ctx->hashfileenv = smalloc(hex_len + strlen(prefix) + sizeof(char));
-            snprintf(ctx->hashfileenv, strlen(prefix) + 1, prefix);
+            snprintf(ctx->hashfileenv, strlen(prefix) + 1, "%s", prefix);
             ctx->hashfile = ctx->hashfileenv+9;
 
             for (size_t i = 0; i < inlen; i++) {
