@@ -336,7 +336,11 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
     if (extType == EXT_RATLS) {
 
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
+            printf("Certificate\n");
+
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
+
+            printf("Got data\n");
 
             // if (!pubkey) {
             //     pubkey = malloc(256 * sizeof(char));
@@ -354,8 +358,14 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             // }
 
             // create the file, snpguest doesn't do that on its own.
-            FILE* touch_outfile = sfopen(ctx->outfile, "w+");
-            fclose(touch_outfile);
+            printf("trying to open [%s]\n", ctx->outfile);
+
+            size_t len_touch = 6 + strlen(ctx->outfile) + 1;
+            char* touch_file = smalloc(len_touch);
+            snprintf(touch_file, len_touch, "touch %s", ctx->outfile);
+
+            system(touch_file);
+
 
             printf("PRE FORK\n");
 
@@ -366,12 +376,13 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                 putenv(ctx->hashfileenv);
                 putenv(ctx->outfileenv);
 
-                printf("PRE SYSTEM\n");
-                int retsys = system("/home/ubuntu/nginx/create-hash.sh");
+                int retsys = system("create-hash.sh");
                 if (retsys == -1 || errno != 0) {
                     perror("system");
                     exit(EXIT_FAILURE);
                 }
+
+                printf("POST SYSTEM\n");
 
                 // char *argv[] = {(char *)"/bin/sh", "-c", "create-hash.sh", NULL};
                 // printf("cmdline:");
@@ -401,11 +412,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                 exit(EXIT_FAILURE);
             }
 
-            FILE* outfile = fopen(ctx->outfile, "r");
-            if (!outfile) {
-                perror("fopen");
-                exit(EXIT_FAILURE);
-            }
+            FILE* outfile = sfopen(ctx->outfile, "r");
 
             size_t cur_size = 0;
             while(fgets(ctx->attestation_report_buffer + cur_size, MEASUREMENT_BUF_SIZE - cur_size, outfile) != NULL) {
