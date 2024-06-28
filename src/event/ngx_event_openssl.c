@@ -348,8 +348,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             pid_t pid = fork();
             if (pid == 0) { // child
 
-                // char *argv[] = {(char *)"/bin/sh", "-c", "create-hash.sh", ctx->outfile, ctx->infile, NULL};
-                char *argv[] = {(char *)"create-hash.sh", ctx->infile, ctx->hashfile, ctx->outfile, NULL};
+                char *argv[] = {(char *)"/bin/sh", "-c", "create-hash.sh", ctx->infile, ctx->hashfile, ctx->outfile, NULL};
 
                 printf("cmdline:");
                 for(int i = 0; argv[i] != NULL; i++) {
