@@ -363,16 +363,20 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                 putenv(ctx->hashfileenv);
                 putenv(ctx->outfileenv);
 
-                system("sh /home/ubuntu/nginx/create-hash.sh");
-
-                char *argv[] = {(char *)"/bin/sh", "-c", "create-hash.sh", NULL};
-                printf("cmdline:");
-                for(int i = 0; argv[i] != NULL; i++) {
-                    printf(" %s", argv[i]);
+                int retsys = system("/home/ubuntu/nginx/create-hash.sh");
+                if (retsys == -1 || errno != 0) {
+                    perror("system");
+                    exit(EXIT_FAILURE);
                 }
-                printf("\n");
 
-                execvp(argv[0], argv);
+                // char *argv[] = {(char *)"/bin/sh", "-c", "create-hash.sh", NULL};
+                // printf("cmdline:");
+                // for(int i = 0; argv[i] != NULL; i++) {
+                //     printf(" %s", argv[i]);
+                // }
+                // printf("\n");
+
+                // execvp(argv[0], argv);
 
                 exit(0);
             } else if (pid < 0) {
