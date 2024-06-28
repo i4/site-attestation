@@ -332,6 +332,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                         size_t *outlen, X509 *x,
                                         size_t chainidx,
                                         int *al, void *addArg) {
+    printf("Sending something\n");
     if (extType == EXT_RATLS) {
 
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
