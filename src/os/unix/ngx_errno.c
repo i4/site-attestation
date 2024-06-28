@@ -28,7 +28,7 @@ ngx_strerror(ngx_err_t err, u_char *errstr, size_t size)
     size_t       len;
     const char  *msg;
 
-    msg = strerrordesc_np(err);
+    msg = (char*) strerrordesc_np(err);
 
     if (msg == NULL) {
         msg = (char *) ngx_unknown_error.data;
