@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/bash
+
+set -eu
 
 if [ ! -f pub.key ]; then
   openssl x509 -noout -pubkey -in /usr/local/nginx/cert.pem > pub.key
