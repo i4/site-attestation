@@ -374,8 +374,6 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             ssystem(touch_file);
             free(touch_file);
 
-            ssystem("pwd");
-
             pid_t pid = fork();
             if (pid == 0) { // child
 
