@@ -340,11 +340,11 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                         size_t *outlen, X509 *x,
                                         size_t chainidx,
                                         int *al, void *addArg) {
-    printf("sending something");
+    printf("sending something\n");
     if (extType == EXT_RATLS) {
-        printf("sending something RATLS");
+        printf("sending something RATLS\n");
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
-            printf("sending certificate");
+            printf("sending certificate\n");
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
             pid_t pid = fork();
