@@ -6,7 +6,7 @@ if [ ! -f pub.key ]; then
   openssl x509 -noout -pubkey -in /usr/local/nginx/cert.pem > pub.key
 fi
 
-echo NONCE: "/usr/local/nginx/${NONCE}"
+echo NONCE: "${NONCE}"
 echo HASHFILE: "/usr/local/nginx/${HASHFILE}"
 echo OUTFILE: "/usr/local/nginx/${OUTFILE}"
 
