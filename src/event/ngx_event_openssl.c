@@ -340,15 +340,9 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                         size_t *outlen, X509 *x,
                                         size_t chainidx,
                                         int *al, void *addArg) {
-    printf("Sending something\n");
     if (extType == EXT_RATLS) {
-
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
-            printf("Certificate\n");
-
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
-
-            printf("Got data\n");
 
             // if (!pubkey) {
             //     pubkey = malloc(256 * sizeof(char));
@@ -366,7 +360,6 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             // }
 
             // create the file, snpguest doesn't do that on its own.
-            printf("trying to open [%s]\n", ctx->outfile);
 
             size_t len_touch = 6 + strlen(ctx->outfile) + 1;
             char* touch_file = smalloc(len_touch);
@@ -382,8 +375,6 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                 putenv(ctx->outfileenv);
 
                 ssystem("./create-hash.sh");
-
-                printf("POST SYSTEM\n");
 
                 // char *argv[] = {(char *)"/bin/sh", "-c", "create-hash.sh", NULL};
                 // printf("cmdline:");
