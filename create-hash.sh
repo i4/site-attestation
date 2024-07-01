@@ -1,8 +1,10 @@
 #!/bin/sh
 
 if [ -f pub.key ]; then
+  echo key exists
   PUBKEY=$(cat pub.key)
 else
+  echo key doesn\'t exist
   openssl x509 -noout -pubkey -in /usr/local/nginx/cert.pem > pub.key
   PUBKEY=$(cat pub.key)
 fi
