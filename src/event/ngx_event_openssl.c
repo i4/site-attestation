@@ -340,8 +340,11 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                         size_t *outlen, X509 *x,
                                         size_t chainidx,
                                         int *al, void *addArg) {
+    printf("sending something");
     if (extType == EXT_RATLS) {
+        printf("sending something RATLS");
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
+            printf("sending certificate");
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
             pid_t pid = fork();
@@ -366,11 +369,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                 exit(EXIT_FAILURE);
             }
 
-            ctx->attestation_report_buffer = malloc((MEASUREMENT_BUF_SIZE + 1) * sizeof(char));
-            if (!ctx->attestation_report_buffer) {
-                perror("malloc");
-                exit(EXIT_FAILURE);
-            }
+            ctx->attestation_report_buffer = smalloc((MEASUREMENT_BUF_SIZE + 1) * sizeof(char));
 
             FILE* outfile = sfopen(ctx->outfile, "r");
 
@@ -396,9 +395,7 @@ static void callbackFreeExtensionRAServer(SSL *ssl, unsigned int extType,
         const unsigned char *out,
         void *add_arg) {
     if (extType == EXT_RATLS) {
-
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
-
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
             free(ctx->outfile);
             free(ctx->hashfile);

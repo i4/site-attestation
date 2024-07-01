@@ -2,8 +2,6 @@
 
 set -eu
 
-echo I am: $(whoami)
-
 PUBKEY_PATH=/usr/local/nginx/pubkey.pem
 
 if [ ! -f pub.key ]; then
