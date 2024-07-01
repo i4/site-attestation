@@ -585,9 +585,7 @@ ngx_ssl_create(ngx_ssl_t *ssl, ngx_uint_t protocols, void *data)
 
     RA_SESSION_FLAG_INDEX = SSL_get_ex_new_index(0, "remote attestation session index", NULL, NULL, NULL);
     SSL_CTX_add_custom_ext(ssl->ctx
-                           , EXT_RATLS, SSL_EXT_CLIENT_HELLO | SSL_EXT_TLS1_2_SERVER_HELLO |
-                           SSL_EXT_TLS1_3_SERVER_HELLO |
-                           SSL_EXT_TLS1_3_CERTIFICATE
+                           , EXT_RATLS, SSL_EXT_CLIENT_HELLO | SSL_EXT_TLS1_3_CERTIFICATE
                            , callbackAddExtensionRAServer
                            , callbackFreeExtensionRAServer
                            , NULL
