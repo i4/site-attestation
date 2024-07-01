@@ -384,9 +384,10 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             *out = (unsigned char*) ctx->attestation_report_buffer;
             *outlen = written;
+            return 1;
         }
     }
-    return 1;
+    return 0;
 }
 
 
