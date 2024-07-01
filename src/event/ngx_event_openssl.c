@@ -344,13 +344,6 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
-            // create the file, snpguest doesn't do that on its own.
-            size_t len_touch = 6 + strlen(ctx->outfile) + 1;
-            char* touch_file = smalloc(len_touch);
-            snprintf(touch_file, len_touch, "touch %s", ctx->outfile);
-            ssystem(touch_file);
-            free(touch_file);
-
             pid_t pid = fork();
             if (pid == 0) { // child
 
@@ -441,12 +434,16 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
 
             size_t hex_len = 2 * inlen * sizeof(char);
 
-            prefix = "OUTFILE=reports/";
+            prefix = "OUTFILE=/usr/local/nginx/reports/";
             ctx->outfileenv = smalloc(hex_len + strlen(prefix) + sizeof(char));
             snprintf(ctx->outfileenv, strlen(prefix) + 1, "%s", prefix);
             ctx->outfile = ctx->outfileenv+8;
 
-            prefix = "HASHFILE=hashes/";
+            FILE* report = sfopen(ctx->outfile, "w+");
+            fflush(report);
+            fclose(report);
+
+            prefix = "HASHFILE=/usr/local/nginx/hashes/";
             ctx->hashfileenv = smalloc(hex_len + strlen(prefix) + sizeof(char));
             snprintf(ctx->hashfileenv, strlen(prefix) + 1, "%s", prefix);
             ctx->hashfile = ctx->hashfileenv+9;
