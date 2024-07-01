@@ -383,11 +383,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                 putenv(ctx->hashfileenv);
                 putenv(ctx->outfileenv);
 
-                int retsys = system("create-hash.sh");
-                if (retsys == -1 || errno != 0) {
-                    perror("system");
-                    exit(EXIT_FAILURE);
-                }
+                ssystem("./create-hash.sh");
 
                 printf("POST SYSTEM\n");
 

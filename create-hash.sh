@@ -1,5 +1,7 @@
 #!/bin/sh
 
+echo CREATING HASH
+
 if [ -f pub.key ]; then
   PUBKEY=$(cat pub.key)
 else
