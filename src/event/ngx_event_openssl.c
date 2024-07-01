@@ -377,7 +377,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             fclose(outfile);
 
-            printf("TLS::AttestationReport len: %lu\n", written);
+            printf("RATLS::AttestationReport len: %lu\n", written);
 
             *out = (unsigned char*) ctx->attestation_report_buffer;
             *outlen = written;
@@ -413,7 +413,6 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
         int *al, void *parseArg) {
     if (extType == EXT_RATLS) {
         if (context == SSL_EXT_CLIENT_HELLO) {
-            printf("Got ClientHello\n");
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
             if (!ctx) {
@@ -425,7 +424,6 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             size_t nonce_len = strlen(prefix) + inlen + 1;
             ctx->nonce = smalloc(nonce_len);
             snprintf(ctx->nonce, nonce_len, "NONCE=%s", in);
-            printf("%s\n", ctx->nonce);
 
             size_t hex_len = 2 * inlen * sizeof(char);
 
@@ -443,7 +441,6 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
                 snprintf(&(ctx->outfile[strlen(ctx->outfile)]), 3, "%02X", in[i]);
                 snprintf(&(ctx->hashfile[strlen(ctx->hashfile)]), 3, "%02X", in[i]);
             }
-            printf("Finished ClientHello\n");
 
             return 1;
         }
