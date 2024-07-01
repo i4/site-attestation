@@ -366,7 +366,6 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             system(touch_file);
 
-
             printf("PRE FORK\n");
 
             pid_t pid = fork();
@@ -470,6 +469,7 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             size_t nonce_len = strlen(prefix) + inlen + 1;
             ctx->nonce = smalloc(nonce_len);
             snprintf(ctx->nonce, nonce_len, "NONCE=%s", in);
+            printf("%s\n", ctx->nonce);
 
             size_t hex_len = 2 * inlen * sizeof(char);
 
