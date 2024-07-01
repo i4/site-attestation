@@ -340,11 +340,8 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                         size_t *outlen, X509 *x,
                                         size_t chainidx,
                                         int *al, void *addArg) {
-    printf("sending something\n");
     if (extType == EXT_RATLS) {
-        printf("sending something RATLS\n");
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
-            printf("sending certificate\n");
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
             pid_t pid = fork();
@@ -380,7 +377,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             fclose(outfile);
 
-            printf("TLS::ServerCertificate len: %lu\n", written);
+            printf("TLS::AttestationReport len: %lu\n", written);
 
             *out = (unsigned char*) ctx->attestation_report_buffer;
             *outlen = written;
