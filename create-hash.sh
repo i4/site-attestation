@@ -3,8 +3,8 @@
 if [ -f pub.key ]; then
   PUBKEY=$(cat pub.key)
 else
-  PUBKEY=$(openssl x509 -noout -pubkey -in /usr/local/nginx/cert.pem)
-  echo $PUBKEY > pub.key
+  openssl x509 -noout -pubkey -in /usr/local/nginx/cert.pem > pub.key
+  PUBKEY=$(cat pub.key)
 fi
 
 echo OUTFILE: $OUTFILE
