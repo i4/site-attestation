@@ -439,10 +439,6 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             snprintf(ctx->outfileenv, strlen(prefix) + 1, "%s", prefix);
             ctx->outfile = ctx->outfileenv+8;
 
-            FILE* report = sfopen(ctx->outfile, "w");
-            fflush(report);
-            fclose(report);
-
             prefix = "HASHFILE=/usr/local/nginx/hashes/";
             ctx->hashfileenv = smalloc(hex_len + strlen(prefix) + sizeof(char));
             snprintf(ctx->hashfileenv, strlen(prefix) + 1, "%s", prefix);
