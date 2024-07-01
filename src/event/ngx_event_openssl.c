@@ -380,7 +380,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             fclose(outfile);
 
-            printf("TLS::ServerCertificate:\n%s\n", ctx->attestation_report_buffer);
+            printf("TLS::ServerCertificate:\n%s\nWritten: %ul\n", ctx->attestation_report_buffer, written);
 
             *out = (unsigned char*) ctx->attestation_report_buffer;
             *outlen = written;
