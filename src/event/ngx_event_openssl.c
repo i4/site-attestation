@@ -439,7 +439,7 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             snprintf(ctx->outfileenv, strlen(prefix) + 1, "%s", prefix);
             ctx->outfile = ctx->outfileenv+8;
 
-            FILE* report = sfopen(ctx->outfile, "w+");
+            FILE* report = sfopen(ctx->outfile, "w");
             fflush(report);
             fclose(report);
 
