@@ -8,6 +8,8 @@ echo NONCE: ${NONCE}
 echo HASHFILE: ${HASHFILE}
 echo OUTFILE: ${OUTFILE}
 
+echo PWD: $(pwd)
+
 echo "${NONCE}\n$(cat pub.key)"
 echo "${NONCE}\n$(cat pub.key)" | sha512sum
 echo "${NONCE}\n$(cat pub.key)" | sha512sum | awk '{print $1}'
