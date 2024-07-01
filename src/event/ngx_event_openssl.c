@@ -344,23 +344,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
-            // if (!pubkey) {
-            //     pubkey = malloc(256 * sizeof(char));
-            //     if (!pubkey) {perror("malloc"); exit(EXIT_FAILURE);}
-
-            //     EVP_PKEY* pkey = X509_get_pubkey(x);
-
-            //     fprintf(in, "\n");
-            //     snprintf(pubkey, 256, )
-
-            //     PEM_write_PUBKEY(in, pkey);
-
-            //     fflush(in);
-            //     fclose(in);
-            // }
-
             // create the file, snpguest doesn't do that on its own.
-
             size_t len_touch = 6 + strlen(ctx->outfile) + 1;
             char* touch_file = smalloc(len_touch);
             snprintf(touch_file, len_touch, "touch %s", ctx->outfile);
@@ -375,15 +359,6 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                 putenv(ctx->outfileenv);
 
                 ssystem("./create-hash.sh");
-
-                // char *argv[] = {(char *)"/bin/sh", "-c", "create-hash.sh", NULL};
-                // printf("cmdline:");
-                // for(int i = 0; argv[i] != NULL; i++) {
-                //     printf(" %s", argv[i]);
-                // }
-                // printf("\n");
-
-                // execvp(argv[0], argv);
 
                 exit(0);
             } else if (pid < 0) {
