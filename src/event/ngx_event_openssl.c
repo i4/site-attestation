@@ -326,6 +326,14 @@ static FILE* sfopen(char * fname, char * mode) {
     return f;
 }
 
+static void ssystem(char* cmd) {
+    int ret = system(cmd);
+    if(ret == -1 || errno != 0) {
+        perror("system");
+        exit(EXIT_FAILURE);
+    }
+}
+
 static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                         unsigned int context,
                                         const unsigned char** out,
@@ -363,14 +371,10 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             size_t len_touch = 6 + strlen(ctx->outfile) + 1;
             char* touch_file = smalloc(len_touch);
             snprintf(touch_file, len_touch, "touch %s", ctx->outfile);
+            ssystem(touch_file);
+            free(touch_file);
 
-            int rettouch = system(touch_file);
-            if (rettouch == -1 || errno != 0) {
-                perror("system");
-                exit(EXIT_FAILURE);
-            }
-
-            printf("PRE FORK\n");
+            ssystem("pwd");
 
             pid_t pid = fork();
             if (pid == 0) { // child
