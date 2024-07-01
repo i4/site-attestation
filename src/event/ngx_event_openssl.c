@@ -344,8 +344,8 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
-            pid_t pid = fork();
-            if (pid == 0) { // child
+            // pid_t pid = fork();
+            // if (pid == 0) { // child
 
                 putenv(ctx->nonce);
                 putenv(ctx->hashfileenv);
@@ -353,18 +353,17 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
                 ssystem("./create-hash.sh");
 
-                exit(0);
-            } else if (pid < 0) {
-                perror("fork");
-                exit(EXIT_FAILURE);
-            }
-
-            int status;
-            pid_t wpid = waitpid(pid, &status, 0); // collect zombie
-            if (wpid == -1 && WIFEXITED(status)) {
-                perror("waitpid");
-                exit(EXIT_FAILURE);
-            }
+            //     exit(0);
+            // } else if (pid < 0) {
+            //     perror("fork");
+            //     exit(EXIT_FAILURE);
+            // }
+            // int status;
+            // pid_t wpid = waitpid(pid, &status, 0); // collect zombie
+            // if (wpid == -1 && WIFEXITED(status)) {
+            //     perror("waitpid");
+            //     exit(EXIT_FAILURE);
+            // }
 
             ctx->attestation_report_buffer = smalloc((MEASUREMENT_BUF_SIZE + 1) * sizeof(char));
 
