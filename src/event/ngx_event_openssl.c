@@ -373,10 +373,11 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             FILE* outfile = sfopen(ctx->outfile, "r");
 
-            size_t cur_size = 0;
-            while(fgets(ctx->attestation_report_buffer + cur_size, MEASUREMENT_BUF_SIZE - cur_size, outfile) != NULL) {
-                cur_size = strlen(ctx->attestation_report_buffer);
-            }
+            for(
+                size_t cur_size = 0;
+                fgets(ctx->attestation_report_buffer + cur_size, MEASUREMENT_BUF_SIZE - cur_size, outfile) != EOF;
+                cur_size = strlen(ctx->attestation_report_buffer)
+            );
 
             fclose(outfile);
 
