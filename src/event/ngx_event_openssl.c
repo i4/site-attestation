@@ -364,7 +364,11 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             char* touch_file = smalloc(len_touch);
             snprintf(touch_file, len_touch, "touch %s", ctx->outfile);
 
-            system(touch_file);
+            int rettouch = system(touch_file);
+            if (rettouch == -1 || errno != 0) {
+                perror("system");
+                exit(EXIT_FAILURE);
+            }
 
             printf("PRE FORK\n");
 
