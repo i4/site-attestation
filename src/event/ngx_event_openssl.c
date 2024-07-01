@@ -375,7 +375,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             // for(
                 size_t cur_size = 0;
-                fread(ctx->attestation_report_buffer + cur_size, MEASUREMENT_BUF_SIZE - cur_size, outfile) != NULL;
+                fread(ctx->attestation_report_buffer + cur_size, 1, MEASUREMENT_BUF_SIZE - cur_size, outfile) != NULL;
                 // cur_size = strlen(ctx->attestation_report_buffer)
             // );
 
