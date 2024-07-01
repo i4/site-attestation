@@ -10,11 +10,12 @@ echo NONCE: "${NONCE}"
 echo HASHFILE: "${HASHFILE}"
 echo OUTFILE: "${OUTFILE}"
 
+touch "${OUTFILE}"
+
 echo PWD: "$(pwd)"
 
 printf "%s\n%s" "${NONCE}" "$(cat pub.key)"
 printf "%s\n%s" "${NONCE}" "$(cat pub.key)" | sha512sum | awk '{print $1}' | xxd -r -p | tee "${HASHFILE}"
 
-touch "${OUTFILE}"
 
 /home/ubuntu/snpguest/target/debug/snpguest report "${OUTFILE}" "${HASHFILE}"
