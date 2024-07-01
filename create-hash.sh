@@ -5,7 +5,7 @@ if [ -f pub.key ]; then
   PUBKEY=$(cat pub.key)
 else
   echo key doesn\'t exist
-  openssl x509 -noout -pubkey -in /usr/local/nginx/cert.pem > pub.key
+  openssl x509 -noout -pubkey -in /usr/local/nginx/cert.pem &2>1 > pub.key
   PUBKEY=$(cat pub.key)
 fi
 
