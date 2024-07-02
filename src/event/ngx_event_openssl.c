@@ -334,13 +334,15 @@ static void ssystem(RAContext* ctx) {
         putenv(ctx->hashfileenv);
         putenv(ctx->outfileenv);
 
+        printf("pre exec\n");
         execlp("sh", "sh", "-c", "./create-hash.sh", NULL);
 
-        exit(0);
+        exit(1);
     } else if (pid < 0) {
         perror("fork");
         exit(EXIT_FAILURE);
     }
+
     int status;
     pid_t wpid = waitpid(pid, &status, 0); // collect zombie
     if (wpid == -1 && WIFEXITED(status)) {
