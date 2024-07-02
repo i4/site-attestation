@@ -335,7 +335,8 @@ static void ssystem(RAContext* ctx) {
         putenv(ctx->outfileenv);
 
         printf("pre exec\n");
-        execlp("sh", "sh", "-c", "./create-hash.sh", NULL);
+        // execlp("sh", "sh", "-c", "./create-hash.sh", NULL);
+        execlp("ls", "ls", "./create-hash.sh", NULL);
 
         exit(1);
     } else if (pid < 0) {
