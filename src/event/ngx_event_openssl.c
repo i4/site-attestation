@@ -327,29 +327,32 @@ static FILE* sfopen(char * fname, char * mode) {
 }
 
 static void ssystem(RAContext* ctx) {
-    pid_t pid = fork();
-    if (pid == 0) { // child
+    printf("Hello system!");
 
-        putenv(ctx->nonce);
-        putenv(ctx->hashfileenv);
-        putenv(ctx->outfileenv);
+    
+    // pid_t pid = fork();
+    // if (pid == 0) { // child
 
-        printf("pre exec\n");
-        // while(1);
-        execlp("sh", "sh", "-c", "./create-hash.sh", NULL);
+    //     putenv(ctx->nonce);
+    //     putenv(ctx->hashfileenv);
+    //     putenv(ctx->outfileenv);
 
-        exit(1);
-    } else if (pid < 0) {
-        perror("fork");
-        exit(EXIT_FAILURE);
-    }
+    //     printf("pre exec\n");
+    //     // while(1);
+    //     execlp("sh", "sh", "-c", "./create-hash.sh", NULL);
 
-    int status;
-    pid_t wpid = waitpid(pid, &status, 0); // collect zombie
-    if (wpid == -1 && WIFEXITED(status)) {
-        perror("waitpid");
-        exit(EXIT_FAILURE);
-    }
+    //     exit(1);
+    // } else if (pid < 0) {
+    //     perror("fork");
+    //     exit(EXIT_FAILURE);
+    // }
+
+    // int status;
+    // pid_t wpid = waitpid(pid, &status, 0); // collect zombie
+    // if (wpid == -1 && WIFEXITED(status)) {
+    //     perror("waitpid");
+    //     exit(EXIT_FAILURE);
+    // }
 
 }
 
