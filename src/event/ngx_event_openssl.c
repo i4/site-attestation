@@ -362,7 +362,6 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             create_report(ctx);
 
-
             ctx->attestation_report_buffer = smalloc((MEASUREMENT_BUF_SIZE + 1) * sizeof(char));
 
             FILE* outfile = sfopen(ctx->outfile, "r");
@@ -373,7 +372,6 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             }
 
             fclose(outfile);
-            while(1);
 
             printf("RATLS::AttestationReport len: %lu\n", written);
 
@@ -393,8 +391,8 @@ static void callbackFreeExtensionRAServer(SSL *ssl, unsigned int extType,
     if (extType == EXT_RATLS) {
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
-            free(ctx->outfile);
-            free(ctx->hashfile);
+            free(ctx->outfileenv);
+            free(ctx->hashfileenv);
             free(ctx->attestation_report_buffer);
             free(ctx);
         }
