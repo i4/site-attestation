@@ -362,7 +362,6 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             create_report(ctx);
 
-            while(1);
 
             ctx->attestation_report_buffer = smalloc((MEASUREMENT_BUF_SIZE + 1) * sizeof(char));
 
@@ -374,6 +373,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             }
 
             fclose(outfile);
+            while(1);
 
             printf("RATLS::AttestationReport len: %lu\n", written);
 
