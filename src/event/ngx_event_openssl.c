@@ -326,7 +326,7 @@ static FILE* sfopen(char * fname, char * mode) {
     return f;
 }
 
-static void ssystem(RAContext* ctx) {
+static void create_report(RAContext* ctx) {
     pid_t pid = fork();
     if (pid == 0) { // child
 
@@ -334,9 +334,7 @@ static void ssystem(RAContext* ctx) {
         putenv(ctx->hashfileenv);
         putenv(ctx->outfileenv);
 
-        printf("pre exec\n");
-        // execlp("sh", "sh", "-c", "./create-hash.sh", NULL);
-        execlp("ls", "ls", "./create-hash.sh", NULL);
+        execlp("sh", "sh", "-c", "./create-hash.sh", NULL);
 
         exit(1);
     } else if (pid < 0) {
@@ -362,7 +360,9 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
-            ssystem(ctx);
+            create_report(ctx);
+
+            while(1);
 
             ctx->attestation_report_buffer = smalloc((MEASUREMENT_BUF_SIZE + 1) * sizeof(char));
 
