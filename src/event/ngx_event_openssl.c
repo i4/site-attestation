@@ -323,7 +323,6 @@ static FILE* sfopen(char * fname, char * mode) {
     FILE* f = fopen(fname, mode);
     if (!f) {
         perror("fopen");
-        puts("Could not open file!!");
         exit(EXIT_FAILURE);
     }
     return f;
@@ -362,7 +361,6 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                         int *al, void *addArg) {
     if (extType == EXT_RATLS) {
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
-            printf("preparing server certificate\n");
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
             // append public key to challenge
@@ -385,11 +383,8 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             fclose(outfile);
 
-            printf("RATLS::AttestationReport len: %lu\n", written);
-
             *out = (unsigned char*) ctx->attestation_report_buffer;
             *outlen = written;
-            printf("prepared server certificate\n");
             return 1;
         }
     }
@@ -403,14 +398,12 @@ static void callbackFreeExtensionRAServer(SSL *ssl, unsigned int extType,
         void *add_arg) {
     if (extType == EXT_RATLS) {
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
-            printf("freeing memory\n");
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
             free(ctx->outfileenv);
             free(ctx->hashfileenv);
             free(ctx->challengefileenv);
             free(ctx->attestation_report_buffer);
             free(ctx);
-            printf("freed memory\n");
         }
     }
     return;
@@ -425,7 +418,6 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
         int *al, void *parseArg) {
     if (extType == EXT_RATLS) {
         if (context == SSL_EXT_CLIENT_HELLO) {
-            printf("Got client hello\n");
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
             if (!ctx) {
@@ -450,21 +442,11 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             snprintf(ctx->hashfileenv, strlen(prefix) + 1, "%s", prefix);
             ctx->hashfile = ctx->hashfileenv+9;
 
-            puts("set hashfiles");
-
             prefix = "CHALLENGE_PATH=/usr/local/nginx/challenges/";
             ctx->challengefileenv = smalloc(strlen(prefix) + hex_len + sizeof(char));
             snprintf(ctx->challengefileenv, strlen(prefix) + 1, "%s", prefix);
             ctx->challengefile = ctx->challengefileenv+15;
 
-            puts("set challenges");
-
-            FILE* challenge = sfopen(ctx->challengefile, "w");
-            puts("opened challengefile");
-            size_t written = fwrite(in, sizeof(char), inlen, challenge);
-            fclose(challenge);
-
-            puts("written nonce to challenge file");
 
             if (written != inlen) {  perror("fwrite"); exit(EXIT_FAILURE); }
 
@@ -474,8 +456,9 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
                 snprintf(&(ctx->challengefile[strlen(ctx->challengefile)]), 3, "%02X", in[i]);
             }
 
-
-            printf("handled client hello\n");
+            FILE* challenge = sfopen(ctx->challengefile, "w");
+            size_t written = fwrite(in, sizeof(char), inlen, challenge);
+            fclose(challenge);
 
             return 1;
         }
