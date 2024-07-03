@@ -323,6 +323,7 @@ static FILE* sfopen(char * fname, char * mode) {
     FILE* f = fopen(fname, mode);
     if (!f) {
         perror("fopen");
+        puts("Could not open file!!");
         exit(EXIT_FAILURE);
     }
     return f;
