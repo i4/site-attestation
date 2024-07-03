@@ -262,48 +262,4 @@ TlsExtensionService::HasHandlerObserver(PRUint16 extension, bool *_retval) {
     PR_Unlock(observersLock);
     return NS_OK;
 }
-
-// NS_IMETHODIMP   // TODO: remove // TODO will never work since its on the same thread
-// TlsExtensionService::CallWriterObserver(PRUint16 extension) {
-//     // PR_Lock(writerLock);
-//     // mozilla::dom::Promise* promise;
-//     // writerObservers[extension]->observer->OnWriteTlsExtension("test", "test", nsITlsExtensionObserver::SSLHandshakeType::ssl_hs_client_hello, 1000, &promise);
-
-//     auto* obsInfo = writerObservers[extension];
-//     // PR_Unlock(writerLock);
-
-//     // prepare task for main thread
-//     mozilla::Monitor monitor("ObservableRunnerMonitor");
-//     char* result = nullptr;
-//     RefPtr<TlsExtWriterObsRunnable> obsRun = new TlsExtWriterObsRunnable(
-//         nullptr, SSLHandshakeType::ssl_hs_client_hello, 1000,
-//         obsInfo, monitor,
-//         result
-//     );
-
-//     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-//             ("Created TlsExtWriterObsRunnable!\n"));
-
-//     nsresult rv = NS_DispatchToMainThread(obsRun);
-//     if (NS_FAILED(rv)) {
-//         MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-//             ("Dispatch failed!\n"));
-//         return rv;
-//     }
-
-//     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-//             ("Dispatched to main thread!\n"));
-
-//     {
-//         mozilla::MonitorAutoLock lock(monitor);
-//         while (!result) { // wait until the result is written
-//             MOZ_LOG(gTLSEXTLog, LogLevel::Debug, ("Waiting Loop!\n"));
-//             monitor.Wait();
-//         }
-//     }
-
-//     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-//             ("Result came back! [%s]\n", result));
-//     return NS_OK;
-// }
 }

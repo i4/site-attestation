@@ -72,14 +72,14 @@ interface nsITlsExtensionService : nsISupports {
 
   // from NSS seccommon.h
   // cenum SECStatus : 8 {
-  //   SECWouldBlock,
-  //   SECFailure,
-  //   SECSuccess
+    // SECWouldBlock,
+    // SECFailure,
+    // SECSuccess
   // };
   // enums with negative values seem to be illegal
-  const long SECWouldBlock = -2;
-  const long SECFailure = -1;
-  const long SECSuccess = 0;
+  // const long SECWouldBlock = -2;
+  // const long SECFailure = -1;
+  // const long SECSuccess = 0; // moved this to the extension schema
 
   nsITlsExtensionService_SSLExtensionSupport getExtensionSupport(in PRUint16 extension);
 

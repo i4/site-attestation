@@ -163,6 +163,18 @@
       "SOME_PROPERTY": {
         "value": 24,
         "description": "Description of my property here."
+      },
+      "SEC_WOULD_BLOCK": {
+        "value": -2,
+        "description": "..."
+      },
+      "SEC_FAILURE": {
+        "value": -1,
+        "description": "..."
+      },
+      "SEC_SUCCESS": {
+        "value": 0,
+        "description": "..."
       }
     }
   }
