@@ -11,13 +11,6 @@ typedef unsigned short PRUint16;
 
 [scriptable, uuid(d4834e5a-41db-4f97-a45d-d4dc53057553)]
 interface nsITlsExtensionObserver : nsISupports {
-  // from NSS seccommon.h
-  cenum SECStatus : 8 {
-    SECWouldBlock,
-    SECFailure,
-    SECSuccess
-  };
-
   // from NSS sslt.h
   cenum SSLHandshakeType : 16 {
     ssl_hs_hello_request = 0,
@@ -76,6 +69,17 @@ interface nsITlsExtensionService : nsISupports {
     ssl_ext_native      = 1,
     ssl_ext_native_only = 2
   };
+
+  // from NSS seccommon.h
+  // cenum SECStatus : 8 {
+  //   SECWouldBlock,
+  //   SECFailure,
+  //   SECSuccess
+  // };
+  // enums with negative values seem to be illegal
+  const long SECWouldBlock = -2;
+  const long SECFailure = -1;
+  const long SECSuccess = 0;
 
   nsITlsExtensionService_SSLExtensionSupport getExtensionSupport(in PRUint16 extension);
 

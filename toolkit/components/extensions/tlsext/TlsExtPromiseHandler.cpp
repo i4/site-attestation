@@ -44,8 +44,12 @@ TlsExtHandlerPromiseHandler::TlsExtHandlerPromiseHandler(mozilla::Monitor& monit
 
 void
 TlsExtHandlerPromiseHandler::ResolvedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv) {
-    // TODO implement
-    result = SECSuccess;
+    if (aValue.isNumber()) {
+        auto number = aValue.toNumber();
+        result = static_cast<SECStatus>(number);
+    } else {
+        result = SECSuccess;
+    }
     Notify();
 }
 

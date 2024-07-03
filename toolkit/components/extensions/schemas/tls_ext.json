@@ -68,7 +68,7 @@
           }
         ],
         "returns": {
-          "type": "string",
+          "type": "number",
           "description": "..."
         }
       },
@@ -151,7 +151,7 @@
       {
         "id": "SECStatus",
         "description": "...",
-        "type": "number",
+        "type": "string",
         "enum": [
           "SECWouldBlock",
           "SECFailure",
