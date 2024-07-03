@@ -366,6 +366,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             // append public key to challenge
             FILE* challenge = sfopen(ctx->challengefile, "a");
+            fputs("\n", challenge);
             EVP_PKEY* pkey = X509_get_pubkey(x);
             PEM_write_PUBKEY(challenge, pkey);
             fclose(challenge);
@@ -454,16 +455,17 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             ctx->challengefile = ctx->challengefileenv+15;
 
             FILE* challenge = sfopen(ctx->challengefile, "w");
+            size_t written = fwrite(in, 1, inlen, challenge);
+            fclose(challenge);
+
+            if (written != inlen) {  perror("fwrite"); exit(EXIT_FAILURE); }
 
             for (size_t i = 0; i < inlen; i++) {
                 snprintf(&(ctx->outfile[strlen(ctx->outfile)]), 3, "%02X", in[i]);
                 snprintf(&(ctx->hashfile[strlen(ctx->hashfile)]), 3, "%02X", in[i]);
                 snprintf(&(ctx->challengefile[strlen(ctx->challengefile)]), 3, "%02X", in[i]);
-                fputc(in[i], challenge);
             }
 
-            fputs("\n", challenge);
-            fclose(challenge);
 
             printf("handled client hello\n");
 
