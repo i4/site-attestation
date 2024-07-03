@@ -7,10 +7,6 @@ const SSLExtensionSupport = ["ssl_ext_none", "ssl_ext_native", "ssl_ext_native_o
 //   return new TlsExtensionObserver();
 // }
 
-function createHandleObserver() {
-  // TODO
-}
-
 function createWriteObserver(fire) {
   console.log("test callback");
   fire.async();
@@ -27,10 +23,26 @@ function createWriteObserver(fire) {
         return promise; // TODO parse return, pass arguments
       }
       return null; // TODO return Promise(null)?
-    },
-    async onHandleTlsExtension(tlsSessionId, url, messageType, data) {
-      return 1; // TODO return SECFailure, but how to access the ns Interface enums?
-    },
+    }
+  });
+  return observer;
+}
+
+function createHandleObserver(fire) {
+  let observer = new Object({
+    classID: Components.ID("{333ceae4-d28f-4b07-80de-3e3ff03327cc}"),
+    contractID: "@mozilla.org/extensions/tls-extension-handler-observer;1",
+    QueryInterface: ChromeUtils.generateQI(["nsITlsExtensionHandlerObserver"]),
+
+    onHandleTlsExtension(extension, tlsSessionId, url, messageType, data) {
+      console.log("handler called");
+      if (fire !== null) {
+        let promise = fire.async(messageType, data);
+        // promise.then(console.log);
+        return promise; // TODO parse return, pass arguments
+      }
+      return null; // TODO return Promise(null)?
+    }
   });
   return observer;
 }
@@ -66,11 +78,12 @@ this.tlsExt = class extends ExtensionAPI {
           context,
           name: "tlsExt.onHandleTlsExtension",
           register: (fire, urlPattern, extension) => {
-            const observer = createObserver();
-            observer.setHandleTlsExtensionCallback(fire);
-            Services.tlsExtensions.addObserver(urlPattern, extension, observer);
+            console.log(Services.tlsExtensions.hasHandlerObserver(extension));
+            const observer = createHandleObserver(fire);
+            Services.tlsExtensions.addHandlerObserver(urlPattern, extension, observer);
+            console.log(Services.tlsExtensions.hasHandlerObserver(extension));
             return () => {
-              Services.tlsExtensions.removeObserver(extension);
+              Services.tlsExtensions.removeHandlerObserver(extension);
             };
           }
         }).api(),
