@@ -453,7 +453,9 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
 
             prefix = "CHALLENGE_PATH=/usr/local/nginx/challenges/";
             ctx->challengefileenv = smalloc(strlen(prefix) + hex_len + sizeof(char));
+            puts("malloc'ed challengeenv");
             snprintf(ctx->challengefileenv, strlen(prefix) + 1, "%s", prefix);
+            puts("concated challengefilename");
             ctx->challengefile = ctx->challengefileenv+15;
 
             puts("set challenges");
