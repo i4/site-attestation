@@ -453,15 +453,14 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
 
             prefix = "CHALLENGE_PATH=/usr/local/nginx/challenges/";
             ctx->challengefileenv = smalloc(strlen(prefix) + hex_len + sizeof(char));
-            puts("malloc'ed challengeenv");
             snprintf(ctx->challengefileenv, strlen(prefix) + 1, "%s", prefix);
-            puts("concated challengefilename");
             ctx->challengefile = ctx->challengefileenv+15;
 
             puts("set challenges");
 
             FILE* challenge = sfopen(ctx->challengefile, "w");
-            size_t written = fwrite(in, 1, inlen, challenge);
+            puts("opened challengefile");
+            size_t written = fwrite(in, sizeof(char), inlen, challenge);
             fclose(challenge);
 
             puts("written nonce to challenge file");
