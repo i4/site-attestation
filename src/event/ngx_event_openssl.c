@@ -361,6 +361,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                         int *al, void *addArg) {
     if (extType == EXT_RATLS) {
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
+            printf("preparing server certificate\n");
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
             // append public key to challenge
@@ -386,6 +387,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             *out = (unsigned char*) ctx->attestation_report_buffer;
             *outlen = written;
+            printf("prepared server certificate\n");
             return 1;
         }
     }
@@ -399,11 +401,14 @@ static void callbackFreeExtensionRAServer(SSL *ssl, unsigned int extType,
         void *add_arg) {
     if (extType == EXT_RATLS) {
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
+            printf("freeing memory\n");
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
             free(ctx->outfileenv);
             free(ctx->hashfileenv);
+            free(ctx->challengefileenv);
             free(ctx->attestation_report_buffer);
             free(ctx);
+            printf("freed memory\n");
         }
     }
     return;
@@ -418,6 +423,7 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
         int *al, void *parseArg) {
     if (extType == EXT_RATLS) {
         if (context == SSL_EXT_CLIENT_HELLO) {
+            printf("Got client hello\n");
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
             if (!ctx) {
@@ -459,6 +465,7 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             fputs("\n", challenge);
             fclose(challenge);
 
+            printf("handled client hello\n");
 
             return 1;
         }
