@@ -446,11 +446,18 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             ctx->challengefileenv = smalloc(strlen(prefix) + hex_len + sizeof(char));
             snprintf(ctx->challengefileenv, strlen(prefix) + 1, "%s", prefix);
 
+            FILE* challenge = sfopen(ctx->challengefile, "w");
+
             for (size_t i = 0; i < inlen; i++) {
                 snprintf(&(ctx->outfile[strlen(ctx->outfile)]), 3, "%02X", in[i]);
                 snprintf(&(ctx->hashfile[strlen(ctx->hashfile)]), 3, "%02X", in[i]);
                 snprintf(&(ctx->challengefile[strlen(ctx->challengefile)]), 3, "%02X", in[i]);
+                fputc(in[i], challenge);
             }
+
+            fputs("\n", challenge);
+            fclose(challenge);
+
 
             return 1;
         }
