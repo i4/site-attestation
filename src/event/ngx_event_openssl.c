@@ -449,14 +449,20 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             snprintf(ctx->hashfileenv, strlen(prefix) + 1, "%s", prefix);
             ctx->hashfile = ctx->hashfileenv+9;
 
+            puts("set hashfiles");
+
             prefix = "CHALLENGE_PATH=/usr/local/nginx/challenges/";
             ctx->challengefileenv = smalloc(strlen(prefix) + hex_len + sizeof(char));
             snprintf(ctx->challengefileenv, strlen(prefix) + 1, "%s", prefix);
             ctx->challengefile = ctx->challengefileenv+15;
 
+            puts("set challenges");
+
             FILE* challenge = sfopen(ctx->challengefile, "w");
             size_t written = fwrite(in, 1, inlen, challenge);
             fclose(challenge);
+
+            puts("written nonce to challenge file");
 
             if (written != inlen) {  perror("fwrite"); exit(EXIT_FAILURE); }
 
