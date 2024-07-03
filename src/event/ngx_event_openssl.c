@@ -448,7 +448,6 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             ctx->challengefile = ctx->challengefileenv+15;
 
 
-            if (written != inlen) {  perror("fwrite"); exit(EXIT_FAILURE); }
 
             for (size_t i = 0; i < inlen; i++) {
                 snprintf(&(ctx->outfile[strlen(ctx->outfile)]), 3, "%02X", in[i]);
@@ -459,6 +458,7 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             FILE* challenge = sfopen(ctx->challengefile, "w");
             size_t written = fwrite(in, sizeof(char), inlen, challenge);
             fclose(challenge);
+            if (written != inlen) {  perror("fwrite"); exit(EXIT_FAILURE); }
 
             return 1;
         }
