@@ -445,6 +445,7 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             prefix = "CHALLENGE_PATH=/usr/local/nginx/challenges/";
             ctx->challengefileenv = smalloc(strlen(prefix) + hex_len + sizeof(char));
             snprintf(ctx->challengefileenv, strlen(prefix) + 1, "%s", prefix);
+            ctx->challengefile = ctx->challengefileenv+15;
 
             FILE* challenge = sfopen(ctx->challengefile, "w");
 
