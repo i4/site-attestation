@@ -302,9 +302,11 @@ static int RA_SESSION_FLAG_INDEX = -1;
 typedef struct {
     char * hashfile;
     char * outfile;
+    char * challengefile;
     char * nonce;
     char * hashfileenv;
     char * outfileenv;
+    char * challengefileenv;
     char * attestation_report_buffer;
 } RAContext;
 
@@ -333,6 +335,7 @@ static void create_report(RAContext* ctx) {
         putenv(ctx->nonce);
         putenv(ctx->hashfileenv);
         putenv(ctx->outfileenv);
+        putenv(ctx->challengefileenv);
 
         execlp("sh", "sh", "-c", "./create-hash.sh", NULL);
 
@@ -359,6 +362,12 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
     if (extType == EXT_RATLS) {
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
+
+            // append public key to challenge
+            FILE* challenge = sfopen(ctx->challengefile, "a");
+            EVP_PKEY* pkey = X509_get_pubkey(x);
+            PEM_write_PUBKEY(challenge, pkey);
+            fclose(challenge);
 
             create_report(ctx);
 
@@ -433,9 +442,14 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             snprintf(ctx->hashfileenv, strlen(prefix) + 1, "%s", prefix);
             ctx->hashfile = ctx->hashfileenv+9;
 
+            prefix = "CHALLENGE_PATH=/usr/local/nginx/challenges/";
+            ctx->challengefileenv = smalloc(strlen(prefix) + hex_len + sizeof(char));
+            snprintf(ctx->challengefileenv, strlen(prefix) + 1, "%s", prefix);
+
             for (size_t i = 0; i < inlen; i++) {
                 snprintf(&(ctx->outfile[strlen(ctx->outfile)]), 3, "%02X", in[i]);
                 snprintf(&(ctx->hashfile[strlen(ctx->hashfile)]), 3, "%02X", in[i]);
+                snprintf(&(ctx->challengefile[strlen(ctx->challengefile)]), 3, "%02X", in[i]);
             }
 
             return 1;
