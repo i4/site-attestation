@@ -294,6 +294,8 @@ ngx_ssl_init(ngx_log_t *log)
     return NGX_OK;
 }
 
+
+// RATLS DEFINITIONS
 static int RA_SESSION_FLAG_INDEX = -1;
 // static char* pubkey;
 #define EXT_RATLS 420
@@ -466,6 +468,8 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
     return 0;
 }
 
+// RATLS DEFINITIONS END
+
 
 ngx_int_t
 ngx_ssl_create(ngx_ssl_t *ssl, ngx_uint_t protocols, void *data)
@@ -601,6 +605,7 @@ ngx_ssl_create(ngx_ssl_t *ssl, ngx_uint_t protocols, void *data)
 
     SSL_CTX_set_info_callback(ssl->ctx, ngx_ssl_info_callback);
 
+    // RATLS INSTALL HANDLER
     RA_SESSION_FLAG_INDEX = SSL_get_ex_new_index(0, "remote attestation session index", NULL, NULL, NULL);
     SSL_CTX_add_custom_ext(ssl->ctx
                            , EXT_RATLS, SSL_EXT_CLIENT_HELLO | SSL_EXT_TLS1_3_CERTIFICATE
@@ -610,6 +615,7 @@ ngx_ssl_create(ngx_ssl_t *ssl, ngx_uint_t protocols, void *data)
                            , callbackParseExtensionRAServer
                            , NULL
                           );
+    // RATLS INSTALL HANDLER END
 
     return NGX_OK;
 }
