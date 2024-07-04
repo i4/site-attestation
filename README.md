@@ -11,7 +11,7 @@ Headings are tags that you can find in the source code.
 
 ### RATLS DEFINITIONS
 
-This defines constans, a data structure and the handler functions up until `RATLS DEFINITIONS END`.
+This defines constants, a data structure and the handler functions up until `RATLS DEFINITIONS END`.
 
 ### RATLS INSTALL HANDLER
 
