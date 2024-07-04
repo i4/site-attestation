@@ -1,8 +1,6 @@
 
 default:	build
 
-NGX_DEBUG = 1
-
 clean:
 	rm -rf Makefile objs
 

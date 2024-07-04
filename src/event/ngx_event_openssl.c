@@ -8,6 +8,7 @@
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <ngx_event.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 
@@ -293,9 +294,64 @@ ngx_ssl_init(ngx_log_t *log)
     return NGX_OK;
 }
 
-static char* cb_add_buffer;
+static int RA_SESSION_FLAG_INDEX = -1;
+// static char* pubkey;
 #define EXT_RATLS 420
-#define MEASUREMENT_BUF_SIZE UINT8_MAX
+#define MEASUREMENT_BUF_SIZE UINT16_MAX
+
+typedef struct {
+    char * hashfile;
+    char * outfile;
+    char * challengefile;
+    char * nonce;
+    char * hashfileenv;
+    char * outfileenv;
+    char * challengefileenv;
+    char * attestation_report_buffer;
+} RAContext;
+
+static char* smalloc(size_t s) {
+    char *ret = malloc(s);
+    if (!ret) {
+        perror("malloc");
+        exit(EXIT_FAILURE);
+    }
+    return ret;
+}
+
+static FILE* sfopen(char * fname, char * mode) {
+    FILE* f = fopen(fname, mode);
+    if (!f) {
+        perror("fopen");
+        exit(EXIT_FAILURE);
+    }
+    return f;
+}
+
+static void create_report(RAContext* ctx) {
+    pid_t pid = fork();
+    if (pid == 0) { // child
+
+        putenv(ctx->nonce);
+        putenv(ctx->hashfileenv);
+        putenv(ctx->outfileenv);
+        putenv(ctx->challengefileenv);
+
+        execlp("sh", "sh", "-c", "./create-hash.sh", NULL);
+
+        exit(1);
+    } else if (pid < 0) {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
+
+    int status;
+    pid_t wpid = waitpid(pid, &status, 0); // collect zombie
+    if (wpid == -1 && WIFEXITED(status)) {
+        perror("waitpid");
+        exit(EXIT_FAILURE);
+    }
+}
 
 static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                         unsigned int context,
@@ -304,86 +360,51 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                         size_t chainidx,
                                         int *al, void *addArg) {
     if (extType == EXT_RATLS) {
+        if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
+            RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
-        if (context == SSL_EXT_TLS1_3_SERVER_HELLO) {
-            cb_add_buffer = malloc(17 * sizeof(char));
-            if (!cb_add_buffer) {
-                perror("malloc");
-                exit(EXIT_FAILURE);
+            // append public key to challenge
+            FILE* challenge = sfopen(ctx->challengefile, "a");
+            fputs("\n", challenge);
+            EVP_PKEY* pkey = X509_get_pubkey(x);
+            PEM_write_PUBKEY(challenge, pkey);
+            fclose(challenge);
+
+            create_report(ctx);
+
+            ctx->attestation_report_buffer = smalloc((MEASUREMENT_BUF_SIZE + 1) * sizeof(char));
+
+            FILE* outfile = sfopen(ctx->outfile, "r");
+
+            size_t written = fread(ctx->attestation_report_buffer, 1, MEASUREMENT_BUF_SIZE, outfile);
+            if(written == 0 && !feof(outfile)) {
+                perror("fread"); exit(EXIT_FAILURE);
             }
 
-            strcpy(cb_add_buffer, "TLS::ServerHello");
-            printf("TLS::ServerHello\n");
-            *out = (unsigned char*) cb_add_buffer;
-            *outlen = 17;
-        } else if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
+            fclose(outfile);
 
-            cb_add_buffer = malloc(17 * sizeof(char));
-            if (!cb_add_buffer) {
-                perror("malloc");
-                exit(EXIT_FAILURE);
-            }
-
-            // an array that will hold two file descriptors
-            int fds[2];
-            // populates fds with two file descriptors
-            pipe(fds);
-            // create child process that is a clone of the parent
-            pid_t pid = fork();
-
-            if (pid == 0) { // child
-                dup2(fds[1], STDOUT_FILENO);
-
-                // file descriptor no longer needed in child since stdout is a copy
-                close(fds[1]);
-
-                close(fds[0]);
-
-                char *argv[] = {(char *)"openssl", "rand", "-base64", "16", NULL};
-                execvp(argv[0], argv);
-
-                exit(0);
-            } else if (pid < 0) {
-                perror("fork");
-                exit(EXIT_FAILURE);
-            }
-
-            // if we reach here, we are in parent process
-            // file descriptor unused in parent
-            close(fds[1]);
-            cb_add_buffer = malloc(MEASUREMENT_BUF_SIZE * sizeof(char));
-            if (!cb_add_buffer) {
-                perror("malloc");
-                exit(EXIT_FAILURE);
-            }
-
-            read(fds[0], cb_add_buffer, MEASUREMENT_BUF_SIZE - 1);
-
-            // send EOF so child can continue (child blocks until all input has been processed):
-            close(fds[0]);
-            int status;
-            pid_t wpid = waitpid(pid, &status, 0); // collect zombie
-            if (wpid != pid && WIFEXITED(status)) {
-                perror("waitpid");
-                exit(EXIT_FAILURE);
-            }
-
-            printf("TLS::ServerCertificate: %s\n", cb_add_buffer);
-
-            *out = (unsigned char*) cb_add_buffer;
-            *outlen = 17;
+            *out = (unsigned char*) ctx->attestation_report_buffer;
+            *outlen = written;
+            return 1;
         }
     }
-    return 1;
+    return 0;
 }
 
 
-static void callbackFreeExtensionRAServer(SSL *s, unsigned int extType,
+static void callbackFreeExtensionRAServer(SSL *ssl, unsigned int extType,
         unsigned int context,
         const unsigned char *out,
         void *add_arg) {
     if (extType == EXT_RATLS) {
-        free(cb_add_buffer);
+        if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
+            RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
+            free(ctx->outfileenv);
+            free(ctx->hashfileenv);
+            free(ctx->challengefileenv);
+            free(ctx->attestation_report_buffer);
+            free(ctx);
+        }
     }
     return;
 }
@@ -396,9 +417,53 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
         size_t chainidx,
         int *al, void *parseArg) {
     if (extType == EXT_RATLS) {
-        printf("%s\n", in);
+        if (context == SSL_EXT_CLIENT_HELLO) {
+            RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
+
+            if (!ctx) {
+                ctx = (RAContext*) smalloc(sizeof(RAContext));
+                SSL_set_ex_data(ssl, RA_SESSION_FLAG_INDEX, ctx);
+            }
+
+            char * prefix = "NONCE=";
+            size_t nonce_len = strlen(prefix) + inlen + 1;
+            ctx->nonce = smalloc(nonce_len);
+            snprintf(ctx->nonce, nonce_len, "NONCE=%s", in);
+
+            size_t hex_len = 2 * inlen * sizeof(char);
+
+            prefix = "OUTFILE=/usr/local/nginx/reports/";
+            ctx->outfileenv = smalloc(hex_len + strlen(prefix) + sizeof(char));
+            snprintf(ctx->outfileenv, strlen(prefix) + 1, "%s", prefix);
+            ctx->outfile = ctx->outfileenv+8;
+
+            prefix = "HASHFILE=/usr/local/nginx/hashes/";
+            ctx->hashfileenv = smalloc(hex_len + strlen(prefix) + sizeof(char));
+            snprintf(ctx->hashfileenv, strlen(prefix) + 1, "%s", prefix);
+            ctx->hashfile = ctx->hashfileenv+9;
+
+            prefix = "CHALLENGE_PATH=/usr/local/nginx/challenges/";
+            ctx->challengefileenv = smalloc(strlen(prefix) + hex_len + sizeof(char));
+            snprintf(ctx->challengefileenv, strlen(prefix) + 1, "%s", prefix);
+            ctx->challengefile = ctx->challengefileenv+15;
+
+
+
+            for (size_t i = 0; i < inlen; i++) {
+                snprintf(&(ctx->outfile[strlen(ctx->outfile)]), 3, "%02X", in[i]);
+                snprintf(&(ctx->hashfile[strlen(ctx->hashfile)]), 3, "%02X", in[i]);
+                snprintf(&(ctx->challengefile[strlen(ctx->challengefile)]), 3, "%02X", in[i]);
+            }
+
+            FILE* challenge = sfopen(ctx->challengefile, "w");
+            size_t written = fwrite(in, sizeof(char), inlen, challenge);
+            fclose(challenge);
+            if (written != inlen) {  perror("fwrite"); exit(EXIT_FAILURE); }
+
+            return 1;
+        }
     }
-    return 1;
+    return 0;
 }
 
 
@@ -536,11 +601,9 @@ ngx_ssl_create(ngx_ssl_t *ssl, ngx_uint_t protocols, void *data)
 
     SSL_CTX_set_info_callback(ssl->ctx, ngx_ssl_info_callback);
 
-    // TODO: SSL_CTX_add_custom_ex();
+    RA_SESSION_FLAG_INDEX = SSL_get_ex_new_index(0, "remote attestation session index", NULL, NULL, NULL);
     SSL_CTX_add_custom_ext(ssl->ctx
-                           , EXT_RATLS, SSL_EXT_CLIENT_HELLO | SSL_EXT_TLS1_2_SERVER_HELLO |
-                           SSL_EXT_TLS1_3_SERVER_HELLO |
-                           SSL_EXT_TLS1_3_CERTIFICATE
+                           , EXT_RATLS, SSL_EXT_CLIENT_HELLO | SSL_EXT_TLS1_3_CERTIFICATE
                            , callbackAddExtensionRAServer
                            , callbackFreeExtensionRAServer
                            , NULL
