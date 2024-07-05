@@ -8,8 +8,6 @@ const SSLExtensionSupport = ["ssl_ext_none", "ssl_ext_native", "ssl_ext_native_o
 // }
 
 function createWriteObserver(fire) {
-  console.log("test callback");
-  fire.async();
   let observer = new Object({
     classID: Components.ID("{62d09cd3-c717-4cff-a04f-4e0facc11cd5}"),
     contractID: "@mozilla.org/extensions/tls-extension-writer-observer;1",
@@ -18,7 +16,8 @@ function createWriteObserver(fire) {
     onWriteTlsExtension(extension, tlsSessionId, url, messageType, maxDataLen) {
       console.log("writer called");
       if (fire !== null) {
-        let promise = fire.async();
+        console.log(messageType);
+        let promise = fire.async(messageType, maxDataLen, { "sessionId": tlsSessionId, "url": url, "extension": extension });
         // promise.then(console.log);
         return promise; // TODO parse return, pass arguments
       }
@@ -37,7 +36,7 @@ function createHandleObserver(fire) {
     onHandleTlsExtension(extension, tlsSessionId, url, messageType, data) {
       console.log("handler called");
       if (fire !== null) {
-        let promise = fire.async(messageType, data);
+        let promise = fire.async(messageType, data, { "sessionId": tlsSessionId, "url": url, "extension": extension });
         // promise.then(console.log);
         return promise; // TODO parse return, pass arguments
       }

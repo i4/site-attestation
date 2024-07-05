@@ -146,7 +146,7 @@ TlsExtensionService::InstallObserverHooks(PRFileDesc* sslSock, const char* host)
 
         if (SECSuccess != SSL_InstallExtensionHooks(
             sslSock, extension,
-            writerFunc, obsInfo,
+            writerFunc, obsInfo,    // TODO simply copy the struct for this
             handlerFunc, obsInfo)) {
 
                 MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
@@ -180,9 +180,16 @@ TlsExtensionService::GetOrCreateObserver(PRUint16 extension) {
     if (it != observers.end()) {
         // Key exists, return the associated pointer.
         PR_Unlock(observersLock);
+
+        MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Found existing obsInfo!\n"));
+
         return it->second;
     }
     PR_Unlock(observersLock);
+
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Found no existing obsInfo!\n"));
 
     return new TlsExtObserverInfo(extension);
 }

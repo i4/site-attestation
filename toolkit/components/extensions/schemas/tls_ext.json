@@ -82,6 +82,10 @@
             "$ref": "SSLHandshakeType"
           },
           {
+            "name": "maxLen",
+            "type": "number"
+          },
+          {
             "name": "details",
             "$ref": "ExtensionDetails"
           }
