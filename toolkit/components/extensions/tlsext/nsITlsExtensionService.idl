@@ -38,6 +38,7 @@ interface nsITlsExtensionObserver : nsISupports {
 
 [scriptable, function, uuid(d2f656a4-6bc7-4d2e-92f2-d3a6ad05b0d1)]
 interface nsITlsExtensionWriterObserver : nsITlsExtensionObserver {
+  // Promise<string>
   Promise onWriteTlsExtension(  in PRUint16 extension,  // TODO return value should be unsigned
                                 in string tlsSessionId,
                                 in string url,
@@ -47,6 +48,7 @@ interface nsITlsExtensionWriterObserver : nsITlsExtensionObserver {
 
 [scriptable, function, uuid(09be1269-301d-469d-99d9-bf9721571aa9)]
 interface nsITlsExtensionHandlerObserver : nsITlsExtensionObserver {
+  // Promise<SECStatus>
   Promise onHandleTlsExtension( in PRUint16 extension,
                                 in string tlsSessionId,
                                 in string url,
@@ -69,17 +71,6 @@ interface nsITlsExtensionService : nsISupports {
     ssl_ext_native      = 1,
     ssl_ext_native_only = 2
   };
-
-  // from NSS seccommon.h
-  // cenum SECStatus : 8 {
-    // SECWouldBlock,
-    // SECFailure,
-    // SECSuccess
-  // };
-  // enums with negative values seem to be illegal
-  // const long SECWouldBlock = -2;
-  // const long SECFailure = -1;
-  // const long SECSuccess = 0; // moved this to the extension schema
 
   nsITlsExtensionService_SSLExtensionSupport getExtensionSupport(in PRUint16 extension);
 

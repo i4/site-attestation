@@ -32,46 +32,14 @@
             "type": "integer",
             "description": "..."
           }
-        ]
+        ],
+        "returns": {
+          "$ref": "SSLExtensionSupport",
+          "description": "..."
+        }
       }
     ],
     "events": [
-      {
-        "name": "onHandleTlsExtension",
-        "type": "function",
-        "async": false,
-        "description": "...",
-        "parameters": [
-          {
-            "name": "messageSSLHandshakeType",
-            "$ref": "SSLHandshakeType"
-          },
-          {
-            "name": "data",
-            "type": "string"
-          },
-          {
-            "name": "details",
-            "$ref": "ExtensionDetails"
-          }
-        ],
-        "extraParameters": [
-          {
-            "name": "urlPattern",
-            "description": "...",
-            "type": "string"
-          },
-          {
-            "name": "extension",
-            "description": "...",
-            "type": "number"
-          }
-        ],
-        "returns": {
-          "type": "number",
-          "description": "..."
-        }
-      },
       {
         "name": "onWriteTlsExtension",
         "type": "function",
@@ -104,6 +72,41 @@
         ],
         "returns": {
           "type": "string",
+          "description": "..."
+        }
+      },
+      {
+        "name": "onHandleTlsExtension",
+        "type": "function",
+        "description": "...",
+        "parameters": [
+          {
+            "name": "messageSSLHandshakeType",
+            "$ref": "SSLHandshakeType"
+          },
+          {
+            "name": "data",
+            "type": "string"
+          },
+          {
+            "name": "details",
+            "$ref": "ExtensionDetails"
+          }
+        ],
+        "extraParameters": [
+          {
+            "name": "urlPattern",
+            "description": "...",
+            "type": "string"
+          },
+          {
+            "name": "extension",
+            "description": "...",
+            "type": "number"
+          }
+        ],
+        "returns": {
+          "$ref": "SECStatus",
           "description": "..."
         }
       }
@@ -161,25 +164,18 @@
           "SECFailure",
           "SECSuccess"
         ]
+      },
+      {
+        "id": "SSLExtensionSupport",
+        "description": "...",
+        "type": "string",
+        "enum": [
+          "ssl_ext_none",
+          "ssl_ext_native",
+          "ssl_ext_native_only"
+        ]
       }
     ],
-    "properties": {
-      "SOME_PROPERTY": {
-        "value": 24,
-        "description": "Description of my property here."
-      },
-      "SEC_WOULD_BLOCK": {
-        "value": -2,
-        "description": "..."
-      },
-      "SEC_FAILURE": {
-        "value": -1,
-        "description": "..."
-      },
-      "SEC_SUCCESS": {
-        "value": 0,
-        "description": "..."
-      }
-    }
+    "properties": {}
   }
 ]
