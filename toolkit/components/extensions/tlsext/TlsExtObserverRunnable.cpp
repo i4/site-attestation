@@ -8,6 +8,12 @@ extern LazyLogModule gTLSEXTLog;
 NS_IMPL_ISUPPORTS(TlsExtWriterObsRunnable, nsIRunnable)
 NS_IMPL_ISUPPORTS(TlsExtHandlerObsRunnable, nsIRunnable)
 
+std::string PtrToStr(const void* ptr) {
+    std::stringstream s;
+    s << ptr;
+    return s.str();
+}
+
 TlsExtWriterObsRunnable::TlsExtWriterObsRunnable(
         PRFileDesc *fd, SSLHandshakeType messageType, unsigned int maxLen, // obsInfo is (callback)arg
         TlsExtObserverInfo* obsInfo, mozilla::Monitor& monitor,
@@ -28,7 +34,7 @@ TlsExtWriterObsRunnable::Run() {
     mozilla::dom::Promise* promise;
     nsresult rv = obsInfo->writerObserver->OnWriteTlsExtension(
         obsInfo->extension,
-        "sessionID",
+        PtrToStr(fd).c_str(),   // TODO does this leak?
         obsInfo->hostname,        // TODO this is wrong
         (nsITlsExtensionObserver::SSLHandshakeType) messageType,
         maxLen,
@@ -75,7 +81,7 @@ TlsExtHandlerObsRunnable::Run() {
     mozilla::dom::Promise* promise;
     nsresult rv = obsInfo->handlerObserver->OnHandleTlsExtension(
         obsInfo->extension,
-        "sessionID",
+        PtrToStr(fd).c_str(),   // TODO does this leak?
         obsInfo->hostname,  // TODO this is wrong
         (nsITlsExtensionObserver::SSLHandshakeType) messageType,
         (const char*) data,     // TODO C++ style cast
