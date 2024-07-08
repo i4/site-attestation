@@ -13,7 +13,8 @@
     "webRequestBlocking",
     "activeTab",
     "scripting",
-    "tabs"
+    "tabs",
+    "tlsExt"
   ],
 
   "host_permissions": ["https://*/*"],
