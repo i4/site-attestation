@@ -22,26 +22,34 @@ TlsExtensionService::GetSingleton() {
     return do_AddRef(singleton);
 }
 
+// cleans up a callback arg after a handshake finished
+void postHandshakeCleanup(SSLHandshakeType messageType, TlsExtHookArg* callbackArg) {
+    if (messageType != SSLHandshakeType::ssl_hs_finished) return;
+    // time to clean up
+    delete callbackArg;
+}
+
 /* static */
 PRBool
 TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType messageType, PRUint8 *data, unsigned int *len, unsigned int maxLen, void *callbackArg) {
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Writer Hook was called!\n"));
 
-    auto* obsInfo = static_cast<TlsExtObserverInfo*>(callbackArg);
+    auto* hookArg = static_cast<TlsExtHookArg*>(callbackArg);
+    auto* obsInfo = hookArg->obsInfo;
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Writer Hook static cast went through!\n"));
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Writer Hook host is known! [%s]\n", obsInfo->hostname)); // TODO hostname should not written to the struct anymore
+            ("Writer Hook host is known! [%s]\n", hookArg->hostName)); // TODO hostname should not written to the struct anymore
 
 
     // prepare task for main thread
     mozilla::Monitor monitor("ObservableRunnerMonitor");
     char* result = nullptr;
     RefPtr<TlsExtWriterObsRunnable> obsRun = new TlsExtWriterObsRunnable(
-        fd, messageType, maxLen,
+        fd, messageType, maxLen, hookArg,
         obsInfo, monitor,
         result
     );
@@ -76,19 +84,22 @@ TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType m
     strcpy((char*) data, result);
     *len = dataLen;
 
+    postHandshakeCleanup(messageType, hookArg);
+
     return PR_TRUE;
 }
 
 /* static */
 SECStatus
 TlsExtensionService::onNSS_SSLExtensionHandler(PRFileDesc *fd, SSLHandshakeType messageType, const PRUint8 *data, unsigned int len, SSLAlertDescription *alert, void *callbackArg) {
-    auto* obsInfo = static_cast<TlsExtObserverInfo*>(callbackArg);
+    auto* hookArg = static_cast<TlsExtHookArg*>(callbackArg);
+    auto* obsInfo = hookArg->obsInfo;
 
     // prepare task for main thread
     mozilla::Monitor monitor("ObservableRunnerMonitor");
     SECStatus result;
     RefPtr<TlsExtHandlerObsRunnable> obsRun = new TlsExtHandlerObsRunnable(
-        fd, messageType, data, len, alert,
+        fd, messageType, data, len, alert, hookArg,
         obsInfo, monitor,
         result
     );
@@ -111,7 +122,6 @@ TlsExtensionService::TlsExtensionService() {
 
 TlsExtensionService::~TlsExtensionService() {
     PR_DestroyLock(observersLock);
-    // TODO free all Observers, patterns etc
 }
 
 PRBool noop_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType message, PRUint8 *data, unsigned int *len, unsigned int maxLen, void *arg) {
@@ -145,10 +155,13 @@ TlsExtensionService::InstallObserverHooks(PRFileDesc* sslSock, const char* host)
 
         // if (writerFunc == noop_SSLExtensionWriter && handlerFunc == noop_SSLExtensionHandler) continue; // TODO should never happen
 
+        // gets freed in postHandshakeCleanup after a handshake finished
+        auto* hookArg = new TlsExtHookArg {.obsInfo = obsInfo, .hostName = host};
+
         if (SECSuccess != SSL_InstallExtensionHooks(
             sslSock, extension,
-            writerFunc, obsInfo,    // TODO simply copy the struct for this
-            handlerFunc, obsInfo)) {
+            writerFunc, hookArg,    // TODO simply copy the struct for this
+            handlerFunc, hookArg)) {
 
                 MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
                     ("SSL_InstallExtensionHooks failed!\n"));
@@ -156,7 +169,6 @@ TlsExtensionService::InstallObserverHooks(PRFileDesc* sslSock, const char* host)
                 return SECStatus::SECFailure;
 
         }
-        obsInfo->hostname = const_cast<char*>(host); // TODO: this is wrong
     }
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
@@ -192,6 +204,7 @@ TlsExtensionService::GetOrCreateObserver(PRUint16 extension) {
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Found no existing obsInfo!\n"));
 
+    // gets freed in RemoveObserver
     return new TlsExtObserverInfo(extension);
 }
 
@@ -202,7 +215,7 @@ TlsExtensionService::AddWriterObserver(const char * urlPattern, PRUint16 extensi
     NS_ADDREF(observer);
 
     auto* obsInfo = GetOrCreateObserver(extension);
-    obsInfo->writerUrlPattern = new std::regex(urlPattern);
+    obsInfo->writerUrlPattern = new std::regex(urlPattern);     // gets freed in RemoveObserver
     obsInfo->writerObserver = observer;
 
     PR_Lock(observersLock);
@@ -218,7 +231,7 @@ TlsExtensionService::AddHandlerObserver(const char * urlPattern, PRUint16 extens
     NS_ADDREF(observer);
 
     auto* obsInfo = GetOrCreateObserver(extension);
-    obsInfo->handlerUrlPattern = new std::regex(urlPattern);
+    obsInfo->handlerUrlPattern = new std::regex(urlPattern);    // gets freed in RemoveObserver
     obsInfo->handlerObserver = observer;
 
     PR_Lock(observersLock);

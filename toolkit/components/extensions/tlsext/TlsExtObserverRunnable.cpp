@@ -15,10 +15,10 @@ std::string PtrToStr(const void* ptr) {
 }
 
 TlsExtWriterObsRunnable::TlsExtWriterObsRunnable(
-        PRFileDesc *fd, SSLHandshakeType messageType, unsigned int maxLen, // obsInfo is (callback)arg
+        PRFileDesc *fd, SSLHandshakeType messageType, unsigned int maxLen, TlsExtHookArg* callbackArg,
         TlsExtObserverInfo* obsInfo, mozilla::Monitor& monitor,
         char*& result):
-    TlsExtObserverRunnable(fd, messageType, obsInfo, monitor),
+    TlsExtObserverRunnable(fd, messageType, callbackArg, obsInfo, monitor),
     maxLen(maxLen),
     result(result) {
         MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
@@ -30,12 +30,21 @@ TlsExtWriterObsRunnable::Run() {
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Reached WriterObsRunnable!\n"));
 
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("ID is: %s\n", PtrToStr(fd).c_str()));
+
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("CallbackArg is: %p\n", callbackArg));
+
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Hostname is: %s\n", callbackArg->hostName));
+
     // run the actual callback
     mozilla::dom::Promise* promise;
     nsresult rv = obsInfo->writerObserver->OnWriteTlsExtension(
         obsInfo->extension,
         PtrToStr(fd).c_str(),   // TODO does this leak?
-        obsInfo->hostname,        // TODO this is wrong
+        callbackArg->hostName,
         (nsITlsExtensionObserver::SSLHandshakeType) messageType,
         maxLen,
         &promise);
@@ -66,10 +75,10 @@ TlsExtWriterObsRunnable::Run() {
 }
 
 TlsExtHandlerObsRunnable::TlsExtHandlerObsRunnable(
-        PRFileDesc *fd, SSLHandshakeType messageType, const PRUint8 *data, unsigned int len, SSLAlertDescription *alert, // obsInfo is (callback)arg
+        PRFileDesc *fd, SSLHandshakeType messageType, const PRUint8 *data, unsigned int len, SSLAlertDescription *alert, TlsExtHookArg* callbackArg,
         TlsExtObserverInfo* obsInfo, mozilla::Monitor& monitor,
         SECStatus& result):
-    TlsExtObserverRunnable(fd, messageType, obsInfo, monitor),
+    TlsExtObserverRunnable(fd, messageType, callbackArg, obsInfo, monitor),
     data(data),
     len(len),
     alert(alert),
@@ -82,7 +91,7 @@ TlsExtHandlerObsRunnable::Run() {
     nsresult rv = obsInfo->handlerObserver->OnHandleTlsExtension(
         obsInfo->extension,
         PtrToStr(fd).c_str(),   // TODO does this leak?
-        obsInfo->hostname,  // TODO this is wrong
+        callbackArg->hostName,
         (nsITlsExtensionObserver::SSLHandshakeType) messageType,
         (const char*) data,     // TODO C++ style cast
         &promise);
