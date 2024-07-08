@@ -231,7 +231,13 @@ void
 TlsExtensionService::RemoveObserver(PRUint16 extension) {
     PR_Lock(observersLock);
     auto* obsInfo = observers[extension];
-    if (obsInfo->writerObserver == nullptr && obsInfo->handlerObserver) observers.erase(extension);
+    if (obsInfo->writerObserver == nullptr && obsInfo->handlerObserver == nullptr) {
+        // free up any storage associated with the observer
+        delete obsInfo->writerUrlPattern;
+        delete obsInfo->handlerUrlPattern;
+        delete obsInfo;
+        observers.erase(extension);
+    }
     PR_Unlock(observersLock);
 }
 
