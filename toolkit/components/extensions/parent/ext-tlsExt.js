@@ -1,49 +1,28 @@
 const SSLExtensionSupport = ["ssl_ext_none", "ssl_ext_native", "ssl_ext_native_only"];
 
-// function createObserver() {
-//   // const tlsExtensionObserverCID = "@mozilla.org/extensions/tls-extension-observer;1";
-//   // return Cc[tlsExtensionObserverCID].createInstance(Ci.nsITlsExtensionObserver);
-//   // return Services.tlsExtensionsObserver.QueryInterface(Ci.nsITlsExtensionObserver);
-//   return new TlsExtensionObserver();
-// }
-
 function createWriteObserver(fire) {
-  let observer = new Object({
-    classID: Components.ID("{62d09cd3-c717-4cff-a04f-4e0facc11cd5}"),
-    contractID: "@mozilla.org/extensions/tls-extension-writer-observer;1",
-    QueryInterface: ChromeUtils.generateQI(["nsITlsExtensionWriterObserver"]),
-
-    onWriteTlsExtension(extension, tlsSessionId, url, messageType, maxDataLen) {
-      console.log("writer called");
-      if (fire !== null) {
-        console.log(messageType);
-        let promise = fire.async(messageType, maxDataLen, { "sessionId": tlsSessionId, "url": url, "extension": extension });
-        // promise.then(console.log);
-        return promise; // TODO parse return, pass arguments
-      }
-      return null; // TODO return Promise(null)?
+  return function (extension, tlsSessionId, url, messageType, maxDataLen) {
+    console.log("writer called");
+    if (fire !== null) {
+      console.log(messageType);
+      let promise = fire.async(messageType, maxDataLen, { "sessionId": tlsSessionId, "url": url, "extension": extension });
+      // promise.then(console.log);
+      return promise; // TODO parse return, pass arguments
     }
-  });
-  return observer;
+    return null; // TODO return Promise(null)?
+  };
 }
 
 function createHandleObserver(fire) {
-  let observer = new Object({
-    classID: Components.ID("{333ceae4-d28f-4b07-80de-3e3ff03327cc}"),
-    contractID: "@mozilla.org/extensions/tls-extension-handler-observer;1",
-    QueryInterface: ChromeUtils.generateQI(["nsITlsExtensionHandlerObserver"]),
-
-    onHandleTlsExtension(extension, tlsSessionId, url, messageType, data) {
-      console.log("handler called");
-      if (fire !== null) {
-        let promise = fire.async(messageType, data, { "sessionId": tlsSessionId, "url": url, "extension": extension });
-        // promise.then(console.log);
-        return promise; // TODO parse return, pass arguments
-      }
-      return null; // TODO return Promise(null)?
+  return function (extension, tlsSessionId, url, messageType, data) {
+    console.log("handler called");
+    if (fire !== null) {
+      let promise = fire.async(messageType, data, { "sessionId": tlsSessionId, "url": url, "extension": extension });
+      // promise.then(console.log);
+      return promise; // TODO parse return, pass arguments
     }
-  });
-  return observer;
+    return null; // TODO return Promise(null)?
+  };
 }
 
 this.tlsExt = class extends ExtensionAPI {

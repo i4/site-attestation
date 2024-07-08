@@ -101,6 +101,7 @@ TlsExtensionService::onNSS_SSLExtensionHandler(PRFileDesc *fd, SSLHandshakeType 
         monitor.Wait();
     }
 
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug, ("SecStatus: %i\n", result));
     return result; // has to be written by the observer runnable
 }
 
