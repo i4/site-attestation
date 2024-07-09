@@ -30,22 +30,22 @@ async function getArray(request){
         return item[request];
 }
 
-export async function setObjectProperties(key, object) {
+export async function setObjectProperties(key, object, storageArea = browser.storage.local) {
     const old = await getObject(key);
-    return browser.storage.local.set({
+    return storageArea.set({
         [key]: {...old, ...object} // the latter overwrites the former
     });
 }
 
-async function getObjectProperty(key, propertyName) {
-    const hosts = await browser.storage.local.get(key);
+async function getObjectProperty(key, propertyName, storageArea = browser.storage.local) {
+    const hosts = await storageArea.get(key);
     return Object.keys(hosts).length !== 0 && hosts[key][propertyName];
 }
 
-async function removeObjectProperty(key, propertyName) {
+async function removeObjectProperty(key, propertyName, storageArea = browser.storage.local) {
     let host = await getObject(key);
     delete host[propertyName];
-    return browser.storage.local.set({[key]: host});
+    return storageArea.set({[key]: host});
 }
 
 async function arrayAdd(key, value) {
@@ -274,4 +274,16 @@ export async function getConfigMeasurement(host) {
 
 export async function removeConfigMeasurement(host) {
     return removeObjectProperty(host, "config_measurement");
+}
+
+export async function setNonce(host, nonce) {
+    return setObjectProperties(host, {nonce: nonce}, browser.storage.session);
+}
+
+export async function getNonce(host){
+    return getObjectProperty(host, "nonce", browser.storage.session);
+}
+
+export async function removeNonce(host) {
+    return removeObjectProperty(host, "nonce", browser.storage.session);
 }

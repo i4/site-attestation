@@ -1,4 +1,4 @@
-import *  as util from "./util";
+import * as util from "./util";
 
 // Parses the TCB information provided by 
 // the attestation report.

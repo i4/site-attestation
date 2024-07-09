@@ -11,6 +11,7 @@ import {AttestationReport} from "../lib/attestation";
 import {arrayBufferToHex, checkAttestationInfoFormat, hasDateChanged} from "../lib/util";
 import {pmark, pmeasure} from "../lib/evaluation";
 import {removeUnsupported} from "../lib/storage";
+import * as attestation from "../lib/attestation";
 
 const ATTESTATION_INFO_PATH = "/remote-attestation.json";
 const NEW_ATTESTATION_PAGE = browser.runtime.getURL("new-remote-attestation.html");
@@ -111,11 +112,11 @@ async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, deta
 
     console.log("writer");
 
-    const nonce = "ichbineinnonce"
+    const nonce = "ichbineinnonce" // TODO generate proper nonce
 
-    // TODO: sessionId + nonce in session storage speichern
+    await storage.setNonce(details.url, nonce);
 
-    return `RA_REQ:${nonce}`;
+    return nonce;
 }
 
 browser.tlsExt.onWriteTlsExtension.addListener(listenerOnWriteTlsExtension, ".*", 420);
@@ -124,8 +125,23 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
     if (messageSSLHandshakeType !== browser.tlsExt.SSLHandshakeType.SSL_HS_CERTIFICATE)
         return browser.tlsExt.SECStatus.SECSUCCESS;
 
-    // TODO: does session storage contain sessionId?
-    // TODO: does RA contain given sessionId?
+    const nonce = await storage.getNonce(details.url);
+    if (!nonce)
+        return browser.tlsExt.SECStatus.SECSUCCESS;
+
+    let ar;
+    try {
+        ar = new attestation.AttestationReport(data);
+    } catch (e) {
+        console.log(e);
+        return browser.tlsExt.SECStatus.SECFAILURE;
+    }
+
+    // TODO: does AR contain given nonce? nonce in the AR might be hashed
+    if (ar.report_data !== nonce)
+        return browser.tlsExt.SECStatus.SECFAILURE;
+
+    // TODO implement basic dialog procedure to trust, block or ignore RA
 
     return browser.tlsExt.SECStatus.SECSUCCESS;
 }
