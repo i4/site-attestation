@@ -363,6 +363,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                         int *al, void *addArg) {
     if (extType == EXT_RATLS) {
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
+            puts("Sending ServerCertificate");
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
             // append public key to challenge
@@ -420,6 +421,7 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
         int *al, void *parseArg) {
     if (extType == EXT_RATLS) {
         if (context == SSL_EXT_CLIENT_HELLO) {
+            puts("Received ClientHello");
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
             if (!ctx) {
