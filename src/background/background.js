@@ -111,8 +111,9 @@ async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, deta
         return null;
 
     console.log("writer");
+    console.log(details);
 
-    const nonce = "ichbineinnonce" // TODO generate proper nonce
+    const nonce = "RA_REQ:ichbineinnonce"; // TODO generate proper nonce
 
     await storage.setNonce(details.url, nonce);
 
@@ -125,21 +126,27 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
     if (messageSSLHandshakeType !== browser.tlsExt.SSLHandshakeType.SSL_HS_CERTIFICATE)
         return browser.tlsExt.SECStatus.SECSUCCESS;
 
+    console.log("handler");
+    console.log(details);
+
     const nonce = await storage.getNonce(details.url);
     if (!nonce)
         return browser.tlsExt.SECStatus.SECSUCCESS;
 
-    let ar;
-    try {
-        ar = new attestation.AttestationReport(data);
-    } catch (e) {
-        console.log(e);
-        return browser.tlsExt.SECStatus.SECFAILURE;
-    }
+    const arrayBuffer = await new Response(data).arrayBuffer(); // is there a better way than using the Response Object?
+    const ar = new attestation.AttestationReport(arrayBuffer);
+    // let ar;
+    // try {
+    //     ar = new attestation.AttestationReport(arrayBuffer);
+    // } catch (e) {
+    //     console.log(e);
+    //     return browser.tlsExt.SECStatus.SECFAILURE;
+    // }
 
     // TODO: does AR contain given nonce? nonce in the AR might be hashed
-    if (ar.report_data !== nonce)
-        return browser.tlsExt.SECStatus.SECFAILURE;
+    // if (ar.report_data !== nonce)
+    //     return browser.tlsExt.SECStatus.SECFAILURE;
+    console.log(ar);
 
     // TODO implement basic dialog procedure to trust, block or ignore RA
 
