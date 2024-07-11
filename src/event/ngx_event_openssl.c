@@ -363,7 +363,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                         int *al, void *addArg) {
     if (extType == EXT_RATLS) {
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
-            puts("Sending ServerCertificate");
+            puts("Preparing ServerCertificate");
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
             // append public key to challenge
@@ -375,19 +375,24 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             create_report(ctx);
 
-            ctx->attestation_report_buffer = smalloc((MEASUREMENT_BUF_SIZE + 1) * sizeof(char));
+            ctx->attestation_report_buffer = smalloc((MEASUREMENT_BUF_SIZE + 1) * sizeof(
+                                                 char));
 
             FILE* outfile = sfopen(ctx->outfile, "r");
 
-            size_t written = fread(ctx->attestation_report_buffer, 1, MEASUREMENT_BUF_SIZE, outfile);
+            size_t written = fread(ctx->attestation_report_buffer, 1, MEASUREMENT_BUF_SIZE,
+                                   outfile);
             if(written == 0 && !feof(outfile)) {
-                perror("fread"); exit(EXIT_FAILURE);
+                perror("fread");
+                exit(EXIT_FAILURE);
             }
 
             fclose(outfile);
 
             *out = (unsigned char*) ctx->attestation_report_buffer;
             *outlen = written;
+
+            puts("Sending ServerCertificate");
             return 1;
         }
     }
@@ -462,7 +467,10 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             FILE* challenge = sfopen(ctx->challengefile, "w");
             size_t written = fwrite(in, sizeof(char), inlen, challenge);
             fclose(challenge);
-            if (written != inlen) {  perror("fwrite"); exit(EXIT_FAILURE); }
+            if (written != inlen) {
+                perror("fwrite");
+                exit(EXIT_FAILURE);
+            }
 
             return 1;
         }
@@ -608,7 +616,8 @@ ngx_ssl_create(ngx_ssl_t *ssl, ngx_uint_t protocols, void *data)
     SSL_CTX_set_info_callback(ssl->ctx, ngx_ssl_info_callback);
 
     // RATLS INSTALL HANDLER
-    RA_SESSION_FLAG_INDEX = SSL_get_ex_new_index(0, "remote attestation session index", NULL, NULL, NULL);
+    RA_SESSION_FLAG_INDEX = SSL_get_ex_new_index(0,
+                            "remote attestation session index", NULL, NULL, NULL);
     SSL_CTX_add_custom_ext(ssl->ctx
                            , EXT_RATLS, SSL_EXT_CLIENT_HELLO | SSL_EXT_TLS1_3_CERTIFICATE
                            , callbackAddExtensionRAServer
