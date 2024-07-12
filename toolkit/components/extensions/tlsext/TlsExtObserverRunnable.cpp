@@ -87,9 +87,13 @@ TlsExtHandlerObsRunnable::TlsExtHandlerObsRunnable(
 NS_IMETHODIMP
 TlsExtHandlerObsRunnable::Run() {
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Data Len [%zu]!\n", strlen((const char *)data)));
-    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Actual Len [%u]!\n", len));
+
+    // convert unsigned char* to AString
+    nsString jsString;
+    jsString.Assign(reinterpret_cast<const char16_t*>(data), len / 2);
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Binary String Len [%zu]!\n", jsString.Length()));
 
     // run the actual callback
     mozilla::dom::Promise* promise;
@@ -98,7 +102,7 @@ TlsExtHandlerObsRunnable::Run() {
         PtrToStr(fd).c_str(),   // TODO does this leak?
         callbackArg->hostName,
         (nsITlsExtensionObserver::SSLHandshakeType) messageType,
-        (const char*) data,     // TODO C++ style cast
+        jsString,     // TODO C++ style cast
         &promise);
 
     if (NS_FAILED(rv) || !promise) {

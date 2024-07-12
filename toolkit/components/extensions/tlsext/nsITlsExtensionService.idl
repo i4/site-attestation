@@ -38,7 +38,7 @@ interface nsITlsExtensionObserver : nsISupports {
 
 [scriptable, function, uuid(d2f656a4-6bc7-4d2e-92f2-d3a6ad05b0d1)]
 interface nsITlsExtensionWriterObserver : nsITlsExtensionObserver {
-  // Promise<string>
+  // Promise<string> // TODO: Rebuild this, so that AString is used instead of string for the return type. Like this, binary data cannot be transferred.
   Promise onWriteTlsExtension(  in PRUint16 extension,  // TODO return value should be unsigned
                                 in string tlsSessionId,
                                 in string url,
@@ -53,7 +53,7 @@ interface nsITlsExtensionHandlerObserver : nsITlsExtensionObserver {
                                 in string tlsSessionId,
                                 in string url,
                                 in nsITlsExtensionObserver_SSLHandshakeType messageType,
-                                in string data);        // TODO data should be unsigned
+                                in AString data);
 };
 
 // `scriptable` designates that this object will be used with JavaScript
