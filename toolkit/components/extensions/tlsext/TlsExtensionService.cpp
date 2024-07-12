@@ -42,7 +42,7 @@ TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType m
             ("Writer Hook static cast went through!\n"));
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Writer Hook host is known! [%s]\n", hookArg->hostName)); // TODO hostname should not written to the struct anymore
+            ("Writer Hook host is known! [%s]\n", hookArg->hostName));
 
 
     // prepare task for main thread
@@ -84,7 +84,13 @@ TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType m
     strcpy((char*) data, result);
     *len = dataLen;
 
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Wrote out params\n"));
+
     postHandshakeCleanup(messageType, hookArg);
+
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Return Successfull\n"));
 
     return PR_TRUE;
 }
@@ -92,8 +98,17 @@ TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType m
 /* static */
 SECStatus
 TlsExtensionService::onNSS_SSLExtensionHandler(PRFileDesc *fd, SSLHandshakeType messageType, const PRUint8 *data, unsigned int len, SSLAlertDescription *alert, void *callbackArg) {
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Handler Hook was called!\n"));
+
     auto* hookArg = static_cast<TlsExtHookArg*>(callbackArg);
     auto* obsInfo = hookArg->obsInfo;
+
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Handler Hook static cast went through!\n"));
+
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Handler Hook host is known! [%s]\n", hookArg->hostName));
 
     // prepare task for main thread
     mozilla::Monitor monitor("ObservableRunnerMonitor");

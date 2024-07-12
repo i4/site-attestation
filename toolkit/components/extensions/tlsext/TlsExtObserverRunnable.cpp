@@ -86,6 +86,11 @@ TlsExtHandlerObsRunnable::TlsExtHandlerObsRunnable(
 
 NS_IMETHODIMP
 TlsExtHandlerObsRunnable::Run() {
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Data Len [%zu]!\n", strlen((const char *)data)));
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Actual Len [%u]!\n", len));
+
     // run the actual callback
     mozilla::dom::Promise* promise;
     nsresult rv = obsInfo->handlerObserver->OnHandleTlsExtension(
