@@ -13,3 +13,5 @@ touch "${OUTFILE}"
 sha512sum "${CHALLENGE_PATH}" | xxd -r -p > "${HASHFILE}"
 
 /home/ubuntu/snpguest/target/debug/snpguest report "${OUTFILE}" "${HASHFILE}"
+/home/ubuntu/snpguest/target/debug/snpguest fetch vcek pem genoa /usr/local/nginx/certs "${OUTFILE}"
+
