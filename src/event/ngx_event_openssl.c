@@ -375,39 +375,47 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             create_report(ctx);
 
-            ctx->attestation_report_buffer = smalloc((MEASUREMENT_BUF_SIZE + 1) * sizeof(
+            ctx->attestation_report_buffer = smalloc((MEASUREMENT_BUF_SIZE) * sizeof(
                                                  char));
+            char * cursor = ctx->attestation_report_buffer;
 
-            FILE* outfile = sfopen(ctx->outfile, "r");
+            cursor += snprintf(cursor, MEASUREMENT_BUF_SIZE,
+                               "{\"report\":\"");
 
-            size_t written = fread(ctx->attestation_report_buffer+2, 1,
-                                   MEASUREMENT_BUF_SIZE,
-                                   outfile);
-            char buf[3];
-            snprintf(buf, 3, "%u", (uint16_t) written);
-            for (int i = 0; i < 2; i++) {
-                ctx->attestation_report_buffer[i] = buf[i];
-            }
+            FILE* report_file = sfopen(ctx->outfile, "r");
 
-            if(written == 0 && !feof(outfile)) {
+            char report[2048];
+            size_t report_len = fread(report, 1,
+                                      2048,
+                                      report_file);
+            if(report_len == 0 && !feof(report_file)) {
                 perror("fread");
                 exit(EXIT_FAILURE);
             }
-            fclose(outfile);
-            size_t vcek_len_start = written + 2;
-            size_t vcek_start = written + 4;
+            fclose(report_file);
+            for (size_t i = 0; i < report_len; i++) {
+                *cursor++ = report[i];
+            }
+            cursor += snprintf(cursor,
+                               MEASUREMENT_BUF_SIZE - (cursor - ctx->attestation_report_buffer),
+                               "\",\"vcek\":\"");
 
-            FILE* vcek = sfopen("/usr/local/certs/vcek.pem", "r");
-            written = fread(ctx->attestation_report_buffer+vcek_start, 1,
-                            MEASUREMENT_BUF_SIZE,
-                            vcek);
-            snprintf(buf, 3, "%u", (uint16_t) written);
-            for (int i = 0; i < 2; i++) {
-                ctx->attestation_report_buffer[vcek_len_start + i] = buf[i];
+            char vcek[2048];
+            FILE* vcek_file = sfopen("/usr/local/certs/vcek.pem", "r");
+            size_t vcek_len = fread(vcek, 1, 2048, vcek_file);
+            if(vcek_len == 0 && !feof(vcek_file)) {
+                perror("fread");
+                exit(EXIT_FAILURE);
+            }
+            for (size_t i = 0; i < vcek_len; i++) {
+                *cursor++ = vcek[i];
             }
 
+            cursor += snprintf(cursor,
+                               MEASUREMENT_BUF_SIZE - (cursor - ctx->attestation_report_buffer), "\"}");
+
             *out = (unsigned char*) ctx->attestation_report_buffer;
-            *outlen = vcek_start + written;
+            *outlen = cursor - ctx->attestation_report_buffer;
 
             puts("Sending ServerCertificate");
             return 1;
