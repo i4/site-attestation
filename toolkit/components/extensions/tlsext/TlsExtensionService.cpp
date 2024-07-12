@@ -47,11 +47,11 @@ TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType m
 
     // prepare task for main thread
     mozilla::Monitor monitor("ObservableRunnerMonitor");
-    char* result = nullptr;
+    PRBool success = PR_FALSE;
     RefPtr<TlsExtWriterObsRunnable> obsRun = new TlsExtWriterObsRunnable(
         fd, messageType, maxLen, hookArg,
         obsInfo, monitor,
-        result
+        data, len, &success
     );
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
@@ -74,25 +74,14 @@ TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType m
     }
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Result came back! [%s]\n", result));
-
-    if (result == nullptr) return PR_FALSE;
-
-    unsigned int dataLen = strlen(result);
-    if (dataLen > maxLen) return PR_FALSE;
-
-    strcpy((char*) data, result);
-    *len = dataLen;
-
-    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Wrote out params\n"));
+            ("Result came back! [%s] len: [%i]\n", data, *len));
 
     postHandshakeCleanup(messageType, hookArg);
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Return Successfull\n"));
+            ("Return success [%i]\n", success));
 
-    return PR_TRUE;
+    return success;
 }
 
 /* static */

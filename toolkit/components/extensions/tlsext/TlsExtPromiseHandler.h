@@ -24,13 +24,16 @@ class TlsExtPromiseHandler : public mozilla::dom::PromiseNativeHandler {
 
 class TlsExtWriterPromiseHandler : public TlsExtPromiseHandler {
     public:
-    TlsExtWriterPromiseHandler(mozilla::Monitor& monitor, char*& result);
+    TlsExtWriterPromiseHandler(mozilla::Monitor& monitor, PRUint8* result, unsigned int* resultLen, unsigned int maxLen, PRBool* success);
 
     void ResolvedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv);
     void RejectedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv);
 
     private:
-    char*& result;
+    PRUint8* result;
+    unsigned int* resultLen;
+    unsigned int maxLen;
+    PRBool* success;
 };
 
 class TlsExtHandlerPromiseHandler : public TlsExtPromiseHandler {

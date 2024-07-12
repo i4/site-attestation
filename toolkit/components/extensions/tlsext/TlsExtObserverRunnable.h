@@ -36,14 +36,16 @@ class TlsExtWriterObsRunnable : public TlsExtObserverRunnable {
     TlsExtWriterObsRunnable(
         PRFileDesc *fd, SSLHandshakeType messageType, unsigned int maxLen, TlsExtHookArg* callbackArg,
         TlsExtObserverInfo* obsInfo, mozilla::Monitor& monitor,
-        char*& result);
+        PRUint8* result, unsigned int *resultLen, PRBool* success);
 
     private:
     ~TlsExtWriterObsRunnable() {};
 
     unsigned int maxLen;
 
-    char*& result;
+    PRUint8* result;
+    unsigned int* resultLen;
+    PRBool* success;
 };
 
 class TlsExtHandlerObsRunnable : public TlsExtObserverRunnable {

@@ -17,10 +17,12 @@ std::string PtrToStr(const void* ptr) {
 TlsExtWriterObsRunnable::TlsExtWriterObsRunnable(
         PRFileDesc *fd, SSLHandshakeType messageType, unsigned int maxLen, TlsExtHookArg* callbackArg,
         TlsExtObserverInfo* obsInfo, mozilla::Monitor& monitor,
-        char*& result):
+        PRUint8* result, unsigned int *resultLen, PRBool* success):
     TlsExtObserverRunnable(fd, messageType, callbackArg, obsInfo, monitor),
     maxLen(maxLen),
-    result(result) {
+    result(result),
+    resultLen(resultLen),
+    success(success) {
         MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Constructor WriterObsRunnable!\n"));
     }
@@ -64,7 +66,7 @@ TlsExtWriterObsRunnable::Run() {
             ("Did not fail!\n"));
 
     // resolve the promise that came back from the web extension
-    RefPtr<TlsExtWriterPromiseHandler> handler = new TlsExtWriterPromiseHandler(monitor, result);
+    RefPtr<TlsExtWriterPromiseHandler> handler = new TlsExtWriterPromiseHandler(monitor, result, resultLen, maxLen, success);
     promise->AppendNativeHandler(handler);
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
