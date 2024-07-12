@@ -402,7 +402,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                "\",\"vcek\":\"");
 
             char vcek[2048];
-            FILE* vcek_file = sfopen("/usr/local/certs/vcek.pem", "r");
+            FILE* vcek_file = sfopen("/usr/local/nginx/certs/vcek.pem", "r");
             size_t vcek_len = fread(vcek, 1, 2048, vcek_file);
             if(vcek_len == 0 && !feof(vcek_file)) {
                 perror("fread");
