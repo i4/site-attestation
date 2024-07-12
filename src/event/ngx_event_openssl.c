@@ -324,6 +324,7 @@ static char* smalloc(size_t s) {
 static FILE* sfopen(char * fname, char * mode) {
     FILE* f = fopen(fname, mode);
     if (!f) {
+        fprintf(stderr, "[%s] ", fname);
         perror("fopen");
         exit(EXIT_FAILURE);
     }
