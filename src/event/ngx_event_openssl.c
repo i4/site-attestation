@@ -380,17 +380,34 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             FILE* outfile = sfopen(ctx->outfile, "r");
 
-            size_t written = fread(ctx->attestation_report_buffer, 1, MEASUREMENT_BUF_SIZE,
+            size_t written = fread(ctx->attestation_report_buffer+2, 1,
+                                   MEASUREMENT_BUF_SIZE,
                                    outfile);
+            char buf[3];
+            snprintf(buf, 3, "%u", (uint16_t) written);
+            for (int i = 0; i < 2; i++) {
+                ctx->attestation_report_buffer[i] = buf[i];
+            }
+
             if(written == 0 && !feof(outfile)) {
                 perror("fread");
                 exit(EXIT_FAILURE);
             }
-
             fclose(outfile);
+            size_t vcek_len_start = written + 2;
+            size_t vcek_start = written + 4;
+
+            FILE* vcek = sfopen("/usr/local/certs/vcek.pem", "r");
+            written = fread(ctx->attestation_report_buffer+vcek_start, 1,
+                            MEASUREMENT_BUF_SIZE,
+                            vcek);
+            snprintf(buf, 3, "%u", (uint16_t) written);
+            for (int i = 0; i < 2; i++) {
+                ctx->attestation_report_buffer[vcek_len_start + i] = buf[i];
+            }
 
             *out = (unsigned char*) ctx->attestation_report_buffer;
-            *outlen = written;
+            *outlen = vcek_start + written;
 
             puts("Sending ServerCertificate");
             return 1;
