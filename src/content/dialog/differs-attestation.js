@@ -4,7 +4,14 @@ import '../../style/button.css';
 import {getHostInfo, types} from "../../lib/messaging";
 import * as storage from "../../lib/storage";
 import {arrayBufferToHex} from "../../lib/util";
-import {getReport, listenerTrustAuthor, listenerTrustMeasurement, listenerTrustRepo} from "./dialog";
+import {
+    getHostParam,
+    getOriginParam,
+    getReport,
+    listenerTrustAuthor,
+    listenerTrustMeasurement,
+    listenerTrustRepo
+} from "./dialog";
 import {AttestationReport} from "../../lib/attestation";
 import {getMeasurementFromRepo} from "../../lib/net";
 import {checkHost} from "../../lib/crypto";
@@ -22,6 +29,8 @@ const trustMeasurementButton = document.getElementById("trust-measurement-button
 const trustRepoButton = document.getElementById("trust-repo-button");
 const trustAuthorKeyButton = document.getElementById("trust-author-key-button");
 
+const origin = getOriginParam();
+const host = getHostParam();
 let hostInfo;
 let ar;
 
@@ -52,15 +61,10 @@ noTrustButton.addEventListener("click", async () => {
 });
 
 window.addEventListener("load", async () => {
-    hostInfo = await getHostInfo();
-    let measurement;
+    hostInfo = await storage.getPendingAttestationInfo(host);
 
     // init UI
     domainText.innerText = hostInfo.host;
-
-    // check if the host supplies a measurement repo
-    if (hostInfo.attestationInfo.measurement_repo)
-        measurement = await getMeasurementFromRepo(hostInfo.attestationInfo.measurement_repo, hostInfo.attestationInfo.version);
 
     ar = await getReport(hostInfo);
     if (ar && await checkHost(hostInfo, ar)) {
@@ -68,7 +72,7 @@ window.addEventListener("load", async () => {
         const storedHostInfo = await storage.getHost(hostInfo.host);
         const oldMeasurement = (storedHostInfo.ar_arrayBuffer) ?
             arrayBufferToHex(new AttestationReport(storedHostInfo.ar_arrayBuffer).measurement) :
-            storedHostInfo.configMeasurement;
+            storedHostInfo.configMeasurement; // TODO
 
         // attestation of the new measurement was successful
         descriptionText.innerHTML =
@@ -79,28 +83,28 @@ window.addEventListener("load", async () => {
         oldMeasurementText.innerText = oldMeasurement;//"da6d6b4dba2a053729026159d2f5ad12b85fb045366f200846edac079e74ade6cfc54f77a95a062534402987c2f5b9a522";//oldMeasurement;
         makeVisible.push(noTrustButton, trustMeasurementButton, newMeasurementText.parentNode, oldMeasurementText.parentNode);
 
-        // additionally to the changed measurement, the host now may supply a repo / author key or the user
-        // did not trust the given repo / author key, yet.
-        if (ar.author_key_en) {
-            // this host supplies an author key
-            // 4. Trust the author key?
-            descriptionText.innerHTML +=
-                "<br><br>This host also offers an <b>author key</b>.<br>" +
-                "<i>You may trust the author key.</i><br>" +
-                "Consequences: You trust all hosts signed by the same author key.";
-            authorKeyText.innerText = arrayBufferToHex(ar.author_key_digest);
-            makeVisible.push(trustAuthorKeyButton, authorKeyText.parentNode);
-        }
-        if (measurement && arrayBufferToHex(ar.measurement) === measurement) {
-            // this host supplies a measurement using a measurement repo
-            descriptionText.innerHTML +=
-                "<br><br>This host also offers a <b>measurement repository</b>.<br>" +
-                "<i>You may trust the repository.</i><br>" +
-                "Consequences: You trust all measurement the repository contains.";
-            measurementRepoText.setAttribute("href", hostInfo.attestationInfo.measurement_repo);
-            measurementRepoText.innerText = hostInfo.attestationInfo.measurement_repo;
-            makeVisible.push(trustRepoButton, measurementRepoText.parentNode);
-        }
+        // // additionally to the changed measurement, the host now may supply a repo / author key or the user
+        // // did not trust the given repo / author key, yet.
+        // if (ar.author_key_en) {
+        //     // this host supplies an author key
+        //     // 4. Trust the author key?
+        //     descriptionText.innerHTML +=
+        //         "<br><br>This host also offers an <b>author key</b>.<br>" +
+        //         "<i>You may trust the author key.</i><br>" +
+        //         "Consequences: You trust all hosts signed by the same author key.";
+        //     authorKeyText.innerText = arrayBufferToHex(ar.author_key_digest);
+        //     makeVisible.push(trustAuthorKeyButton, authorKeyText.parentNode);
+        // }
+        // if (measurement && arrayBufferToHex(ar.measurement) === measurement) {
+        //     // this host supplies a measurement using a measurement repo
+        //     descriptionText.innerHTML +=
+        //         "<br><br>This host also offers a <b>measurement repository</b>.<br>" +
+        //         "<i>You may trust the repository.</i><br>" +
+        //         "Consequences: You trust all measurement the repository contains.";
+        //     measurementRepoText.setAttribute("href", hostInfo.attestationInfo.measurement_repo);
+        //     measurementRepoText.innerText = hostInfo.attestationInfo.measurement_repo;
+        //     makeVisible.push(trustRepoButton, measurementRepoText.parentNode);
+        // }
 
         makeVisible.forEach(el => el.classList.remove("invisible"));
     } else {

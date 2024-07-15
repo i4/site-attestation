@@ -89,7 +89,7 @@ export async function validateAttestationReport(ar, vcek) {
 }
 
 export async function checkHost(hostInfo, ar) {
-    const ssl_sha512 = hostInfo.ssl_sha512;
+    // const ssl_sha512 = hostInfo.ssl_sha512;
 
     let vcek;
     try {
@@ -103,12 +103,12 @@ export async function checkHost(hostInfo, ar) {
     }
 
     // 1. verify TLS connection
-    // ! TODO trick ssl connection is correct for now
-    if (/*false && */util.arrayBufferToHex(ar.report_data) !== ssl_sha512) {
-        // TLS connection pubkey is not equal to pubkey in attestation report
-        console.log("TLS connection invalid");
-        return false;
-    }
+    // TODO check for Nonce, Public Key
+    // if (/*false && */util.arrayBufferToHex(ar.report_data) !== ssl_sha512) {
+    //     // TLS connection pubkey is not equal to pubkey in attestation report
+    //     console.log("TLS connection invalid");
+    //     return false;
+    // }
 
     async function validation() {
         // 2. Validate that the VCEK is correctly signed by AMD root cert

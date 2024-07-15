@@ -56,7 +56,7 @@ export async function fetchAttestationReport(url, path) {
  */
 export async function fetchVCEK(chipId, committedTCB, reload) {
     // AMD key server
-    const KDSINF = "https://kdsintf.amd.com/vcek/v1/Milan/";
+    const KDSINF = "https://kdsintf.amd.com/vcek/v1/Genoa/";
 
     // Query to Amd key sever including the used TCB
     // https://kdsintf.amd.com/vcek/v1/Milan/<5b-machine-id-a2654>/?blSPL=02&teeSPL=00&snpSPL=06&ucodeSPL=55

@@ -6,12 +6,13 @@ import {fetchAttestationInfo, getMeasurementFromRepo} from "../lib/net";
 import * as storage from "../lib/storage";
 import * as messaging from "../lib/messaging";
 import {DialogType} from "../lib/ui";
-import {validateAuthorKey, validateMeasurement} from "../lib/crypto";
+import {checkHost, validateAuthorKey, validateMeasurement} from "../lib/crypto";
 import {AttestationReport} from "../lib/attestation";
 import {arrayBufferToHex, checkAttestationInfoFormat, hasDateChanged} from "../lib/util";
-import {pmark, pmeasure} from "../lib/evaluation";
+// import {pmark, pmeasure} from "../lib/evaluation";
 import {removeUnsupported} from "../lib/storage";
 import * as attestation from "../lib/attestation";
+import {buildParamUrl} from "../content/dialog/dialog";
 
 const ATTESTATION_INFO_PATH = "/remote-attestation.json";
 const NEW_ATTESTATION_PAGE = browser.runtime.getURL("new-remote-attestation.html");
@@ -112,7 +113,6 @@ async function queryRATLSTab(host) {
         currentWindow: true,
         active: true
     };
-    console.log(queryInfo);
     try {
         const tabs = await browser.tabs.query(queryInfo);
         console.log(`found ${tabs.length} tabs`);
@@ -182,22 +182,71 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
     console.log(ar);
     console.log(ar.version);
 
-    const isKnown = await storage.isKnownHost(host.href);
-    const hostInfo = {
-        host : details.url,
-        url : tab.url,
-        attestationReport : ar,
-    };
-
-    // TODO implement basic dialog procedure to trust, block or ignore RA
+    const isKnown = await storage.isKnownHost(details.url);
     const tab = await queryRATLSTab(details.url);   // TODO this might not work if a page's content refers to a RATLS page
-    if (!tab) return browser.tlsExt.SECStatus.SECSUCCESS; // could not find the tab causing the TLS connection
+    if (!tab) {
+        console.log(`could not find tab for ${details.url}`);
+        return browser.tlsExt.SECStatus.SECFAILURE; // could not find the tab causing the TLS connection
+    }
     console.log(tab.url);
 
-    browser.tabs.update(tab.id, {
-        url : NEW_ATTESTATION_PAGE
-    });
+    if (!isKnown) {
+        console.log("host is unknown");
+        await storage.setPendingAttestationInfo(details.url, {
+            host: details.url,
+            ar_arrayBuffer: ar.arrayBuffer,
+        });
 
+        browser.tabs.update(tab.id, {
+            url : buildParamUrl(NEW_ATTESTATION_PAGE, tab.url, details.url)
+        });
+
+        return browser.tlsExt.SECStatus.SECSUCCESS;
+    }
+
+    console.log("host is known");
+
+    // host is known
+    if (await storage.isIgnored(details.url)) {
+        // attestation ignored -> show page action
+        await showPageAction(tab.tabId, false);
+        return browser.tlsExt.SECStatus.SECSUCCESS;
+    }
+
+    console.log("host is not ignored");
+
+    if (await storage.isUntrusted(details.url)) {
+        // host is blocked
+        browser.tabs.update(tab.id, {
+            url : buildParamUrl(BLOCKED_ATTESTATION_PAGE, tab.url, details.url)
+        });
+        return browser.tlsExt.SECStatus.SECFAILURE;
+    }
+
+    console.log("host is not untrusted");
+
+    // can the already known host be trusted?
+    const storedAR = await storage.getAttestationReport(details.url);
+    if (storedAR &&
+        arrayBufferToHex(ar.measurement) === arrayBufferToHex(storedAR.measurement) // &&
+        /*await checkHost({}, ar)*/) { // TODO can not do network requests while network socket is blocked
+        // the measurement is correct and the host can be trusted
+        // -> store new TLS key, update lastTrusted
+        console.log("known measurement " + details.url);
+        await storage.setTrusted(host.href, {
+            lastTrusted: new Date(),
+            // ssl_sha512: ssl_sha512,
+        });
+    } else {
+        console.log("attestation failed " + details.url);
+        browser.tabs.update(tab.id, {
+            url : buildParamUrl(DIFFERS_ATTESTATION_PAGE, tab.url, details.url)
+        });
+        return browser.tlsExt.SECStatus.SECFAILURE;
+    }
+
+    console.log("trusted successfully");
+    await showPageAction(tab.tabId, true);
     return browser.tlsExt.SECStatus.SECSUCCESS;
 }
 
@@ -216,8 +265,6 @@ async function listenerOnMessageReceived(message, sender) {
             // sendResponse() does not work
             return Promise.resolve(hostInfo);
         case messaging.types.redirect:
-            pmark("dialog:end", {url: message.url});
-            pmeasure("dialog", "dialog:start", {url: message.url}, "dialog:end");
             browser.tabs.update(sender.tab.id, {
                 url : message.url
             });

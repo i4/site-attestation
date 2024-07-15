@@ -14,8 +14,8 @@ import {isEmpty} from "lodash";
 const AUTHOR_KEYS = "author_keys";
 const MEASUREMENT_REPOS = "measurement_repos";
 
-async function getObject(request){
-    const item = await browser.storage.local.get(request);
+async function getObject(request, storageArea = browser.storage.local){
+    const item = await storageArea.get(request);
     if (isEmpty(item))
         return {};
     else
@@ -172,7 +172,8 @@ export async function removeSSLKey(host) {
 }
 
 export async function getAttestationReport(host) {
-    const ar_arrayBuffer = getObjectProperty(host, "ar_arrayBuffer");
+    const ar_arrayBuffer = await getObjectProperty(host, "ar_arrayBuffer");
+    if (!ar_arrayBuffer) return null;
     return new AttestationReport(ar_arrayBuffer);
 }
 
@@ -286,4 +287,12 @@ export async function getNonce(host){
 
 export async function removeNonce(host) {
     return removeObjectProperty(host, "nonce", browser.storage.session);
+}
+
+export async function setPendingAttestationInfo(host, attestationInfo) {
+    return setObjectProperties(host, attestationInfo, browser.storage.session);
+}
+
+export async function getPendingAttestationInfo(host){
+    return getObject(host, browser.storage.session);
 }
