@@ -183,7 +183,7 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
     console.log(ar.version);
 
     const isKnown = await storage.isKnownHost(details.url);
-    const tab = await queryRATLSTab(details.url);   // TODO this might not work if a page's content refers to a RATLS page
+    const tab = await queryRATLSTab(details.url);   // TODO this might not work if a page's content refers to a RATLS page // TODO infact this does not really work, because it seems like a TLS connection is opened before the URL bar reflects the URL
     if (!tab) {
         console.log(`could not find tab for ${details.url}`);
         return browser.tlsExt.SECStatus.SECFAILURE; // could not find the tab causing the TLS connection
