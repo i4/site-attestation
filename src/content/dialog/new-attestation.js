@@ -64,6 +64,7 @@ noTrustButton.addEventListener("click", async () => {
 
 window.addEventListener("load", async () => {
     hostInfo = await storage.getPendingAttestationInfo(host);
+    console.log(`origin is ${origin}`);
 
     // init UI
     domainText.innerText = host;

@@ -201,7 +201,7 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
             url : buildParamUrl(NEW_ATTESTATION_PAGE, tab.url, details.url)
         });
 
-        return browser.tlsExt.SECStatus.SECSUCCESS;
+        return browser.tlsExt.SECStatus.SECFAILURE;
     }
 
     console.log("host is known");
@@ -233,7 +233,7 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
         // the measurement is correct and the host can be trusted
         // -> store new TLS key, update lastTrusted
         console.log("known measurement " + details.url);
-        await storage.setTrusted(host.href, {
+        await storage.setTrusted(details.url, {
             lastTrusted: new Date(),
             // ssl_sha512: ssl_sha512,
         });
