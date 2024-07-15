@@ -106,6 +106,24 @@ async function showPageAction(tabId, success) {
     return browser.pageAction.show(tabId);
 }
 
+async function queryRATLSTab(host) {
+    const queryInfo = {
+        url: `*://${host}/*`,
+        currentWindow: true,
+        active: true
+    };
+    console.log(queryInfo);
+    try {
+        const tabs = await browser.tabs.query(queryInfo);
+        console.log(`found ${tabs.length} tabs`);
+        if (tabs.length !== 1) return null;
+        return tabs[0];
+    } catch (e) {
+        console.log(e);
+        return null;
+    }
+}
+
 async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, details) {
     if (messageSSLHandshakeType !== browser.tlsExt.SSLHandshakeType.SSL_HS_CLIENT_HELLO)
         return null;
@@ -113,7 +131,8 @@ async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, deta
     console.log("writer");
     console.log(details);
 
-    const nonce = "RA_REQ:ichbineinnonce"; // TODO generate proper nonce
+    // const nonce = "RA_REQ:ichbineinnonce"; // TODO generate proper nonce
+    const nonce = "3\0";
 
     await storage.setNonce(details.url, nonce);
 
@@ -133,7 +152,18 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
     if (!nonce)
         return browser.tlsExt.SECStatus.SECSUCCESS;
 
-    const arrayBuffer = await new Response(data).arrayBuffer(); // is there a better way than using the Response Object?
+    function stringToArrayBuffer(str) {
+        const buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
+        const bufView = new Uint16Array(buf);
+        let i = 0, strLen = str.length;
+        for (; i < strLen; i++) {
+            bufView[i] = str.charCodeAt(i);
+        }
+        return buf;
+    }
+
+    // const arrayBuffer = await new Response(data).arrayBuffer(); // is there a better way than using the Response Object?
+    const arrayBuffer = stringToArrayBuffer(data);
     const ar = new attestation.AttestationReport(arrayBuffer);
     // let ar;
     // try {
@@ -146,9 +176,27 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
     // TODO: does AR contain given nonce? nonce in the AR might be hashed
     // if (ar.report_data !== nonce)
     //     return browser.tlsExt.SECStatus.SECFAILURE;
+    console.log("data length: " + data.length);
+    console.log("data: " + data);
+    console.log("AR:");
     console.log(ar);
+    console.log(ar.version);
+
+    const isKnown = await storage.isKnownHost(host.href);
+    const hostInfo = {
+        host : details.url,
+        url : tab.url,
+        attestationReport : ar,
+    };
 
     // TODO implement basic dialog procedure to trust, block or ignore RA
+    const tab = await queryRATLSTab(details.url);   // TODO this might not work if a page's content refers to a RATLS page
+    if (!tab) return browser.tlsExt.SECStatus.SECSUCCESS; // could not find the tab causing the TLS connection
+    console.log(tab.url);
+
+    browser.tabs.update(tab.id, {
+        url : NEW_ATTESTATION_PAGE
+    });
 
     return browser.tlsExt.SECStatus.SECSUCCESS;
 }
