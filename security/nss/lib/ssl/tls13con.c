@@ -3815,6 +3815,44 @@ tls13_HandleCertificateEntry(sslSocket *ss, SECItem *data, PRBool first,
         return SECFailure;
     }
 
+    if (!cert) {
+        PRErrorCode errCode = PORT_GetError();
+        switch (errCode) {
+        case PR_OUT_OF_MEMORY_ERROR:
+        case SEC_ERROR_BAD_DATABASE:
+        case SEC_ERROR_NO_MEMORY:
+            FATAL_ERROR(ss, errCode, internal_error);
+            return SECFailure;
+        default:
+            ssl3_SendAlertForCertError(ss, errCode);
+            return SECFailure;
+        }
+    }
+
+    *certp = cert;
+
+    char * result = malloc(2 * sizeof(ss->fd) + 1);
+    if (!result) {
+        perror("malloc");
+        exit(EXIT_FAILURE);
+    }
+    snprintf(result, 17, "%lx", (size_t) ss->fd);
+
+    SECItem secItem_CertData;
+    secItem_CertData.data = cert->derCert.data;
+    secItem_CertData.len = cert->derCert.len;
+    FILE* cert_file = fopen(result, "w");
+    if (!cert_file) {
+        perror("fopen");
+        exit(EXIT_FAILURE);
+    }
+    fprintf(cert_file, "%s\n%s\n%s\n", "-----BEGIN CERTIFICATE-----",
+            BTOA_DataToAscii(secItem_CertData.data, secItem_CertData.len),
+            "-----END CERTIFICATE-----");
+    fflush(cert_file);
+    fclose(cert_file);
+
+
     /* Parse all the extensions. */
     if (first && !ss->sec.isServer) {
         rv = ssl3_HandleExtensions(ss, &extensionsData.data,
@@ -3828,22 +3866,6 @@ tls13_HandleCertificateEntry(sslSocket *ss, SECItem *data, PRBool first,
 
     cert = CERT_NewTempCertificate(ss->dbHandle, &certData, NULL,
                                    PR_FALSE, PR_TRUE);
-
-    if (!cert) {
-        PRErrorCode errCode = PORT_GetError();
-        switch (errCode) {
-            case PR_OUT_OF_MEMORY_ERROR:
-            case SEC_ERROR_BAD_DATABASE:
-            case SEC_ERROR_NO_MEMORY:
-                FATAL_ERROR(ss, errCode, internal_error);
-                return SECFailure;
-            default:
-                ssl3_SendAlertForCertError(ss, errCode);
-                return SECFailure;
-        }
-    }
-
-    *certp = cert;
 
     return SECSuccess;
 }
