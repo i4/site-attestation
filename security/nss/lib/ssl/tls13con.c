@@ -27,6 +27,7 @@
 #include "tls13hashstate.h"
 #include "tls13subcerts.h"
 #include "tls13psk.h"
+#include "base64.h"
 
 static SECStatus tls13_SetCipherSpec(sslSocket *ss, PRUint16 epoch,
                                      SSLSecretDirection install,
