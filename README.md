@@ -16,3 +16,7 @@ This defines constants, a data structure and the handler functions up until `RAT
 ### RATLS INSTALL HANDLER
 
 This tells OpenSSL to install the aforedefined handlers to the TLS handshake.
+
+## Symlinks
+
+execute `ln -s $(pwd)/vcek.pem /usr/local/nginx/certs/vcek.pem`
