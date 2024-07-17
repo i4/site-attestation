@@ -13,6 +13,7 @@ import {arrayBufferToHex, checkAttestationInfoFormat, hasDateChanged} from "../l
 import {removeUnsupported} from "../lib/storage";
 import * as attestation from "../lib/attestation";
 import {buildParamUrl} from "../content/dialog/dialog";
+import {isEmpty} from "lodash";
 
 const ATTESTATION_INFO_PATH = "/remote-attestation.json";
 const NEW_ATTESTATION_PAGE = browser.runtime.getURL("new-remote-attestation.html");
@@ -109,7 +110,7 @@ async function showPageAction(tabId, success) {
 
 async function queryRATLSTab(host) {
     const queryInfo = {
-        url: `*://${host}/*`,
+        // url: `*://${host}/*`,    // TODO issue with URL bar being set after a TLS connection is opened
         currentWindow: true,
         active: true
     };
@@ -229,7 +230,7 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
     const storedAR = await storage.getAttestationReport(details.url);
     if (storedAR &&
         arrayBufferToHex(ar.measurement) === arrayBufferToHex(storedAR.measurement) // &&
-        /*await checkHost({}, ar)*/) { // TODO can not do network requests while network socket is blocked
+        /*await checkHost({}, ar)*/) { // TODO can not do network requests while network socket is blocked -> use bundled VCEK
         // the measurement is correct and the host can be trusted
         // -> store new TLS key, update lastTrusted
         console.log("known measurement " + details.url);
@@ -251,6 +252,18 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
 }
 
 browser.tlsExt.onHandleTlsExtension.addListener(listenerOnHandleTlsExtension, ".*", 420);
+
+async function listenerOnTabUpdated(tabId, changeInfo, tab) {
+    const url = new URL(tab.url);
+    const host = await storage.getHost(url.host);
+    if (isEmpty(host)) return; // unknown host
+    if (host.trusted)
+        showPageAction(tabId, true)
+    else if (host.ignored)
+        showPageAction(tabId, false);
+}
+
+browser.tabs.onUpdated.addListener(listenerOnTabUpdated);
 
 async function listenerOnMessageReceived(message, sender) {
     if (sender.id !== browser.runtime.id) {
