@@ -21,6 +21,7 @@
 #include "keyhi.h"
 #include "mozilla/Base64.h"
 #include "mozilla/Casting.h"
+#include "mozilla/Components.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/Logging.h"
 #include "mozilla/Preferences.h"
@@ -57,6 +58,7 @@
 #include "sslerr.h"
 #include "sslexp.h"
 #include "sslproto.h"
+#include "mozilla/extensions/TlsExtensionService.h"
 
 #if defined(__arm__)
 #  include "mozilla/arm.h"
@@ -1263,6 +1265,34 @@ nsresult nsSSLIOLayerNewSocket(int32_t family, const char* host, int32_t port,
   return NS_OK;
 }
 
+PRBool my_SSLExtensionWriter(
+        PRFileDesc *fd,
+        SSLHandshakeType message,
+        PRUint8 *data,
+        unsigned int *len,
+        unsigned int maxLen,
+        void *arg
+) {
+  MOZ_LOG(gPIPNSSLog, LogLevel::Debug,
+            ("Writer aufgerufen!\n"));
+  return PR_TRUE;
+}
+
+SECStatus my_SSLExtensionHandler(
+        PRFileDesc *fd,
+        SSLHandshakeType messageType,
+        const PRUint8 *data,
+        unsigned int len,
+        SSLAlertDescription *alert,
+        void *arg
+) {
+  MOZ_LOG(gPIPNSSLog, LogLevel::Debug,
+            ("Handler aufgerufen!\n"));
+  return SECSuccess;
+}
+
+LazyLogModule gTLSEXTLog("tlsext"); // TODO remove
+
 static PRFileDesc* nsSSLIOLayerImportFD(PRFileDesc* fd,
                                         NSSSocketControl* infoObject,
                                         const char* host, bool haveHTTPSProxy) {
@@ -1304,9 +1334,20 @@ static PRFileDesc* nsSSLIOLayerImportFD(PRFileDesc* fd,
       SECSuccess) {
     return nullptr;
   }
+
+  auto* tlsExtensionService = mozilla::extensions::TlsExtensionService::GetSingleton().take();
+  if (tlsExtensionService->InstallObserverHooks(sslSock, host) != SECSuccess) {
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("NSS Install failed!\n"));
+    return nullptr;
+  }
+
   if (SSL_SetURL(sslSock, host) != SECSuccess) {
     return nullptr;
   }
+
+  MOZ_LOG(gPIPNSSLog, LogLevel::Debug,
+            ("Dies ist ein Test! [%s]\n", host));
 
   return sslSock;
 }

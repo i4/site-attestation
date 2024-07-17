@@ -1,0 +1,30 @@
+
+XPIDL_SOURCES += [
+    "nsITlsExtensionService.idl",
+]
+
+XPIDL_MODULE = "webextensions"
+
+UNIFIED_SOURCES += [
+    "TlsExtensionService.cpp",
+    "TlsExtObserverRunnable.cpp",
+    "TlsExtPromiseHandler.cpp"
+]
+
+EXPORTS.mozilla.extensions += [
+    "TlsExtensionService.h",
+    "TlsExtObserverInfo.h",
+    "TlsExtObserverRunnable.h",
+    "TlsExtPromiseHandler.h"
+]
+
+XPCOM_MANIFESTS += [
+    "components.conf",
+]
+
+EXTRA_JS_MODULES += [
+    # "TlsExtensionObserver.sys.mjs",
+]
+
+# Necessary for the .cpp implementation to be compiled
+FINAL_LIBRARY = "xul"
