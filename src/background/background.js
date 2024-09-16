@@ -156,26 +156,6 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
     if (!nonce)
         return browser.tlsExt.SECStatus.SECSUCCESS;
 
-    function stringToArrayBuffer(str) {
-        const buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
-        const bufView = new Uint16Array(buf);
-        let i = 0, strLen = str.length;
-        for (; i < strLen; i++) {
-            bufView[i] = str.charCodeAt(i);
-        }
-        return buf;
-    }
-
-    // https://www.geeksforgeeks.org/convert-base64-string-to-arraybuffer-in-javascript/
-    function base64ToArrayBuffer(str) {
-        const binaryString = atob(str);
-
-        const encoder = new TextEncoder();
-        const binaryArray = encoder.encode(binaryString);
-
-        return binaryArray.buffer;
-    }
-
     // console.log("Creating JSON");
     // const hostAttestationInfo = JSON.parse(data);
     // console.log(hostAttestationInfo);
@@ -186,27 +166,15 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
     console.log(data);
 
     // TODO convert Base64 to Binary: https://www.geeksforgeeks.org/convert-base64-string-to-arraybuffer-in-javascript/
-    const hostAttestationInfo = base64ToArrayBuffer(data.report);
+    const hostAttestationInfo = util.base64ToArrayBuffer(data.report);
     console.log(hostAttestationInfo)
 
     console.log("Creating AR");
-    // const arrayBuffer = await new Response(data).arrayBuffer(); // is there a better way than using the Response Object?
-    // const arrayBuffer = stringToArrayBuffer(data);
     const ar = new attestation.AttestationReport(hostAttestationInfo);
-    // let ar;
-    // try {
-    //     ar = new attestation.AttestationReport(arrayBuffer);
-    // } catch (e) {
-    //     console.log(e);
-    //     return browser.tlsExt.SECStatus.SECFAILURE;
-    // }
 
     // TODO: does AR contain given nonce? nonce in the AR might be hashed
     // if (ar.report_data !== nonce)
     //     return browser.tlsExt.SECStatus.SECFAILURE;
-    console.log("AR:");
-    console.log(ar);
-    console.log(ar.version);
 
     const isKnown = await storage.isKnownHost(details.url);
     const tab = await queryRATLSTab(details.url);   // TODO this might not work if a page's content refers to a RATLS page // TODO infact this does not really work, because it seems like a TLS connection is opened before the URL bar reflects the URL
