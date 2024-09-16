@@ -388,7 +388,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             char report[2048];
             size_t report_len = fread(report, 1,
                                       2048,
-                                      report_file);
+                                      report_file) - 1;
             if(report_len == 0 && !feof(report_file)) {
                 perror("fread");
                 exit(EXIT_FAILURE);
@@ -403,7 +403,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             char vcek[2048];
             FILE* vcek_file = sfopen("/usr/local/nginx/certs/vcek.pem", "r");
-            size_t vcek_len = fread(vcek, 1, 2048, vcek_file);
+            size_t vcek_len = fread(vcek, 1, 2048, vcek_file) - 1;
             if(vcek_len == 0 && !feof(vcek_file)) {
                 perror("fread");
                 exit(EXIT_FAILURE);
