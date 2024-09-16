@@ -143,10 +143,13 @@ async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, deta
 browser.tlsExt.onWriteTlsExtension.addListener(listenerOnWriteTlsExtension, ".*", 420);
 
 async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, details) {
+    console.log("handler unfiltered");
+
     if (messageSSLHandshakeType !== browser.tlsExt.SSLHandshakeType.SSL_HS_CERTIFICATE)
         return browser.tlsExt.SECStatus.SECSUCCESS;
 
     console.log("handler");
+    console.log(data);
     console.log(details);
 
     const nonce = await storage.getNonce(details.url);
@@ -163,9 +166,33 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
         return buf;
     }
 
+    // https://www.geeksforgeeks.org/convert-base64-string-to-arraybuffer-in-javascript/
+    function base64ToArrayBuffer(str) {
+        const binaryString = atob(str);
+
+        const encoder = new TextEncoder();
+        const binaryArray = encoder.encode(binaryString);
+
+        return binaryArray.buffer;
+    }
+
+    // console.log("Creating JSON");
+    // const hostAttestationInfo = JSON.parse(data);
+    // console.log(hostAttestationInfo);
+    // TODO fake this for now, fix later by Maxim
+    data = {
+        report :"AgAAAAAAAAAAAAsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAEAAAAHAAAAAAALPgEAAAAAAAAAAAAAAAAAAABzseYNSM5UpP1CrlpUS0FBeWLdtLFR6A2T+ssEZ+S4Bdj0Sboraa32nkTHBfycKJfxqczBrGzaAadSUDnMUCeQ5WmeDCcPPlv9fi2dyEYjHpkpfVXQ98b4lEaes4SzQCI5tywMKKSeIx6KGmIxQwm0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABDS4FHtaycfJGmk7nnqwt2xU5RLT9kwgG6a7P1wIM1D///////////////////////////////////////////BwAAAAAACz4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAArC147EqgrYzseBcpN0P1pPeAWtdU/K26adV7Jj4BaUnEELbZRw/CiO+o7U1XxmdClBAMNTaPhmuOi6cixnx8PBwAAAAAACz4GNgEABjYBAAcAAAAAAAs+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKMQ79KtMjW/FknifGBRUDCziNWDYgEd1B+3nyB/83D7BhpQ4lvQJb3uzwiLdpcoKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARUa8YCoV+3IqSOwYn8ETgAAClC1AmwI2kFzAYMix/SyIKTeR1MMNgIzWghf1TjpgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+    }
+    console.log(data);
+
+    // TODO convert Base64 to Binary: https://www.geeksforgeeks.org/convert-base64-string-to-arraybuffer-in-javascript/
+    const hostAttestationInfo = base64ToArrayBuffer(data.report);
+    console.log(hostAttestationInfo)
+
+    console.log("Creating AR");
     // const arrayBuffer = await new Response(data).arrayBuffer(); // is there a better way than using the Response Object?
-    const arrayBuffer = stringToArrayBuffer(data);
-    const ar = new attestation.AttestationReport(arrayBuffer);
+    // const arrayBuffer = stringToArrayBuffer(data);
+    const ar = new attestation.AttestationReport(hostAttestationInfo);
     // let ar;
     // try {
     //     ar = new attestation.AttestationReport(arrayBuffer);
@@ -177,8 +204,6 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
     // TODO: does AR contain given nonce? nonce in the AR might be hashed
     // if (ar.report_data !== nonce)
     //     return browser.tlsExt.SECStatus.SECFAILURE;
-    console.log("data length: " + data.length);
-    console.log("data: " + data);
     console.log("AR:");
     console.log(ar);
     console.log(ar.version);

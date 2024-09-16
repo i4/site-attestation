@@ -6,13 +6,14 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "webpack --watch --progress",
-    "browser": "cd ./build && web-ext run --url https://transparent-vm.net --bc -p ../firefox-profile/ --profile-create-if-missing",
+    "browser": "cd ./build && web-ext run --url https://localhost --bc -p ../firefox-profile/ --profile-create-if-missing --firefox=/Users/luca/Dev/FAU/FAU_Proj/shallow_firefox/obj-aarch64-apple-darwin22.4.0/dist/Nightly.app/Contents/MacOS/firefox",
     "http": "cd ./demo-site && http-server -C cert.pem -K key.pem -S",
     "lint": "npx eslint src",
     "lint:fix": "npx eslint --fix src",
     "build": "webpack build",
-    "debug": "cd ./build && web-ext run --url https://transparent-vm.net --devtools -p ../firefox-profile/ --profile-create-if-missing",
-    "sign": "cd ./build && web-ext sign --api-key=$AMO_JWT_ISSUER --api-secret=$AMO_JWT_SECRET"
+    "debug": "cd ./build && web-ext run --url https://localhost --devtools -p ../firefox-profile/ --profile-create-if-missing --firefox=/Users/luca/Dev/FAU/FAU_Proj/shallow_firefox/obj-aarch64-apple-darwin22.4.0/dist/Nightly.app/Contents/MacOS/firefox",
+    "sign": "cd ./build && web-ext sign --api-key=$AMO_JWT_ISSUER --api-secret=$AMO_JWT_SECRET",
+    "bd": "cd ./build && web-ext run --url https://localhost --devtools --bc -p ../firefox-profile/ --profile-create-if-missing --firefox=/Users/luca/Dev/FAU/FAU_Proj/shallow_firefox/obj-aarch64-apple-darwin22.4.0/dist/Nightly.app/Contents/MacOS/firefox"
   },
   "keywords": [],
   "author": "",
