@@ -13,4 +13,4 @@ touch "${OUTFILE}.bin"
 sha512sum "${CHALLENGE_PATH}" | xxd -r -p > "${HASHFILE}"
 
 /home/ubuntu/snpguest/target/debug/snpguest report "${OUTFILE}.bin" "${HASHFILE}"
-base64 "${OUTFILE}.bin" > "${OUTFILE}"
+base64 "${OUTFILE}.bin" | sed ':a; N; $!ba; s/\n/\\\\n/g' > "${OUTFILE}"
