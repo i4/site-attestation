@@ -1,7 +1,7 @@
 import {AttestationReport} from "../lib/attestation";
 import {base64ToArrayBuffer, stringToArrayBuffer} from "../lib/util";
-import asn1js from "asn1js";
-import pkijs from "pkijs";
+import * as pkijs from "pkijs";
+import * as asn1js from "asn1js";
 
 function pemToArrayBuffer(pem) {
     const base64String = pem
