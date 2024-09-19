@@ -70,7 +70,7 @@ export function hasDateChanged(date1, date2) {
 
 // https://www.geeksforgeeks.org/convert-base64-string-to-arraybuffer-in-javascript/
 export function base64ToArrayBuffer(str) {
-    const binaryString = atob(str);
+    const binaryString = atob(str); // TODO rework, deprecated
 
     const encoder = new TextEncoder();
     const binaryArray = encoder.encode(binaryString);
