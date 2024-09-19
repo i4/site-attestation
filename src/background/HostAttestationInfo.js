@@ -28,8 +28,10 @@ export class HostAttestationInfo {
         const json = JSON.parse(data);
         this.report = json.report;
         this.vcek = json.vcek;
+    }
 
-        this.attestationReport = new AttestationReport(base64ToArrayBuffer(this.report));
+    get attestationReport() {
+        return new AttestationReport(base64ToArrayBuffer(this.report));
     }
 
     get reportDataStr() {

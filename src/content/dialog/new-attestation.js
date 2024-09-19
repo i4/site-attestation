@@ -15,6 +15,7 @@ import {
 } from "./dialog";
 import {getMeasurementFromRepo} from "../../lib/net";
 import {checkHost} from "../../lib/crypto";
+import {HostAttestationInfo} from "../../background/HostAttestationInfo";
 
 const titleText = document.getElementById("title");
 const domainText = document.getElementById("domain");
@@ -63,18 +64,27 @@ noTrustButton.addEventListener("click", async () => {
 });
 
 window.addEventListener("load", async () => {
-    hostInfo = await storage.getPendingAttestationInfo(host);
+    console.log("New Attestation");
+
+    console.log("host is: " + host);
     console.log(`origin is ${origin}`);
+
+    hostInfo = await storage.getPendingAttestationInfo(host);
+
+    console.log(hostInfo);
+
+    const hostAttestationInfo = new HostAttestationInfo(hostInfo.hostAttestationInfo);
+
+    console.log(hostAttestationInfo);
 
     // init UI
     domainText.innerText = host;
 
-    ar = await getReport(hostInfo);
-    if (ar && (await checkHost(hostInfo, ar))) {
+    if (await checkHost(hostInfo, hostAttestationInfo)) {
         let makeVisible = [];
 
         // 4. Trust the measurement? wait for user input
-        measurementText.innerText = arrayBufferToHex(ar.measurement);
+        measurementText.innerText = arrayBufferToHex(hostAttestationInfo.attestationReport.measurement); // TODO: could have better performance
         descriptionText.innerHTML =
             "This host offers remote attestation, do you want to trust it?<br>" +
             "<i>You may trust its measurement.</i>";

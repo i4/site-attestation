@@ -5,7 +5,8 @@ import {types} from "../../lib/messaging";
 import {AttestationReport} from "../../lib/attestation";
 
 export async function getReport(hostInfo) {
-    return new AttestationReport(hostInfo.ar_arrayBuffer);
+    // return new AttestationReport(hostInfo.ar_arrayBuffer);
+    return hostInfo.hostAttestationInfo.attestationReport;
 }
 
 export async function listenerTrustMeasurement(hostInfo, ar, origin) {

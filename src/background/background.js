@@ -160,16 +160,10 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
     const hostAttestationInfo = new HostAttestationInfo(data);
     console.log(hostAttestationInfo)
 
-    console.log("Creating AR");
-    const ar = hostAttestationInfo.attestationReport;
-
     // TODO: does AR contain given nonce? nonce in the AR might be hashed
     // if (ar.report_data !== nonce)
     //     return browser.tlsExt.SECStatus.SECFAILURE;
     // ! This won't work: The Extension has to build a structure like '<nonce>\n<pubkey> on its won, hash it and compare it
-
-    const vcek = hostAttestationInfo.vcekCert;
-    console.log(vcek);
 
     const isKnown = await storage.isKnownHost(details.url);
     const tab = await queryRATLSTab(details.url);   // TODO this might not work if a page's content refers to a RATLS page // TODO infact this does not really work, because it seems like a TLS connection is opened before the URL bar reflects the URL
@@ -179,11 +173,15 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
     }
     console.log(tab.url);
 
+    console.log("AR is: ", hostAttestationInfo.attestationReport);
+    console.log("VCEK is: ", hostAttestationInfo.vcekCert);
+
     if (!isKnown) {
         console.log("host is unknown");
         await storage.setPendingAttestationInfo(details.url, {
             host: details.url,
-            ar_arrayBuffer: ar.arrayBuffer,
+            ar_arrayBuffer: hostAttestationInfo.attestationReport.arrayBuffer,
+            hostAttestationInfo: JSON.stringify(hostAttestationInfo),
         });
 
         browser.tabs.update(tab.id, {
