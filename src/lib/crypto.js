@@ -12,7 +12,7 @@ import * as storage from "./storage";
 // returns boolean
 export async function validateWithCertChain(vcek) {
     // AMD key server
-    const AMD_ARK_ASK_REVOCATION = "https://kdsintf.amd.com/vcek/v1/Milan/crl"
+    const AMD_ARK_ASK_REVOCATION = "https://kdsintf.amd.com/vcek/v1/Genoa/crl" // TODO: derive architecture from AR
 
     // Fetch assets of the web extension such as ask and ark
     async function loadData(resourcePath) {
@@ -116,9 +116,12 @@ export async function checkHost(hostInfo, hostAttestationInfo) {
     const ar = hostAttestationInfo.attestationReport;
     const vcek = hostAttestationInfo.vcekCert;
     console.log("AR is: ");
-    console.log(ar);
-    console.log("VCEK is: " + vcek);
+    console.log(ar.parse_report);
+    console.log("VCEK is: ");
     console.log(vcek);
+
+    console.log("Fetching VCEK:");
+    fetchVCEK(ar.chip_id, ar.committedTCB);
 
     // 1. verify TLS connection
     // TODO check for Nonce, Public Key

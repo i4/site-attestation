@@ -72,10 +72,17 @@ export function hasDateChanged(date1, date2) {
 export function base64ToArrayBuffer(str) {
     const binaryString = atob(str); // TODO rework, deprecated
 
-    const encoder = new TextEncoder();
-    const binaryArray = encoder.encode(binaryString);
+    // Create an ArrayBuffer with the same length as the binary string
+    let len = binaryString.length;
+    let bytes = new Uint8Array(len);
 
-    return binaryArray.buffer;
+    // Convert each character in the binary string to its byte representation
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+
+    // Return the ArrayBuffer
+    return bytes.buffer;
 }
 
 // https://developer.chrome.com/blog/how-to-convert-arraybuffer-to-and-from-string
