@@ -85,43 +85,18 @@ export async function validateAttestationReport(ar, vcek) {
 
     // Hack: We cannot directly ask the cert object for the public key as
     // it triggers a 'not supported' exception. Thus convert to JSON and back.
-
-    console.log("getting json pub key");
     const jsonPubKey = vcek.subjectPublicKeyInfo.subjectPublicKey.toJSON()
-    console.log("getting pub key");
     const pubKey = await importPubKey(util.hex_decode(jsonPubKey.valueBlock.valueHex))
-    console.log("verifying");
-
-    console.log(arrayBufferToHex(ar.signature), arrayBufferToHex(ar.measurement));
-    // TODO: Signature is 0ed
-
     return await verifyMessage(pubKey, ar.signature, ar.getSignedData)
 }
 
 export async function checkHost(hostInfo, hostAttestationInfo) {
     // const ssl_sha512 = hostInfo.ssl_sha512;
 
-    // let vcek;
-    // try {
-    //     // ! TODO das hier ist falsch! VCEK wird von reportedTCB abgeleitet!
-    //     // Aus irgendeinem Grund wird VCEK im Fall der VM von currentTCB abgeleitet?
-    //     vcek = await fetchVCEK(ar.chip_id, ar.currentTCB);
-    // } catch (e) {
-    //     // vcek could not be attained
-    //     console.log(e);
-    //     return false;
-    // }
     console.log("checking host");
 
     const ar = hostAttestationInfo.attestationReport;
     const vcek = hostAttestationInfo.vcekCert;
-    console.log("AR is: ");
-    console.log(ar.parse_report);
-    console.log("VCEK is: ");
-    console.log(vcek);
-
-    console.log("Fetching VCEK:");
-    fetchVCEK(ar.chip_id, ar.committedTCB);
 
     // 1. verify TLS connection
     // TODO check for Nonce, Public Key
@@ -131,45 +106,27 @@ export async function checkHost(hostInfo, hostAttestationInfo) {
     //     return false;
     // }
 
-    async function validation() {
-        console.log("validating AR and VCEK");
+    console.log("validating AR and VCEK");
 
-        // 2. Validate that the VCEK is correctly signed by AMD root cert
-        if (!await validateWithCertChain(vcek)) {
-            // vcek could not be verified
-            console.log("vcek invalid");
-            return false;
-        }
-
-        console.log("VCEK validated");
-
-        // 3. Validate that the attestation report is correctly signed using the VCEK
-        if (!await validateAttestationReport(ar, vcek)) {
-            // attestation report could not be verified using VCEK
-            console.log("attestation report invalid")
-            return false;
-        }
-
-        console.log("AR validated");
-
-        return true;
+    // 2. Validate that the VCEK is correctly signed by AMD root cert
+    if (!await validateWithCertChain(vcek)) {
+        // vcek could not be verified
+        console.log("vcek invalid");
+        return false;
     }
 
-    // The VCEK is force cached, thus changes on the source are ignored.
-    // To solve this, reload the VCEK once, if the validation fails.
-    // if (!await validation()) {
-    //     console.log("reload vcek");
-    //     try {
-    //         vcek = await fetchVCEK(ar.chip_id, ar.committedTCB, true);
-    //     } catch (e) {
-    //         // vcek could not be attained
-    //         console.log(e);
-    //         return false;
-    //     }
-    //     return validation();
-    // }
+    console.log("VCEK validated");
 
-    return validation();
+    // 3. Validate that the attestation report is correctly signed using the VCEK
+    if (!await validateAttestationReport(ar, vcek)) {
+        // attestation report could not be verified using VCEK
+        console.log("attestation report invalid")
+        return false;
+    }
+
+    console.log("AR validated");
+
+    return true;
 }
 
 /**
