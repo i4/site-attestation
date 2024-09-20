@@ -179,7 +179,7 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
     if (!isKnown) {
         console.log("host is unknown");
         await storage.setPendingAttestationInfo(details.url, {
-            host: details.url,
+            host: details.url, // TODO this is a hostname, not an URL
             ar_arrayBuffer: hostAttestationInfo.attestationReport.arrayBuffer,
             hostAttestationInfo: JSON.stringify(hostAttestationInfo),
         });

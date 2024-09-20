@@ -33,7 +33,10 @@ async function init() {
     tab = await getTab();
     const url = new URL(tab.url)
     host = new URL(url.origin);
-    const hostInfo = await storage.getHost(host.href);
+
+    // The hostInfo is stored for each hostname, instead of each href with the old extension.
+    // This is a limitation of the TlsExt web-extension API.
+    const hostInfo = await storage.getHost(host.hostname);
 
     urlText.innerText = host.href;
 
