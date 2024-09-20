@@ -3816,6 +3816,9 @@ tls13_HandleCertificateEntry(sslSocket *ss, SECItem *data, PRBool first,
         return SECFailure;
     }
 
+    cert = CERT_NewTempCertificate(ss->dbHandle, &certData, NULL,
+                                   PR_FALSE, PR_TRUE);
+
     if (!cert) {
         PRErrorCode errCode = PORT_GetError();
         switch (errCode) {
@@ -3865,8 +3868,6 @@ tls13_HandleCertificateEntry(sslSocket *ss, SECItem *data, PRBool first,
         /* TODO(ekr@rtfm.com): Copy out SCTs. Bug 1315727. */
     }
 
-    cert = CERT_NewTempCertificate(ss->dbHandle, &certData, NULL,
-                                   PR_FALSE, PR_TRUE);
 
     return SECSuccess;
 }
