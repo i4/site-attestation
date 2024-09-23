@@ -166,7 +166,7 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
     // ! This won't work: The Extension has to build a structure like '<nonce>\n<pubkey> on its won, hash it and compare it
 
     const isKnown = await storage.isKnownHost(details.url);
-    const tab = await queryRATLSTab(details.url);   // TODO this might not work if a page's content refers to a RATLS page // TODO infact this does not really work, because it seems like a TLS connection is opened before the URL bar reflects the URL
+    const tab = await queryRATLSTab(details.url);   // TODO this might not work if a page's content refers to a RATLS page // ! in fact this does not really work, because it seems like a TLS connection is opened before the URL bar reflects the URL
     if (!tab) {
         console.log(`could not find tab for ${details.url}`);
         return browser.tlsExt.SECStatus.SECFAILURE; // could not find the tab causing the TLS connection
@@ -244,8 +244,8 @@ async function listenerOnTabUpdated(tabId, changeInfo, tab) {
     const host = await storage.getHost(url.host);
     if (isEmpty(host)) return; // unknown host
     if (host.trusted)
-        showPageAction(tabId, true)
-    else if (host.ignored)
+        showPageAction(tabId, true);
+    else if (host.ignore)
         showPageAction(tabId, false);
 }
 
