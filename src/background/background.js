@@ -136,7 +136,11 @@ async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, deta
     // const nonce = "RA_REQ:ichbineinnonce"; // TODO generate proper nonce
     const nonce = "3\0";
 
-    await storage.setNonce(details.url, nonce);
+    try {
+        await storage.setNonce(details.url, nonce);
+    } catch (e) {
+        console.error(e);
+    }
 
     return nonce;
 }
@@ -172,6 +176,7 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
         return browser.tlsExt.SECStatus.SECFAILURE; // could not find the tab causing the TLS connection
     }
 
+    console.log("getting last request target");
     const targetUrl = await storage.getLastRequestTarget(tab.id);
     console.log("got target url ", targetUrl, " for tab ", tab.id);
     console.log("handler for tab with url: ", targetUrl);

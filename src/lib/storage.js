@@ -11,8 +11,17 @@ import {isEmpty} from "lodash";
  *                      | measurement repos                   |
  */
 
+/**
+ * structure of the session storage:
+ * key------------------|-value-------------------------------|-comment-----------------------------
+ * hosts                | a map of hosts                      | -
+ * tabs                 | a map of tabs and their last targets| -
+ */
+
 const AUTHOR_KEYS = "author_keys";
 const MEASUREMENT_REPOS = "measurement_repos";
+const HOSTS = "hosts";
+const TABS = "tabs";
 
 async function getObject(request, storageArea = browser.storage.local){
     const item = await storageArea.get(request);
@@ -31,7 +40,7 @@ async function getArray(request){
 }
 
 export async function setObjectProperties(key, object, storageArea = browser.storage.local) {
-    const old = await getObject(key);
+    const old = await getObject(key, storageArea);
     return storageArea.set({
         [key]: {...old, ...object} // the latter overwrites the former
     });
@@ -43,9 +52,22 @@ async function getObjectProperty(key, propertyName, storageArea = browser.storag
 }
 
 async function removeObjectProperty(key, propertyName, storageArea = browser.storage.local) {
-    let host = await getObject(key);
+    let host = await getObject(key, storageArea);
     delete host[propertyName];
     return storageArea.set({[key]: host});
+}
+
+async function mapSet(mapName, key, value, storageArea = browser.storage.local) {
+    let map = await getObject(mapName, storageArea);
+    map[key] = value;
+    return storageArea.set({
+        [mapName]: map
+    });
+}
+
+async function mapGet(mapName, key, storageArea = browser.storage.local) {
+    const map = await getObject(mapName, storageArea);
+    return map[key];
 }
 
 async function arrayAdd(key, value) {
@@ -278,30 +300,36 @@ export async function removeConfigMeasurement(host) {
 }
 
 export async function setNonce(host, nonce) {
-    return setObjectProperties(host, {nonce: nonce}, browser.storage.session);
+    let hostInfo = await mapGet(HOSTS, host, browser.storage.session);
+    if (!hostInfo) hostInfo = {}; // if key is unknown, hostInfo would be undefined
+    console.log("old hostinfo is ", hostInfo);
+    hostInfo.nonce = nonce;
+    return mapSet(HOSTS, host, hostInfo, browser.storage.session);
 }
 
 export async function getNonce(host){
-    return getObjectProperty(host, "nonce", browser.storage.session);
-}
-
-export async function removeNonce(host) {
-    return removeObjectProperty(host, "nonce", browser.storage.session);
+    const hostInfo = await mapGet(HOSTS, host, browser.storage.session);
+    return hostInfo.nonce;
 }
 
 export async function setPendingAttestationInfo(host, attestationInfo) {
-    return setObjectProperties(host, attestationInfo, browser.storage.session);
+    let hostInfo = await mapGet(HOSTS, host, browser.storage.session);
+    if (!hostInfo) hostInfo = {}; // if key is unknown, hostInfo would be undefined
+    hostInfo = {...hostInfo, ...attestationInfo};
+    return mapSet(HOSTS, host, hostInfo, browser.storage.session);
 }
 
 export async function getPendingAttestationInfo(host){
-    return getObject(host, browser.storage.session);
+    return mapGet(HOSTS, host, browser.storage.session);
 }
 
 // TODO for testing only, has to be rewritten for production
 export async function setLastRequestTarget(tabId, target) {
-    return setObjectProperties(tabId.toString(), {target: target}, browser.storage.session);
+    // return setObjectProperties(tabId.toString(), {target: target}, browser.storage.session);
+    return mapSet(TABS, tabId.toString(), target, browser.storage.session);
 }
 
 export async function getLastRequestTarget(tabId){
-    return getObjectProperty(tabId.toString(), "target", browser.storage.session);
+    // return getObjectProperty(tabId.toString(), "target", browser.storage.session);
+    return mapGet(TABS, tabId.toString(), browser.storage.session);
 }
