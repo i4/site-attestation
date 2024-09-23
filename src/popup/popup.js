@@ -13,8 +13,8 @@ const settingsButton = document.getElementById("button-settings");
 let tab, host;
 
 removeButton.addEventListener("click", async () => {
-    await storage.removeHost(host.href);
-    browser.tabs.reload(tab.id);
+    await storage.removeHost(host.host);
+    browser.tabs.reload(tab.id, { bypassCache: true });
 });
 
 settingsButton.addEventListener("click", () => browser.runtime.openOptionsPage());
