@@ -60,7 +60,11 @@ noTrustButton.addEventListener("click", async () => {
     browser.runtime.sendMessage({
         type : types.redirect,
         url : origin
+        // type : types.block,
+        // origin : origin,
+        // host: host,
     });
+    console.log("blocking host ", host, " redirecting to ", origin);
 });
 
 window.addEventListener("load", async () => {

@@ -171,7 +171,10 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
         console.log(`could not find tab for ${details.url}`);
         return browser.tlsExt.SECStatus.SECFAILURE; // could not find the tab causing the TLS connection
     }
-    console.log(tab.url);
+
+    const targetUrl = await storage.getLastRequestTarget(tab.id);
+    console.log("got target url ", targetUrl, " for tab ", tab.id);
+    console.log("handler for tab with url: ", targetUrl);
 
     console.log("AR is: ", hostAttestationInfo.attestationReport);
     console.log("VCEK is: ", hostAttestationInfo.vcekCert);
@@ -185,7 +188,7 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
         });
 
         browser.tabs.update(tab.id, {
-            url : buildParamUrl(NEW_ATTESTATION_PAGE, tab.url, details.url)
+            url : buildParamUrl(NEW_ATTESTATION_PAGE, targetUrl, details.url)
         });
 
         return browser.tlsExt.SECStatus.SECFAILURE;
@@ -196,7 +199,7 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
     // host is known
     if (await storage.isIgnored(details.url)) {
         // attestation ignored -> show page action
-        await showPageAction(tab.tabId, false);
+        await showPageAction(tab.id, false);
         return browser.tlsExt.SECStatus.SECSUCCESS;
     }
 
@@ -205,7 +208,7 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
     if (await storage.isUntrusted(details.url)) {
         // host is blocked
         browser.tabs.update(tab.id, {
-            url : buildParamUrl(BLOCKED_ATTESTATION_PAGE, tab.url, details.url)
+            url : buildParamUrl(BLOCKED_ATTESTATION_PAGE, targetUrl, details.url)
         });
         return browser.tlsExt.SECStatus.SECFAILURE;
     }
@@ -227,13 +230,13 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
     } else {
         console.log("attestation failed " + details.url);
         browser.tabs.update(tab.id, {
-            url : buildParamUrl(DIFFERS_ATTESTATION_PAGE, tab.url, details.url)
+            url : buildParamUrl(DIFFERS_ATTESTATION_PAGE, targetUrl, details.url)
         });
         return browser.tlsExt.SECStatus.SECFAILURE;
     }
 
     console.log("trusted successfully");
-    await showPageAction(tab.tabId, true);
+    await showPageAction(tab.id, true);
     return browser.tlsExt.SECStatus.SECSUCCESS;
 }
 
@@ -267,6 +270,14 @@ async function listenerOnMessageReceived(message, sender) {
             browser.tabs.update(sender.tab.id, {
                 url : message.url
             });
+            console.log("updating tab to ", message.url);
+            break;
+        // case messaging.types.block:
+        //     console.log("blocking tab for origin: ", message.origin, message.host);
+        //     browser.tabs.update(sender.tab.id, {
+        //         url : buildParamUrl(BLOCKED_ATTESTATION_PAGE, message.origin, message.host),
+        //     });
+        //     break;
     }
 }
 
@@ -277,3 +288,13 @@ browser.runtime.onStartup.addListener(async () => {
     // does not acquire huge amounts of user data and storage.
     await removeUnsupported();
 });
+
+async function listenerOnBeforeRequest(details) {
+    console.log("webrequest for ", details.url, " in tab ", details.tabId);
+    await storage.setLastRequestTarget(details.tabId, details.url);
+}
+
+browser.webRequest.onBeforeRequest.addListener(
+    listenerOnBeforeRequest,
+    {urls: ['https://*/*'], types: ['main_frame']},
+    ["blocking"]); // TODO required?

@@ -296,3 +296,12 @@ export async function setPendingAttestationInfo(host, attestationInfo) {
 export async function getPendingAttestationInfo(host){
     return getObject(host, browser.storage.session);
 }
+
+// TODO for testing only, has to be rewritten for production
+export async function setLastRequestTarget(tabId, target) {
+    return setObjectProperties(tabId.toString(), {target: target}, browser.storage.session);
+}
+
+export async function getLastRequestTarget(tabId){
+    return getObjectProperty(tabId.toString(), "target", browser.storage.session);
+}
