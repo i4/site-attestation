@@ -3581,11 +3581,11 @@ static SECStatus
 tls13_SendCompressedCertificate(sslSocket *ss, sslBuffer *bufferCertificate)
 {
     /* TLS Certificate Compression. RFC 8879 */
-    /* As the encoding function takes as input a SECItem, 
+    /* As the encoding function takes as input a SECItem,
      * we convert bufferCertificate to certificateToEncode.
      *
-     * encodedCertificate is used to store the certificate 
-     * after encoding. 
+     * encodedCertificate is used to store the certificate
+     * after encoding.
      */
     SECItem encodedCertificate = { siBuffer, NULL, 0 };
     SECItem certificateToEncode = { siBuffer, NULL, 0 };
@@ -3765,7 +3765,7 @@ tls13_SendCertificate(sslSocket *ss)
         }
     }
 
-    /* If no compression mechanism was established or 
+    /* If no compression mechanism was established or
      * the compression mechanism supports only decoding,
      * we continue as before. */
     if (ss->xtnData.compressionAlg == 0 || !tls13_FindCompressionAlgAndCheckIfSupportsEncoding(ss)) {
@@ -3868,6 +3868,8 @@ tls13_HandleCertificateEntry(sslSocket *ss, SECItem *data, PRBool first,
         /* TODO(ekr@rtfm.com): Copy out SCTs. Bug 1315727. */
     }
 
+    // TODO: Luca
+    unlink(result);
 
     return SECSuccess;
 }
@@ -3977,7 +3979,7 @@ tls13_HandleCertificateDecode(sslSocket *ss, PRUint8 *b, PRUint32 length)
     }
 
     /*  If the received CompressedCertificate message cannot be decompressed,
-     *  he connection MUST be terminated with the "bad_certificate" alert. 
+     *  he connection MUST be terminated with the "bad_certificate" alert.
      */
     if (decodedCertificateLen == 0) {
         SSL_TRC(50, ("%d: TLS13[%d]: %s decoded certificate length is incorrect",
@@ -4020,9 +4022,9 @@ tls13_HandleCertificateDecode(sslSocket *ss, PRUint8 *b, PRUint32 length)
     *b += compressedCertificateMessageLen;
     length -= compressedCertificateMessageLen;
 
-    /*  If, after decompression, the specified length does not match the actual length, 
-     *  the party receiving the invalid message MUST abort the connection 
-     *  with the "bad_certificate" alert. 
+    /*  If, after decompression, the specified length does not match the actual length,
+     *  the party receiving the invalid message MUST abort the connection
+     *  with the "bad_certificate" alert.
      */
     if (decodedCertificateLen != decodedCertificate.len) {
         SSL_TRC(50, ("%d: TLS13[%d]: %s certificate length does not correspond to extension length",
@@ -4048,8 +4050,8 @@ tls13_HandleCertificateDecode(sslSocket *ss, PRUint8 *b, PRUint32 length)
     if (rv != SECSuccess) {
         goto loser;
     }
-    /* We allow only one compressed certificate to be handled after each 
-       certificate compression advertisement. 
+    /* We allow only one compressed certificate to be handled after each
+       certificate compression advertisement.
        See test CertificateCompression_TwoEncodedCertificateRequests. */
     ss->xtnData.certificateCompressionAdvertised = PR_FALSE;
     SECITEM_FreeItem(&decodedCertificate, PR_FALSE);
