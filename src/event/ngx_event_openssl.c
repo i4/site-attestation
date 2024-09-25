@@ -358,7 +358,6 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                         int *al, void *addArg) {
     if (extType == EXT_RATLS) {
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
-            puts("Preparing ServerCertificate");
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
             snprintf(&(ctx->challenge[strlen(ctx->challenge)]), 2, "\n");
@@ -399,8 +398,6 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             strncpy(buffer, key_data, key_len); // Use strncpy to avoid truncation issues
             buffer[key_len] = '\0'; // Null-terminate the string
 
-            printf("Challenge:\n'''\n%s\n'''\n", ctx->challenge);
-
             EVP_PKEY_free(pkey);
             BIO_free(mem_bio);
 
@@ -410,12 +407,9 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             SHA512((unsigned char*) ctx->challenge, strlen(ctx->challenge), md_buf);
 
             FILE *hfile = sfopen(ctx->hashfile, "w");
-            puts("SHA512:");
             for (size_t i = 0; i < 64; i++) {
-                printf("%02x", md_buf[i]);
                 fprintf(hfile, "%02x", md_buf[i]);
             }
-            puts("\n");
 
             fclose(hfile);
 
@@ -496,7 +490,6 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             *out = (unsigned char*) ctx->attestation_report_buffer;
             *outlen = buffer_cursor - ctx->attestation_report_buffer;
 
-            puts("Sending ServerCertificate");
             return 1;
         }
     }
@@ -514,6 +507,7 @@ static void callbackFreeExtensionRAServer(SSL *ssl, unsigned int extType,
             free(ctx->attestation_report_buffer);
             free(ctx->hashfile);
             free(ctx->outfile);
+            free(ctx->challenge);
             free(ctx);
         }
     }
@@ -529,7 +523,6 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
         int *al, void *parseArg) {
     if (extType == EXT_RATLS) {
         if (context == SSL_EXT_CLIENT_HELLO) {
-            puts("Received ClientHello");
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
             if (!ctx) {
