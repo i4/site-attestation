@@ -509,7 +509,7 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             buffer[key_len] = '\0';  // Null-terminate the PEM string
 
             // Now buffer contains the PEM encoded public key as a null-terminated string
-            printf("Challenge:\n'''\n%s\n'''\n", buffer);
+            printf("Challenge:\n'''\n%s\n'''\n",challenge);
 
             EVP_PKEY_free(pkey);
             BIO_free(mem_bio);
@@ -518,6 +518,8 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
 
             // unsigned char *SHA512(const unsigned char *data, size_t count, unsigned char *md_buf);
             SHA512((unsigned char*) challenge, key_len + inlen + 1, md_buf);
+
+            printf("SHA512:\n%s\n", md_buf);
 
             FILE *hfile = sfopen(ctx->hashfile, "w");
             fprintf(hfile, "%s", md_buf);
