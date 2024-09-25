@@ -498,8 +498,6 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
 
             snprintf(&(challenge[strlen(challenge)]), 2, "\n");
 
-            X509_print_fp(stdout, x);
-
             EVP_PKEY* pkey = X509_get_pubkey(x);
             if (!pkey) {
                 fprintf(stderr, "Failed to get public key from certificate\n");
