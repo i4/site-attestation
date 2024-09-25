@@ -453,10 +453,9 @@ static void callbackFreeExtensionRAServer(SSL *ssl, unsigned int extType,
     if (extType == EXT_RATLS) {
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
-            free(ctx->outfileenv);
-            free(ctx->hashfileenv);
-            free(ctx->challengefileenv);
             free(ctx->attestation_report_buffer);
+            free(ctx->hashfile);
+            free(ctx->outfile);
             free(ctx);
         }
     }
