@@ -396,7 +396,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             ctx->attestation_report_buffer = smalloc((MEASUREMENT_BUF_SIZE) * sizeof(
                                                  char));
-            char * cursor = ctx->attestation_report_buffer;
+            unsigned char * cursor = ctx->attestation_report_buffer;
 
             cursor += snprintf(cursor, MEASUREMENT_BUF_SIZE,
                                "{\"report\":\"");
@@ -405,17 +405,14 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             EVP_ENCODE_CTX *context = EVP_ENCODE_CTX_new();
             if (context == NULL) {
                 fprintf(stderr, "Failed to create EVP_ENCODE_CTX\n");
-                free(report);
                 return 1;
             }
 
             // Initialize the encoding context
             EVP_EncodeInit(context);
             // Variables to keep track of how much we've written
-            int total_output_len = 0;
-            int output_len = 0;
-            int final_len = 0;
-            int offset = 0;
+            size_t output_len = 0;
+            size_t offset = 0;
 
             // Perform the encoding in chunks
             while (offset < report_len) {
@@ -435,6 +432,8 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             // Print the base64 encoded result
             printf("Base64 Encoded:\n%s\n", ctx->attestation_report_buffer);
+
+            EVP_ENCODE_CTX_free(ctx);
 
             // for (size_t i = 0; i < report_len; i++) {
             //     *cursor++ = report[i];
