@@ -501,6 +501,7 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             EVP_PKEY* pkey = X509_get_pubkey(x);
             if (!pkey) {
                 fprintf(stderr, "Failed to get public key from certificate\n");
+                ERR_print_errors_fp(stderr);  // Print OpenSSL error details
                 return 0;
             }
             BIO* mem_bio = BIO_new(BIO_s_mem());
@@ -512,7 +513,6 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
 
             if (!PEM_write_bio_PUBKEY(mem_bio, pkey)) {
                 fprintf(stderr, "Failed to write public key to memory BIO\n");
-                ERR_print_errors_fp(stderr);  // Print OpenSSL error details
                 EVP_PKEY_free(pkey);
                 BIO_free(mem_bio);
                 return 0;
