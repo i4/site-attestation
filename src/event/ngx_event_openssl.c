@@ -414,7 +414,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             int offset = 0;
 
             // Perform the encoding in chunks
-            while (offset < report_len) {
+            while (((size_t) offset) < report_len) {
                 int chunk_len = (report_len - offset) < 48 ? (report_len - offset) : 48;
                 EVP_EncodeUpdate(context,
                                  (unsigned char*) buffer_cursor,
@@ -426,7 +426,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             }
 
             // handle padding
-            EVP_EncodeFinal(context, buffer_cursor, &output_len);
+            EVP_EncodeFinal(context, (unsigned char*) buffer_cursor, &output_len);
             buffer_cursor += output_len;
 
             // Null-terminate the encoded string
