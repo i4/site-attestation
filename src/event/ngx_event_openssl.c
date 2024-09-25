@@ -409,6 +409,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             // Initialize the encoding context
             EVP_EncodeInit(context);
+            evp_encode_ctx_set_flags(context, EVP_ENCODE_CTX_NO_NEWLINES);
             // Variables to keep track of how much we've written
             int output_len = 0;
             int offset = 0;
