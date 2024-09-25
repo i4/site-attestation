@@ -303,11 +303,6 @@ static int RA_SESSION_FLAG_INDEX = -1;
 typedef struct {
     char * hashfile;
     char * outfile;
-    char * challengefile;
-    char * nonce;
-    char * hashfileenv;
-    char * outfileenv;
-    char * challengefileenv;
     char * attestation_report_buffer;
 } RAContext;
 
@@ -334,12 +329,12 @@ static void create_report(RAContext* ctx) {
     pid_t pid = fork();
     if (pid == 0) { // child
 
-        putenv(ctx->nonce);
         putenv(ctx->hashfileenv);
         putenv(ctx->outfileenv);
         putenv(ctx->challengefileenv);
 
-        execlp("sh", "sh", "-c", "./create-hash.sh", NULL);
+        execlp("/home/ubuntu/snpguest/target/debug/snpguest", "report", ctx->outfile,
+               ctx->hashfile, NULL);
 
         exit(1);
     } else if (pid < 0) {
@@ -366,21 +361,8 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             puts("Preparing ServerCertificate");
             RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
-            // append public key to challenge
-            FILE* challenge = sfopen(ctx->challengefile, "a");
-            fputs("\n", challenge);
-            EVP_PKEY* pkey = X509_get_pubkey(x);
-            PEM_write_PUBKEY(challenge, pkey);
-            fclose(challenge);
-
-            // TODO: sha512sum over challenge
-            // unsigned char *SHA512(const unsigned char *data, size_t count, unsigned char *md_buf);
-
-            // TODO: find xxd alternative
-
             create_report(ctx);
 
-            // TODO: read in outfile
             FILE* report_file = sfopen(ctx->outfile, "r");
 
             char report[2048];
@@ -432,12 +414,6 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             // remove newline
             buffer_cursor--;
-
-            // Null-terminate the encoded string
-            // *buffer_cursor = '\0';
-
-            // Print the base64 encoded result
-            // printf("Base64 Encoded:\n%s\n", ctx->attestation_report_buffer);
 
             EVP_ENCODE_CTX_free(context);
 
@@ -504,43 +480,53 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
                 SSL_set_ex_data(ssl, RA_SESSION_FLAG_INDEX, ctx);
             }
 
-            char * prefix = "NONCE=";
-            size_t nonce_len = strlen(prefix) + inlen + 1;
-            ctx->nonce = smalloc(nonce_len);
-            snprintf(ctx->nonce, nonce_len, "NONCE=%s", in);
-
             size_t hex_len = 2 * inlen * sizeof(char);
 
-            prefix = "OUTFILE=/usr/local/nginx/reports/";
-            ctx->outfileenv = smalloc(hex_len + strlen(prefix) + sizeof(char));
-            snprintf(ctx->outfileenv, strlen(prefix) + 1, "%s", prefix);
-            ctx->outfile = ctx->outfileenv+8;
+            char * prefix = "/usr/local/nginx/reports/";
+            ctx->outfile = smalloc(hex_len + strlen(prefix) + sizeof(char));
+            snprintf(ctx->outfile, strlen(prefix) + 1, "%s", prefix);
 
-            prefix = "HASHFILE=/usr/local/nginx/hashes/";
-            ctx->hashfileenv = smalloc(hex_len + strlen(prefix) + sizeof(char));
-            snprintf(ctx->hashfileenv, strlen(prefix) + 1, "%s", prefix);
-            ctx->hashfile = ctx->hashfileenv+9;
+            prefix = "/usr/local/nginx/hashes/";
+            ctx->hashfile = smalloc(hex_len + strlen(prefix) + sizeof(char));
+            snprintf(ctx->hashfile, strlen(prefix) + 1, "%s", prefix);
 
-            prefix = "CHALLENGE_PATH=/usr/local/nginx/challenges/";
-            ctx->challengefileenv = smalloc(strlen(prefix) + hex_len + sizeof(char));
-            snprintf(ctx->challengefileenv, strlen(prefix) + 1, "%s", prefix);
-            ctx->challengefile = ctx->challengefileenv+15;
-
-
+            char challenge[4096];
 
             for (size_t i = 0; i < inlen; i++) {
                 snprintf(&(ctx->outfile[strlen(ctx->outfile)]), 3, "%02X", in[i]);
                 snprintf(&(ctx->hashfile[strlen(ctx->hashfile)]), 3, "%02X", in[i]);
-                snprintf(&(ctx->challengefile[strlen(ctx->challengefile)]), 3, "%02X", in[i]);
+                snprintf(&(challenge[strlen(challenge)]), 3, "%02X", in[i]);
             }
 
-            FILE* challenge = sfopen(ctx->challengefile, "w");
-            size_t written = fwrite(in, sizeof(char), inlen, challenge);
-            fclose(challenge);
-            if (written != inlen) {
-                perror("fwrite");
-                exit(EXIT_FAILURE);
-            }
+            snprintf(&(challenge[strlen(challenge)]), 2, "\n");
+
+            // append public key to challenge
+            EVP_PKEY* pkey = X509_get_pubkey(x);
+            BIO* mem_bio = BIO_new(BIO_s_mem());
+            PEM_write_bio_PUBKEY(mem_bio, pkey);
+
+            char* key_data = NULL;
+            long key_len = BIO_get_mem_data(mem_bio, &key_data);
+
+            char* buffer = &(challenge[strlen(challenge)]);
+
+            memcpy(buffer, key_data, key_len);
+            buffer[key_len] = '\0';  // Null-terminate the PEM string
+
+            // Now buffer contains the PEM encoded public key as a null-terminated string
+            printf("Challenge:\n'''\n%s\n'''\n", buffer);
+
+            EVP_PKEY_free(pkey);
+            BIO_free(mem_bio);
+
+            char md_buf[65];
+
+            // unsigned char *SHA512(const unsigned char *data, size_t count, unsigned char *md_buf);
+            SHA512(challenge, key_len + inlen + 1, md_buf);
+
+            FILE *hfile = sfopen(ctx->hashfile, "w");
+            fprintf(hfile, "%s", md_buf);
+            fclose(hfile);
 
             return 1;
         }

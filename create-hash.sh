@@ -8,9 +8,6 @@ if [ ! -f "${PUBKEY_PATH}" ]; then
   openssl x509 -noout -pubkey -in /usr/local/nginx/cert.pem > "${PUBKEY_PATH}"
 fi
 
-touch "${OUTFILE}.bin"
-
 sha512sum "${CHALLENGE_PATH}" | xxd -r -p > "${HASHFILE}"
 
 exec /home/ubuntu/snpguest/target/debug/snpguest report "${OUTFILE}" "${HASHFILE}"
-# base64 "${OUTFILE}.bin" | sed ':a; N; $!ba; s/\n//g' > "${OUTFILE}"
