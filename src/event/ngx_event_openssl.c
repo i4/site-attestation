@@ -519,7 +519,11 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             // unsigned char *SHA512(const unsigned char *data, size_t count, unsigned char *md_buf);
             SHA512((unsigned char*) challenge, key_len + inlen + 1, md_buf);
 
-            printf("SHA512:\n%s\n", md_buf);
+            puts("SHA512:\n%");
+            for (size_t i = 0; i < 64; i++) {
+                printf("%02X", md_buf[i]);
+            }
+            puts("\n");
 
             FILE *hfile = sfopen(ctx->hashfile, "w");
             fprintf(hfile, "%s", md_buf);
