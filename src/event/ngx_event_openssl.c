@@ -10,7 +10,6 @@
 #include <ngx_event.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <openssl/include/crypto/evp.h>
 
 #define NGX_SSL_PASSWORD_BUFFER_SIZE  4096
 
@@ -409,7 +408,6 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             // Initialize the encoding context
             EVP_EncodeInit(context);
-            evp_encode_ctx_set_flags(context, EVP_ENCODE_CTX_NO_NEWLINES);
             // Variables to keep track of how much we've written
             int output_len = 0;
             int offset = 0;
@@ -423,6 +421,8 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                  (unsigned char *)report + offset,
                                  chunk_len);
                 buffer_cursor += output_len;
+                // remove newline
+                buffer_cursor--;
                 offset += chunk_len;
             }
 
