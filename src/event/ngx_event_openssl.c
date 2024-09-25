@@ -502,7 +502,7 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
                 fprintf(stderr, "Failed to write public key to memory BIO\n");
                 EVP_PKEY_free(pkey);
                 BIO_free(mem_bio);
-                return;
+                return 0;
             }
 
             char* key_data = NULL;
@@ -511,7 +511,7 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
                 fprintf(stderr, "Failed to get public key data from memory BIO\n");
                 EVP_PKEY_free(pkey);
                 BIO_free(mem_bio);
-                return;
+                return 0;
             }
 
             char* buffer = &(challenge[strlen(challenge)]);
