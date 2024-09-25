@@ -374,15 +374,14 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             PEM_write_PUBKEY(challenge, pkey);
             fclose(challenge);
 
+            // TODO: sha512sum over challenge
+            // unsigned char *SHA512(const unsigned char *data, size_t count, unsigned char *md_buf);
+
+            // TODO: find xxd alternative
+
             create_report(ctx);
 
-            ctx->attestation_report_buffer = smalloc((MEASUREMENT_BUF_SIZE) * sizeof(
-                                                 char));
-            char * cursor = ctx->attestation_report_buffer;
-
-            cursor += snprintf(cursor, MEASUREMENT_BUF_SIZE,
-                               "{\"report\":\"");
-
+            // TODO: read in outfile
             FILE* report_file = sfopen(ctx->outfile, "r");
 
             char report[2048];
@@ -394,9 +393,53 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                 exit(EXIT_FAILURE);
             }
             fclose(report_file);
-            for (size_t i = 0; i < report_len; i++) {
-                *cursor++ = report[i];
+
+            ctx->attestation_report_buffer = smalloc((MEASUREMENT_BUF_SIZE) * sizeof(
+                                                 char));
+            char * cursor = ctx->attestation_report_buffer;
+
+            cursor += snprintf(cursor, MEASUREMENT_BUF_SIZE,
+                               "{\"report\":\"");
+
+            // Create an EVP_ENCODE_CTX for base64 encoding
+            EVP_ENCODE_CTX *context = EVP_ENCODE_CTX_new();
+            if (context == NULL) {
+                fprintf(stderr, "Failed to create EVP_ENCODE_CTX\n");
+                free(report);
+                return 1;
             }
+
+            // Initialize the encoding context
+            EVP_EncodeInit(context);
+            // Variables to keep track of how much we've written
+            int total_output_len = 0;
+            int output_len = 0;
+            int final_len = 0;
+            int offset = 0;
+
+            // Perform the encoding in chunks
+            while (offset < report_len) {
+                int chunk_len = (report_len - offset) < 48 ? (report_len - offset) : 48;
+                EVP_EncodeUpdate(context, cursor, &output_len, (unsigned char *)report + offset,
+                                 chunk_len);
+                cursor += output_len;
+                offset += chunk_len;
+            }
+
+            // handle padding
+            EVP_EncodeFinal(context, cursor, &output_len);
+            cursor += output_len;
+
+            // Null-terminate the encoded string
+            *++cursor = '\0';
+
+            // Print the base64 encoded result
+            printf("Base64 Encoded:\n%s\n", ctx->attestation_report_buffer);
+
+            // for (size_t i = 0; i < report_len; i++) {
+            //     *cursor++ = report[i];
+            // }
+
             cursor += snprintf(cursor,
                                MEASUREMENT_BUF_SIZE - (cursor - ctx->attestation_report_buffer),
                                "\",\"vcek\":\"");
@@ -925,7 +968,7 @@ ngx_ssl_load_certificate(ngx_pool_t *pool, char **err, ngx_str_t *cert,
         return NULL;
     }
 
-    for ( ;; ) {
+    for (;; ) {
 
         temp = PEM_read_bio_X509(bio, NULL, NULL, NULL);
         if (temp == NULL) {
@@ -1055,7 +1098,7 @@ ngx_ssl_load_certificate_key(ngx_pool_t *pool, char **err,
         cb = NULL;
     }
 
-    for ( ;; ) {
+    for (;; ) {
 
         pkey = PEM_read_bio_PrivateKey(bio, NULL, cb, pwd);
         if (pkey != NULL) {
@@ -1481,7 +1524,7 @@ ngx_ssl_read_password_file(ngx_conf_t *cf, ngx_str_t *file)
 
         p = buf;
 
-        for ( ;; ) {
+        for (;; ) {
             last = ngx_strlchr(last, end, LF);
 
             if (last == NULL) {
@@ -2403,7 +2446,7 @@ ngx_ssl_recv_chain(ngx_connection_t *c, ngx_chain_t *cl, off_t limit)
     b = cl->buf;
     last = b->last;
 
-    for ( ;; ) {
+    for (;; ) {
         size = b->end - last;
 
         if (limit) {
@@ -2486,7 +2529,7 @@ ngx_ssl_recv(ngx_connection_t *c, u_char *buf, size_t size)
      * until SSL_read() would return no data
      */
 
-    for ( ;; ) {
+    for (;; ) {
 
         n = SSL_read(c->ssl->connection, buf, size);
 
@@ -2632,7 +2675,7 @@ ngx_ssl_recv_early(ngx_connection_t *c, u_char *buf, size_t size)
      * until SSL_read_early_data() would return no data
      */
 
-    for ( ;; ) {
+    for (;; ) {
 
         readbytes = 0;
 
@@ -2909,7 +2952,7 @@ ngx_ssl_send_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit)
     send = buf->last - buf->pos;
     flush = (in == NULL) ? 1 : buf->flush;
 
-    for ( ;; ) {
+    for (;; ) {
 
         while (in && buf->last < buf->end && send < limit) {
             if (in->buf->last_buf || in->buf->flush) {
@@ -3512,7 +3555,7 @@ ngx_ssl_shutdown(ngx_connection_t *c)
 
     tries = 2;
 
-    for ( ;; ) {
+    for (;; ) {
 
         /*
          * For bidirectional shutdown, SSL_shutdown() needs to be called
@@ -3897,7 +3940,7 @@ ngx_ssl_error(ngx_uint_t level, ngx_log_t *log, ngx_err_t err, char *fmt, ...)
     if (ERR_peek_error()) {
         p = ngx_cpystrn(p, (u_char *) " (SSL:", last - p);
 
-        for ( ;; ) {
+        for (;; ) {
 
             n = ERR_peek_error_data(&data, &flags);
 
@@ -4585,7 +4628,7 @@ ngx_ssl_session_rbtree_insert_value(ngx_rbtree_node_t *temp,
     ngx_rbtree_node_t  **p;
     ngx_ssl_sess_id_t   *sess_id, *sess_id_temp;
 
-    for ( ;; ) {
+    for (;; ) {
 
         if (node->key < temp->key) {
 
@@ -5182,7 +5225,7 @@ ngx_ssl_check_host(ngx_connection_t *c, ngx_str_t *name)
         }
 
         i = -1;
-        for ( ;; ) {
+        for (;; ) {
             i = X509_NAME_get_index_by_NID(sname, NID_commonName, i);
 
             if (i < 0) {
