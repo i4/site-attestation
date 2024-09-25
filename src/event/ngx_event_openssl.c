@@ -498,8 +498,19 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
 
             snprintf(&(challenge[strlen(challenge)]), 2, "\n");
 
+            X509_print_fp(stdout, x);
+
             EVP_PKEY* pkey = X509_get_pubkey(x);
+            if (!pkey) {
+                fprintf(stderr, "Failed to get public key from certificate\n");
+                return 0;
+            }
             BIO* mem_bio = BIO_new(BIO_s_mem());
+            if (!mem_bio) {
+                fprintf(stderr, "Failed to create BIO\n");
+                EVP_PKEY_free(pkey);
+                return 0;
+            }
 
             if (!PEM_write_bio_PUBKEY(mem_bio, pkey)) {
                 fprintf(stderr, "Failed to write public key to memory BIO\n");
