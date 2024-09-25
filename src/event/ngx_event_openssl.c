@@ -394,12 +394,11 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             }
             fclose(report_file);
 
-            ctx->attestation_report_buffer = smalloc((MEASUREMENT_BUF_SIZE) * sizeof(
-                                                 char));
-            unsigned char * cursor = ctx->attestation_report_buffer;
+            ctx->attestation_report_buffer = smalloc(MEASUREMENT_BUF_SIZE);
+            char * buffer_cursor = ctx->attestation_report_buffer;
 
-            cursor += snprintf(cursor, MEASUREMENT_BUF_SIZE,
-                               "{\"report\":\"");
+            buffer_cursor += snprintf(buffer_cursor, MEASUREMENT_BUF_SIZE,
+                                      "{\"report\":\"");
 
             // Create an EVP_ENCODE_CTX for base64 encoding
             EVP_ENCODE_CTX *context = EVP_ENCODE_CTX_new();
@@ -417,18 +416,21 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             // Perform the encoding in chunks
             while (offset < report_len) {
                 int chunk_len = (report_len - offset) < 48 ? (report_len - offset) : 48;
-                EVP_EncodeUpdate(context, cursor, &output_len, (unsigned char *)report + offset,
+                EVP_EncodeUpdate(context,
+                                 (unsigned char*) buffer_cursor,
+                                 &output_len,
+                                 (unsigned char *)report + offset,
                                  chunk_len);
-                cursor += output_len;
+                buffer_cursor += output_len;
                 offset += chunk_len;
             }
 
             // handle padding
-            EVP_EncodeFinal(context, cursor, &output_len);
-            cursor += output_len;
+            EVP_EncodeFinal(context, buffer_cursor, &output_len);
+            buffer_cursor += output_len;
 
             // Null-terminate the encoded string
-            *++cursor = '\0';
+            *++buffer_cursor = '\0';
 
             // Print the base64 encoded result
             printf("Base64 Encoded:\n%s\n", ctx->attestation_report_buffer);
@@ -439,9 +441,9 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             //     *cursor++ = report[i];
             // }
 
-            cursor += snprintf(cursor,
-                               MEASUREMENT_BUF_SIZE - (cursor - ctx->attestation_report_buffer),
-                               "\",\"vcek\":\"");
+            buffer_cursor += snprintf(buffer_cursor,
+                                      MEASUREMENT_BUF_SIZE - (buffer_cursor - ctx->attestation_report_buffer),
+                                      "\",\"vcek\":\"");
 
             char vcek[2048];
             FILE* vcek_file = sfopen("/usr/local/nginx/certs/vcek.pem", "r");
@@ -451,14 +453,14 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                 exit(EXIT_FAILURE);
             }
             for (size_t i = 0; i < vcek_len; i++) {
-                *cursor++ = vcek[i];
+                *buffer_cursor++ = vcek[i];
             }
 
-            cursor += snprintf(cursor,
-                               MEASUREMENT_BUF_SIZE - (cursor - ctx->attestation_report_buffer), "\"}");
+            buffer_cursor += snprintf(buffer_cursor,
+                                      MEASUREMENT_BUF_SIZE - (buffer_cursor - ctx->attestation_report_buffer), "\"}");
 
             *out = (unsigned char*) ctx->attestation_report_buffer;
-            *outlen = cursor - ctx->attestation_report_buffer;
+            *outlen = buffer_cursor - ctx->attestation_report_buffer;
 
             puts("Sending ServerCertificate");
             return 1;
