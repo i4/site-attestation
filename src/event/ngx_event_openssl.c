@@ -303,6 +303,7 @@ static int RA_SESSION_FLAG_INDEX = -1;
 typedef struct {
     char * hashfile;
     char * outfile;
+    char * challenge;
     char * attestation_report_buffer;
 } RAContext;
 
@@ -406,16 +407,16 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             unsigned char md_buf[65];
 
             // unsigned char *SHA512(const unsigned char *data, size_t count, unsigned char *md_buf);
-            SHA512((unsigned char*) ctx->challenge, key_len + inlen + 1, md_buf);
+            SHA512((unsigned char*) ctx->challenge, strlen(ctx->challenge), md_buf);
 
+            FILE *hfile = sfopen(ctx->hashfile, "w");
             puts("SHA512:");
             for (size_t i = 0; i < 64; i++) {
-                printf("%02X", md_buf[i]);
+                printf("%02x", md_buf[i]);
+                fprintf(hfile, "%02x", md_buf[i]);
             }
             puts("\n");
 
-            FILE *hfile = sfopen(ctx->hashfile, "w");
-            fprintf(hfile, "%s", md_buf);
             fclose(hfile);
 
             create_report(ctx);
