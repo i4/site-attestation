@@ -495,21 +495,30 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
 
             snprintf(&(challenge[strlen(challenge)]), 2, "\n");
 
-            // append public key to challenge
             EVP_PKEY* pkey = X509_get_pubkey(x);
             BIO* mem_bio = BIO_new(BIO_s_mem());
-            PEM_write_bio_PUBKEY(mem_bio, pkey);
+
+            if (!PEM_write_bio_PUBKEY(mem_bio, pkey)) {
+                fprintf(stderr, "Failed to write public key to memory BIO\n");
+                EVP_PKEY_free(pkey);
+                BIO_free(mem_bio);
+                return;
+            }
 
             char* key_data = NULL;
             long key_len = BIO_get_mem_data(mem_bio, &key_data);
+            if (key_len <= 0) {
+                fprintf(stderr, "Failed to get public key data from memory BIO\n");
+                EVP_PKEY_free(pkey);
+                BIO_free(mem_bio);
+                return;
+            }
 
             char* buffer = &(challenge[strlen(challenge)]);
+            strncpy(buffer, key_data, key_len); // Use strncpy to avoid truncation issues
+            buffer[key_len] = '\0'; // Null-terminate the string
 
-            memcpy(buffer, key_data, key_len);
-            buffer[key_len - 1] = '\0';  // replace newline with null
-
-            // Now buffer contains the PEM encoded public key as a null-terminated string
-            printf("Challenge:\n'''\n%s\n'''\n",challenge);
+            printf("Challenge:\n'''\n%s\n'''\n", challenge);
 
             EVP_PKEY_free(pkey);
             BIO_free(mem_bio);
@@ -519,7 +528,7 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             // unsigned char *SHA512(const unsigned char *data, size_t count, unsigned char *md_buf);
             SHA512((unsigned char*) challenge, key_len + inlen + 1, md_buf);
 
-            puts("SHA512:n");
+            puts("SHA512:");
             for (size_t i = 0; i < 64; i++) {
                 printf("%02X", md_buf[i]);
             }
