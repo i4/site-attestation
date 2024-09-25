@@ -329,7 +329,10 @@ static void create_report(RAContext* ctx) {
     pid_t pid = fork();
     if (pid == 0) { // child
 
-        execlp("/home/ubuntu/snpguest/target/debug/snpguest", "report", ctx->outfile,
+        execlp("/home/ubuntu/snpguest/target/debug/snpguest",
+               "snpguest",
+               "report",
+               ctx->outfile,
                ctx->hashfile, NULL);
 
         exit(1);
