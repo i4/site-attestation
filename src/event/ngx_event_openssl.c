@@ -10,7 +10,7 @@
 #include <ngx_event.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <openssl/include/crypto/evp.h>
 
 #define NGX_SSL_PASSWORD_BUFFER_SIZE  4096
 
