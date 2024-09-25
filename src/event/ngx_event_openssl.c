@@ -512,6 +512,7 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
 
             if (!PEM_write_bio_PUBKEY(mem_bio, pkey)) {
                 fprintf(stderr, "Failed to write public key to memory BIO\n");
+                ERR_print_errors_fp(stderr);  // Print OpenSSL error details
                 EVP_PKEY_free(pkey);
                 BIO_free(mem_bio);
                 return 0;
