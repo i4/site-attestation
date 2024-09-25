@@ -518,7 +518,7 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             EVP_PKEY_free(pkey);
             BIO_free(mem_bio);
 
-            char md_buf[65];
+            unsigned char md_buf[65];
 
             // unsigned char *SHA512(const unsigned char *data, size_t count, unsigned char *md_buf);
             SHA512(challenge, key_len + inlen + 1, md_buf);
