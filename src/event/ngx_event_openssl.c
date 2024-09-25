@@ -329,10 +329,6 @@ static void create_report(RAContext* ctx) {
     pid_t pid = fork();
     if (pid == 0) { // child
 
-        putenv(ctx->hashfileenv);
-        putenv(ctx->outfileenv);
-        putenv(ctx->challengefileenv);
-
         execlp("/home/ubuntu/snpguest/target/debug/snpguest", "report", ctx->outfile,
                ctx->hashfile, NULL);
 
