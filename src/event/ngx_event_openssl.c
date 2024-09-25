@@ -430,17 +430,16 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             EVP_EncodeFinal(context, (unsigned char*) buffer_cursor, &output_len);
             buffer_cursor += output_len;
 
+            // remove newline
+            buffer_cursor--;
+
             // Null-terminate the encoded string
-            *++buffer_cursor = '\0';
+            // *buffer_cursor = '\0';
 
             // Print the base64 encoded result
-            printf("Base64 Encoded:\n%s\n", ctx->attestation_report_buffer);
+            // printf("Base64 Encoded:\n%s\n", ctx->attestation_report_buffer);
 
             EVP_ENCODE_CTX_free(context);
-
-            // for (size_t i = 0; i < report_len; i++) {
-            //     *cursor++ = report[i];
-            // }
 
             buffer_cursor += snprintf(buffer_cursor,
                                       MEASUREMENT_BUF_SIZE - (buffer_cursor - ctx->attestation_report_buffer),
