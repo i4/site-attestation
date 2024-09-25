@@ -503,7 +503,7 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             char* key_data = NULL;
             long key_len = BIO_get_mem_data(mem_bio, &key_data);
 
-            char* buffer = &(challenge[strlen(challenge)]);
+            char* buffer = &(challenge[strlen(challenge)]) - 1;
 
             memcpy(buffer, key_data, key_len);
             buffer[key_len] = '\0';  // Null-terminate the PEM string
