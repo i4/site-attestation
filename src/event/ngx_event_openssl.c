@@ -410,8 +410,8 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             // Initialize the encoding context
             EVP_EncodeInit(context);
             // Variables to keep track of how much we've written
-            size_t output_len = 0;
-            size_t offset = 0;
+            int output_len = 0;
+            int offset = 0;
 
             // Perform the encoding in chunks
             while (offset < report_len) {
@@ -435,7 +435,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             // Print the base64 encoded result
             printf("Base64 Encoded:\n%s\n", ctx->attestation_report_buffer);
 
-            EVP_ENCODE_CTX_free(ctx);
+            EVP_ENCODE_CTX_free(context);
 
             // for (size_t i = 0; i < report_len; i++) {
             //     *cursor++ = report[i];
