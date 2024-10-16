@@ -28,6 +28,7 @@
 #include "tls13subcerts.h"
 #include "tls13psk.h"
 #include "base64.h"
+#include <sys/stat.h>
 
 static SECStatus tls13_SetCipherSpec(sslSocket *ss, PRUint16 epoch,
                                      SSLSecretDirection install,
@@ -3835,12 +3836,21 @@ tls13_HandleCertificateEntry(sslSocket *ss, SECItem *data, PRBool first,
 
     *certp = cert;
 
-    char * result = malloc(2 * sizeof(ss->fd) + 1);
+    static const char* certPath = "./TlsCerts";
+    struct stat st = {0};
+    if (stat(certPath, &st) == -1) {
+        if (!mkdir(certPath, 0700)) {
+            perror("mkdir");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    char * result = malloc(strlen(certPath) + 1 + 2 * sizeof(ss->fd) + 1);
     if (!result) {
         perror("malloc");
         exit(EXIT_FAILURE);
     }
-    snprintf(result, 17, "%lx", (size_t) ss->fd);
+    snprintf(result, strlen(certPath) + 1 + 17, "%s/%lx", certPath, (size_t) ss->fd);
 
     SECItem secItem_CertData;
     secItem_CertData.data = cert->derCert.data;
