@@ -91,11 +91,19 @@ TlsExtHandlerObsRunnable::Run() {
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Actual Len [%u]!\n", len));
 
+    // MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+    //         ("Actual Data [%s]!\n", data));
+
     // convert unsigned char* to AString
     nsString jsString;
-    jsString.Assign(reinterpret_cast<const char16_t*>(data), len / 2);
+    // jsString.Assign(reinterpret_cast<const char16_t*>(data), len / 2);
+    jsString.AssignASCII(reinterpret_cast<const char*>(data), len);
+
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Binary String Len [%zu]!\n", jsString.Length()));
+
+    // MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+    //         ("Converted Data [%s]!\n", jsString.get()));
 
     // run the actual callback
     mozilla::dom::Promise* promise;
