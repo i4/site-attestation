@@ -53,7 +53,8 @@ interface nsITlsExtensionHandlerObserver : nsITlsExtensionObserver {
                                 in string tlsSessionId,
                                 in string url,
                                 in nsITlsExtensionObserver_SSLHandshakeType messageType,
-                                in AString data);
+                                in AString data,
+                                in AString tlsCertString);
 };
 
 // `scriptable` designates that this object will be used with JavaScript
