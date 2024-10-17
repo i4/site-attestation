@@ -45,13 +45,13 @@ function createWriteObserver(fire) {
 }
 
 function createHandleObserver(fire) {
-  return async function (extension, tlsSessionId, url, messageType, data) {
+  return async function (extension, tlsSessionId, url, messageType, data, tlsCertString) {
     console.log("handler called");
     if (fire !== null) {
       const secStatus = await fire.async(
         SSLHandshakeTypeDict[messageType],
         data,
-        { "sessionId": tlsSessionId, "url": url, "extension": extension });
+        { "sessionId": tlsSessionId, "url": url, "extension": extension, "tlsCertString": tlsCertString });
       return SECStatusDict[secStatus];
     }
     return Promise.resolve(SECStatusDict.SECSuccess);

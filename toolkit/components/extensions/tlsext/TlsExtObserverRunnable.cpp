@@ -154,6 +154,7 @@ TlsExtHandlerObsRunnable::Run() {
         callbackArg->hostName,
         (nsITlsExtensionObserver::SSLHandshakeType) messageType,
         jsString,     // TODO C++ style cast
+        jsTlsCertString,
         &promise);
 
     if (NS_FAILED(rv) || !promise) {
