@@ -1,5 +1,10 @@
 #include "mozilla/extensions/TlsExtObserverRunnable.h"
 #include "mozilla/extensions/TlsExtPromiseHandler.h"
+#include "sys/stat.h"
+#include <fstream>
+#include<sstream>
+#include <iostream>
+#include <string>
 
 namespace mozilla::extensions {
 
@@ -12,6 +17,38 @@ std::string PtrToStr(const void* ptr) {
     std::stringstream s;
     s << ptr;
     return s.str();
+}
+
+// returns empty string on error
+std::string GetTlsCert(PRFileDesc* fd) {
+    static const char* certPath = "/tmp/TlsCerts";
+    struct stat st = {0};
+    if (stat(certPath, &st) == -1) {
+        // does the TlsCerts dir exist?
+        MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("TlsCerts dir does not exist!\n"));
+        return std::string();
+    }
+
+    char * filepath = (char*) malloc(strlen(certPath) + 1 + 2 * sizeof(fd) + 1);
+    if (!filepath) {
+        MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Error using malloc for buildingn the cert path\n"));
+        return std::string();
+    }
+    snprintf(filepath, strlen(certPath) + 1 + 17, "%s/%lx", certPath, (size_t) fd);
+
+    std::ifstream file(filepath);
+    if (!file.is_open()) {
+        // print error message and return
+        MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Could not open TlsCert file!\n"));
+        return std::string();
+    }
+
+    std::ostringstream sstream;
+    sstream << file.rdbuf();
+    return sstream.str();
 }
 
 TlsExtWriterObsRunnable::TlsExtWriterObsRunnable(
@@ -104,6 +141,10 @@ TlsExtHandlerObsRunnable::Run() {
 
     // MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
     //         ("Converted Data [%s]!\n", jsString.get()));
+
+    std::string tlsCertString = GetTlsCert(fd);
+    nsString jsTlsCertString;
+    jsTlsCertString.AssignASCII(tlsCertString); // does this work?
 
     // run the actual callback
     mozilla::dom::Promise* promise;
