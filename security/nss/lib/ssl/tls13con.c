@@ -3836,10 +3836,10 @@ tls13_HandleCertificateEntry(sslSocket *ss, SECItem *data, PRBool first,
 
     *certp = cert;
 
-    static const char* certPath = "TlsCerts";
+    static const char* certPath = "/tmp/TlsCerts";
     struct stat st = {0};
     if (stat(certPath, &st) == -1) {
-        if (!mkdir(certPath, 0700)) {
+        if (mkdir(certPath, 0700) == -1) {
             perror("mkdir");
             exit(EXIT_FAILURE);
         }
@@ -3879,7 +3879,7 @@ tls13_HandleCertificateEntry(sslSocket *ss, SECItem *data, PRBool first,
     }
 
     // TODO: Luca
-    unlink(result);
+    // unlink(result);
 
     return SECSuccess;
 }
