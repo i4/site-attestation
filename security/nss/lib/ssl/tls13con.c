@@ -3878,8 +3878,8 @@ tls13_HandleCertificateEntry(sslSocket *ss, SECItem *data, PRBool first,
         /* TODO(ekr@rtfm.com): Copy out SCTs. Bug 1315727. */
     }
 
-    // TODO: Luca
-    // unlink(result);
+    // works, tested
+    unlink(result);
 
     return SECSuccess;
 }
