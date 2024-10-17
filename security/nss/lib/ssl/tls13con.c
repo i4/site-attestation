@@ -3836,7 +3836,7 @@ tls13_HandleCertificateEntry(sslSocket *ss, SECItem *data, PRBool first,
 
     *certp = cert;
 
-    static const char* certPath = "./TlsCerts";
+    static const char* certPath = "TlsCerts";
     struct stat st = {0};
     if (stat(certPath, &st) == -1) {
         if (!mkdir(certPath, 0700)) {
