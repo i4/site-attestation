@@ -74,7 +74,7 @@ window.addEventListener("load", async () => {
     console.log(`origin is ${origin}`);
 
     hostInfo = await storage.getPendingAttestationInfo(host);
-    const hostAttestationInfo = new HostAttestationInfo(hostInfo.hostAttestationInfo);
+    const hostAttestationInfo = new HostAttestationInfo().fromJson(hostInfo.hostAttestationInfo);
     ar = hostAttestationInfo.attestationReport;
 
     // init UI

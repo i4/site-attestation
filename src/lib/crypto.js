@@ -97,14 +97,16 @@ export async function checkHost(hostInfo, hostAttestationInfo) {
 
     const ar = hostAttestationInfo.attestationReport;
     const vcek = hostAttestationInfo.vcekCert;
+    const verificationHash = await hostAttestationInfo.getVerificationHash();
 
     // 1. verify TLS connection
-    // TODO check for Nonce, Public Key
-    // if (/*false && */util.arrayBufferToHex(ar.report_data) !== ssl_sha512) {
-    //     // TLS connection pubkey is not equal to pubkey in attestation report
-    //     console.log("TLS connection invalid");
-    //     return false;
-    // }
+    if (verificationHash !== hostAttestationInfo.reportDataStr) {
+        // AR verification string "${NONCE}\n${PUBKEY}" is not valid and / or fresh
+        console.log("AR verification report data invalid");
+        console.log("verificationHash", verificationHash);
+        console.log("report_data", hostAttestationInfo.reportDataStr);
+        return false;
+    }
 
     console.log("validating AR and VCEK");
 
@@ -171,15 +173,4 @@ export async function validateAuthorKey(hostInfo) {
         console.log(e);
     }
     return null;
-}
-
-export function base64StrToCert(base64Str) {
-    // reformat certificate into multi line string; remove all \r characters
-    const certStr = base64Str.replace(/\\n/g, '\n').replace(/\r/g, "");
-    const ab = pemToArrayBuffer(certStr);
-    const asn1 = asn1js.fromBER(ab);
-    if (asn1.offset === -1)
-        throw new Error("Incorrect encoded ASN.1 data");
-
-    return new pkijs.Certificate({schema: asn1.result});
 }

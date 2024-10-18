@@ -46,12 +46,6 @@ ${exportedAsBase64.substring(64 * 6, 64 * 6 + 8)}
 -----END PUBLIC KEY-----\n`;
     }
 
-    async function sha512(str) {
-        return crypto.subtle.digest("SHA-512", new TextEncoder("utf-8").encode(str)).then(buf => {
-            return Array.prototype.map.call(new Uint8Array(buf), x => (('00' + x.toString(16)).slice(-2))).join('');
-        });
-    }
-
     const securityInfo = await browser.webRequest.getSecurityInfo(requestId, {
         "rawDER": true,
     });
@@ -76,7 +70,7 @@ ${exportedAsBase64.substring(64 * 6, 64 * 6 + 8)}
 
             const exported = await exportAndFormatCryptoKey(pubKey);
             // console.log(exported);
-            return await sha512(exported);
+            return await util.sha512(exported);
         } else {
             console.error("querySSLFingerprint: Cannot validate connection in state " + securityInfo.state);
         }
@@ -161,7 +155,7 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
     if (!nonce)
         return browser.tlsExt.SECStatus.SECSUCCESS;
 
-    const hostAttestationInfo = new HostAttestationInfo(data);
+    const hostAttestationInfo = new HostAttestationInfo(data, details.tlsCertString, nonce);
     console.log(hostAttestationInfo)
 
     // TODO: does AR contain given nonce? nonce in the AR might be hashed
@@ -184,12 +178,14 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
     console.log("AR is: ", hostAttestationInfo.attestationReport);
     console.log("VCEK is: ", hostAttestationInfo.vcekCert);
 
+    console.log(hostAttestationInfo);
+
     if (!isKnown) {
         console.log("host is unknown");
         await storage.setPendingAttestationInfo(details.url, {
             host: details.url, // TODO this is a hostname, not an URL
             ar_arrayBuffer: hostAttestationInfo.attestationReport.arrayBuffer,
-            hostAttestationInfo: JSON.stringify(hostAttestationInfo),
+            hostAttestationInfo: hostAttestationInfo.toJson(),
         });
 
         browser.tabs.update(tab.id, {

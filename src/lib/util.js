@@ -1,4 +1,6 @@
 import format from "./attestation-info.json";
+import * as asn1js from "asn1js";
+import * as pkijs from "pkijs";
 
 export function arrayBufferToHex (arrayBuffer,fmt = false) {
     if (typeof arrayBuffer !== 'object' || arrayBuffer === null || typeof arrayBuffer.byteLength !== 'number') {
@@ -85,6 +87,7 @@ export function base64ToArrayBuffer(str) {
     return bytes.buffer;
 }
 
+// TODO: refactor
 export function pemToArrayBuffer(pem) { // TODO: rework, use own util function
     const base64String = pem
         .replace("-----BEGIN CERTIFICATE-----", "")
@@ -114,4 +117,22 @@ export function stringToArrayBuffer(str) {
         bufView[i] = str.charCodeAt(i);
     }
     return buf;
+}
+
+// TODO: refactor
+export function base64StrToCert(base64Str) {
+    // reformat certificate into multi line string; remove all \r characters
+    const certStr = base64Str.replace(/\\n/g, '\n').replace(/\r/g, "");
+    const ab = pemToArrayBuffer(certStr);
+    const asn1 = asn1js.fromBER(ab);
+    if (asn1.offset === -1)
+        throw new Error("Incorrect encoded ASN.1 data");
+
+    return new pkijs.Certificate({schema: asn1.result});
+}
+
+export async function sha512(str) {
+    return crypto.subtle.digest("SHA-512", new TextEncoder("utf-8").encode(str)).then(buf => {
+        return Array.prototype.map.call(new Uint8Array(buf), x => (('00' + x.toString(16)).slice(-2))).join('');
+    });
 }
