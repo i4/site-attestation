@@ -174,8 +174,8 @@ export async function validateAuthorKey(hostInfo) {
 }
 
 export function base64StrToCert(base64Str) {
-    // reformat certificate into multi line string
-    const certStr = base64Str.replace(/\\n/g, '\n');
+    // reformat certificate into multi line string; remove all \r characters
+    const certStr = base64Str.replace(/\\n/g, '\n').replace(/\r/g, "");
     const ab = pemToArrayBuffer(certStr);
     const asn1 = asn1js.fromBER(ab);
     if (asn1.offset === -1)
