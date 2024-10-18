@@ -71,20 +71,55 @@ export function hasDateChanged(date1, date2) {
 }
 
 // https://www.geeksforgeeks.org/convert-base64-string-to-arraybuffer-in-javascript/
-export function base64ToArrayBuffer(str) {
-    const binaryString = atob(str); // TODO rework, deprecated
+// export function base64ToArrayBuffer(str) {
+//     console.log(str);
+//     const binaryString = atob(str); // TODO rework, deprecated
+//
+//     // Create an ArrayBuffer with the same length as the binary string
+//     let len = binaryString.length;
+//     let bytes = new Uint8Array(len);
+//
+//     // Convert each character in the binary string to its byte representation
+//     for (let i = 0; i < len; i++) {
+//         bytes[i] = binaryString.charCodeAt(i);
+//     }
+//
+//     // Return the ArrayBuffer
+//     return bytes.buffer;
+// }
 
-    // Create an ArrayBuffer with the same length as the binary string
-    let len = binaryString.length;
-    let bytes = new Uint8Array(len);
+export function base64ToArrayBuffer(base64) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    let bufferLength = base64.length * 0.75;
+    let len = base64.length;
 
-    // Convert each character in the binary string to its byte representation
-    for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
+    if (base64[len - 1] === '=') {
+        bufferLength--;
+        if (base64[len - 2] === '=') {
+            bufferLength--;
+        }
     }
 
-    // Return the ArrayBuffer
-    return bytes.buffer;
+    const arrayBuffer = new ArrayBuffer(bufferLength);
+    const bytes = new Uint8Array(arrayBuffer);
+
+    let l = 0;
+    for (let i = 0; i < len; i += 4) {
+        const encoded1 = chars.indexOf(base64[i]);
+        const encoded2 = chars.indexOf(base64[i + 1]);
+        const encoded3 = chars.indexOf(base64[i + 2]);
+        const encoded4 = chars.indexOf(base64[i + 3]);
+
+        const byte1 = (encoded1 << 2) | (encoded2 >> 4);
+        const byte2 = ((encoded2 & 15) << 4) | (encoded3 >> 2);
+        const byte3 = ((encoded3 & 3) << 6) | encoded4;
+
+        bytes[l++] = byte1;
+        if (encoded3 !== 64) bytes[l++] = byte2;
+        if (encoded4 !== 64) bytes[l++] = byte3;
+    }
+
+    return arrayBuffer;
 }
 
 // TODO: refactor
@@ -135,4 +170,10 @@ export async function sha512(str) {
     return crypto.subtle.digest("SHA-512", new TextEncoder("utf-8").encode(str)).then(buf => {
         return Array.prototype.map.call(new Uint8Array(buf), x => (('00' + x.toString(16)).slice(-2))).join('');
     });
+    // const encoder = new TextEncoder();
+    // const data = encoder.encode(str);
+    // const hashBuffer = await crypto.subtle.digest('SHA-512', data);
+    // const hashArray = Array.from(new Uint8Array(hashBuffer));
+    // const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    // return hashHex;
 }

@@ -128,7 +128,8 @@ async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, deta
     console.log(details);
 
     // const nonce = "RA_REQ:ichbineinnonce"; // TODO generate proper nonce
-    const nonce = "3\0";
+    const nonce = "3";
+    // const nonce = "hallo ich bin ein nonce"; // TODO
 
     try {
         await storage.setNonce(details.url, nonce);
@@ -136,7 +137,7 @@ async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, deta
         console.error(e);
     }
 
-    return nonce;
+    return nonce + '\0'; // TODO: there is something wrong with Firefox, that the \0 is required
 }
 
 browser.tlsExt.onWriteTlsExtension.addListener(listenerOnWriteTlsExtension, ".*", 420);
@@ -175,7 +176,12 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
     console.log("got target url ", targetUrl, " for tab ", tab.id);
     console.log("handler for tab with url: ", targetUrl);
 
-    console.log("AR is: ", hostAttestationInfo.attestationReport);
+    console.log("trying to get AR");
+    try {
+        console.log("AR is: ", hostAttestationInfo.attestationReport);
+    } catch (e) {
+        console.error(e);
+    }
     console.log("VCEK is: ", hostAttestationInfo.vcekCert);
 
     console.log(hostAttestationInfo);
