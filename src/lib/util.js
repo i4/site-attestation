@@ -85,6 +85,26 @@ export function base64ToArrayBuffer(str) {
     return bytes.buffer;
 }
 
+export function pemToArrayBuffer(pem) { // TODO: rework, use own util function
+    const base64String = pem
+        .replace("-----BEGIN CERTIFICATE-----", "")
+        .replace("-----END CERTIFICATE-----", "")
+        .replace(/\s+/g, ""); // Remove newlines and spaces
+
+    const binaryString = atob(base64String); // TODO: rework, is deprecated
+    const len = binaryString.length;
+    const buffer = new ArrayBuffer(len);
+    const view = new Uint8Array(buffer);
+
+    for (let i = 0; i < len; i++) {
+        view[i] = binaryString.charCodeAt(i);
+    }
+
+    return buffer;
+
+    // return base64ToArrayBuffer(base64String);
+}
+
 // https://developer.chrome.com/blog/how-to-convert-arraybuffer-to-and-from-string
 export function stringToArrayBuffer(str) {
     const buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char

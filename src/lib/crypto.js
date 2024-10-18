@@ -4,7 +4,7 @@ import ask from "../certificates/ask.der";
 import ark from "../certificates/ark.der";
 import {fetchArrayBuffer, fetchAttestationReport, fetchVCEK} from "./net";
 import * as util from "./util";
-import {arrayBufferToHex} from "./util";
+import {arrayBufferToHex, pemToArrayBuffer} from "./util";
 import * as storage from "./storage";
 
 // Validate the VCEK certificate using the AMD provided keys
@@ -171,4 +171,15 @@ export async function validateAuthorKey(hostInfo) {
         console.log(e);
     }
     return null;
+}
+
+export function base64StrToCert(base64Str) {
+    // reformat certificate into multi line string
+    const certStr = base64Str.replace(/\\n/g, '\n');
+    const ab = pemToArrayBuffer(certStr);
+    const asn1 = asn1js.fromBER(ab);
+    if (asn1.offset === -1)
+        throw new Error("Incorrect encoded ASN.1 data");
+
+    return new pkijs.Certificate({schema: asn1.result});
 }
