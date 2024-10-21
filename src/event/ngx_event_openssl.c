@@ -456,7 +456,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                  chunk_len);
                 buffer_cursor += output_len;
                 // remove newline
-                buffer_cursor--;
+                // buffer_cursor--;
                 offset += chunk_len;
             }
 
@@ -465,7 +465,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             buffer_cursor += output_len;
 
             // remove newline
-            // buffer_cursor--;
+            buffer_cursor--;
 
             EVP_ENCODE_CTX_free(context);
 
