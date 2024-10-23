@@ -403,6 +403,8 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             unsigned char md_buf[65];
 
+            printf("%s\n", ctx->challenge);
+
             // unsigned char *SHA512(const unsigned char *data, size_t count, unsigned char *md_buf);
             SHA512((unsigned char*) ctx->challenge, strlen(ctx->challenge), md_buf);
 
@@ -467,11 +469,11 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             // remove newline
             buffer_cursor--;
 
-            EVP_ENCODE_CTX_free(context);
-
             buffer_cursor += snprintf(buffer_cursor,
                                       MEASUREMENT_BUF_SIZE - (buffer_cursor - ctx->attestation_report_buffer),
                                       "\",\"vcek\":\"");
+
+            EVP_ENCODE_CTX_free(context);
 
             char vcek[2048];
             FILE* vcek_file = sfopen("/usr/local/nginx/certs/vcek.pem", "r");
