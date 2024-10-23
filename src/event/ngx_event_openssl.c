@@ -545,12 +545,12 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
             ctx->challenge = smalloc(4096);
             ctx->challenge[0] = '\0';
 
-            snprintf(ctx->challenge, inlen, "%s", in);
+            // snprintf(ctx->challenge, inlen, "%s", in);
 
             for (size_t i = 0; i < inlen; i++) {
                 snprintf(&(ctx->outfile[strlen(ctx->outfile)]), 3, "%02X", in[i]);
                 snprintf(&(ctx->hashfile[strlen(ctx->hashfile)]), 3, "%02X", in[i]);
-                // snprintf(&(ctx->challenge[strlen(ctx->challenge)]), 3, "%02X", in[i]);
+                snprintf(&(ctx->challenge[strlen(ctx->challenge)]), 2, "%x", in[i]);
             }
 
             return 1;
