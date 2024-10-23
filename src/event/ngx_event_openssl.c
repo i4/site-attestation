@@ -396,7 +396,7 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             char* buffer = &(ctx->challenge[strlen(ctx->challenge)]);
             strncpy(buffer, key_data, key_len); // Use strncpy to avoid truncation issues
-            buffer[key_len] = '\0'; // Null-terminate the string
+            buffer[key_len-1] = '\0'; // Null-terminate the string
 
             EVP_PKEY_free(pkey);
             BIO_free(mem_bio);
