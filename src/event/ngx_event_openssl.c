@@ -403,8 +403,6 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
 
             unsigned char md_buf[65];
 
-            printf("%s\n", ctx->challenge);
-
             // unsigned char *SHA512(const unsigned char *data, size_t count, unsigned char *md_buf);
             SHA512((unsigned char*) ctx->challenge, strlen(ctx->challenge), md_buf);
 
