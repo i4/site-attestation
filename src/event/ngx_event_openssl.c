@@ -414,6 +414,8 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                 printf("%02x", md_buf[i]);
             }
 
+            printf("\n");
+
             fclose(hfile);
 
             create_report(ctx);
