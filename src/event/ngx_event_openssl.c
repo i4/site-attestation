@@ -406,6 +406,8 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
             // unsigned char *SHA512(const unsigned char *data, size_t count, unsigned char *md_buf);
             SHA512((unsigned char*) ctx->challenge, strlen(ctx->challenge), md_buf);
 
+            printf("SHA512: %s\n", md_buf);
+
             FILE *hfile = sfopen(ctx->hashfile, "w");
             for (size_t i = 0; i < 64; i++) {
                 fprintf(hfile, "%02x", md_buf[i]);
