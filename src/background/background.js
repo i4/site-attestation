@@ -128,7 +128,7 @@ async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, deta
     console.log(details);
 
     // const nonce = "RA_REQ:ichbineinnonce"; // TODO generate proper nonce
-    const nonce = "3";
+    const nonce = "5";
     // const nonce = "hallo ich bin ein nonce"; // TODO
 
     try {
@@ -143,108 +143,114 @@ async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, deta
 browser.tlsExt.onWriteTlsExtension.addListener(listenerOnWriteTlsExtension, ".*", 420);
 
 async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, details) {
-    console.log("handler unfiltered");
-
-    if (messageSSLHandshakeType !== browser.tlsExt.SSLHandshakeType.SSL_HS_CERTIFICATE)
-        return browser.tlsExt.SECStatus.SECSUCCESS;
-
-    console.log("handler");
-    console.log(data);
-    console.log(details);
-
-    const nonce = await storage.getNonce(details.url);
-    if (!nonce)
-        return browser.tlsExt.SECStatus.SECSUCCESS;
-
-    const hostAttestationInfo = new HostAttestationInfo(data, details.tlsCertString, nonce);
-    console.log(hostAttestationInfo)
-
-    // TODO: does AR contain given nonce? nonce in the AR might be hashed
-    // if (ar.report_data !== nonce)
-    //     return browser.tlsExt.SECStatus.SECFAILURE;
-    // ! This won't work: The Extension has to build a structure like '<nonce>\n<pubkey> on its won, hash it and compare it
-
-    const isKnown = await storage.isKnownHost(details.url);
-    const tab = await queryRATLSTab(details.url);   // TODO this might not work if a page's content refers to a RATLS page // ! in fact this does not really work, because it seems like a TLS connection is opened before the URL bar reflects the URL
-    if (!tab) {
-        console.log(`could not find tab for ${details.url}`);
-        return browser.tlsExt.SECStatus.SECFAILURE; // could not find the tab causing the TLS connection
-    }
-
-    console.log("getting last request target");
-    const targetUrl = await storage.getLastRequestTarget(tab.id);
-    console.log("got target url ", targetUrl, " for tab ", tab.id);
-    console.log("handler for tab with url: ", targetUrl);
-
-    console.log("trying to get AR");
     try {
-        console.log("AR is: ", hostAttestationInfo.attestationReport);
+        console.log("handler unfiltered");
+
+        if (messageSSLHandshakeType !== browser.tlsExt.SSLHandshakeType.SSL_HS_CERTIFICATE)
+            return browser.tlsExt.SECStatus.SECSUCCESS;
+
+        console.log("handler");
+        console.log(data);
+        console.log(details);
+
+        const nonce = await storage.getNonce(details.url);
+        if (!nonce)
+            return browser.tlsExt.SECStatus.SECSUCCESS;
+
+        const hostAttestationInfo = new HostAttestationInfo(data, details.tlsCertString, nonce);
+        console.log(hostAttestationInfo)
+
+        console.log(arrayBufferToHex(hostAttestationInfo.attestationReport.measurement, true));
+
+        // TODO: does AR contain given nonce? nonce in the AR might be hashed
+        // if (ar.report_data !== nonce)
+        //     return browser.tlsExt.SECStatus.SECFAILURE;
+        // ! This won't work: The Extension has to build a structure like '<nonce>\n<pubkey> on its won, hash it and compare it
+
+        const isKnown = await storage.isKnownHost(details.url);
+        const tab = await queryRATLSTab(details.url);   // TODO this might not work if a page's content refers to a RATLS page // ! in fact this does not really work, because it seems like a TLS connection is opened before the URL bar reflects the URL
+        if (!tab) {
+            console.log(`could not find tab for ${details.url}`);
+            return browser.tlsExt.SECStatus.SECFAILURE; // could not find the tab causing the TLS connection
+        }
+
+        console.log("getting last request target");
+        const targetUrl = await storage.getLastRequestTarget(tab.id);
+        console.log("got target url ", targetUrl, " for tab ", tab.id);
+        console.log("handler for tab with url: ", targetUrl);
+
+        console.log("trying to get AR");
+        try {
+            console.log("AR is: ", hostAttestationInfo.attestationReport);
+        } catch (e) {
+            console.error(e);
+        }
+        console.log("VCEK is: ", hostAttestationInfo.vcekCert);
+
+        console.log(hostAttestationInfo);
+
+        if (!isKnown) {
+            console.log("host is unknown");
+            await storage.setPendingAttestationInfo(details.url, {
+                host: details.url, // TODO this is a hostname, not an URL
+                ar_arrayBuffer: hostAttestationInfo.attestationReport.arrayBuffer,
+                hostAttestationInfo: hostAttestationInfo.toJson(),
+            });
+
+            browser.tabs.update(tab.id, {
+                url: buildParamUrl(NEW_ATTESTATION_PAGE, targetUrl, details.url)
+            });
+
+            return browser.tlsExt.SECStatus.SECFAILURE;
+        }
+
+        console.log("host is known");
+
+        // host is known
+        if (await storage.isIgnored(details.url)) {
+            // attestation ignored -> show page action
+            await showPageAction(tab.id, false);
+            return browser.tlsExt.SECStatus.SECSUCCESS;
+        }
+
+        console.log("host is not ignored");
+
+        if (await storage.isUntrusted(details.url)) {
+            // host is blocked
+            browser.tabs.update(tab.id, {
+                url: buildParamUrl(BLOCKED_ATTESTATION_PAGE, targetUrl, details.url)
+            });
+            return browser.tlsExt.SECStatus.SECFAILURE;
+        }
+
+        console.log("host is not untrusted");
+
+        // can the already known host be trusted?
+        const storedAR = await storage.getAttestationReport(details.url);
+        if (storedAR && // TODO ! ar is undefined here !
+            arrayBufferToHex(ar.measurement) === arrayBufferToHex(storedAR.measurement) // &&
+            /*await checkHost({}, ar)*/) { // TODO can not do network requests while network socket is blocked -> use bundled VCEK
+            // the measurement is correct and the host can be trusted
+            // -> store new TLS key, update lastTrusted
+            console.log("known measurement " + details.url);
+            await storage.setTrusted(details.url, {
+                lastTrusted: new Date(),
+                // ssl_sha512: ssl_sha512,
+            });
+        } else {
+            console.log("attestation failed " + details.url);
+            browser.tabs.update(tab.id, {
+                url: buildParamUrl(DIFFERS_ATTESTATION_PAGE, targetUrl, details.url)
+            });
+            return browser.tlsExt.SECStatus.SECFAILURE;
+        }
+
+        console.log("trusted successfully");
+        await showPageAction(tab.id, true);
+        return browser.tlsExt.SECStatus.SECSUCCESS;
     } catch (e) {
         console.error(e);
     }
-    console.log("VCEK is: ", hostAttestationInfo.vcekCert);
-
-    console.log(hostAttestationInfo);
-
-    if (!isKnown) {
-        console.log("host is unknown");
-        await storage.setPendingAttestationInfo(details.url, {
-            host: details.url, // TODO this is a hostname, not an URL
-            ar_arrayBuffer: hostAttestationInfo.attestationReport.arrayBuffer,
-            hostAttestationInfo: hostAttestationInfo.toJson(),
-        });
-
-        browser.tabs.update(tab.id, {
-            url : buildParamUrl(NEW_ATTESTATION_PAGE, targetUrl, details.url)
-        });
-
-        return browser.tlsExt.SECStatus.SECFAILURE;
-    }
-
-    console.log("host is known");
-
-    // host is known
-    if (await storage.isIgnored(details.url)) {
-        // attestation ignored -> show page action
-        await showPageAction(tab.id, false);
-        return browser.tlsExt.SECStatus.SECSUCCESS;
-    }
-
-    console.log("host is not ignored");
-
-    if (await storage.isUntrusted(details.url)) {
-        // host is blocked
-        browser.tabs.update(tab.id, {
-            url : buildParamUrl(BLOCKED_ATTESTATION_PAGE, targetUrl, details.url)
-        });
-        return browser.tlsExt.SECStatus.SECFAILURE;
-    }
-
-    console.log("host is not untrusted");
-
-    // can the already known host be trusted?
-    const storedAR = await storage.getAttestationReport(details.url);
-    if (storedAR &&
-        arrayBufferToHex(ar.measurement) === arrayBufferToHex(storedAR.measurement) // &&
-        /*await checkHost({}, ar)*/) { // TODO can not do network requests while network socket is blocked -> use bundled VCEK
-        // the measurement is correct and the host can be trusted
-        // -> store new TLS key, update lastTrusted
-        console.log("known measurement " + details.url);
-        await storage.setTrusted(details.url, {
-            lastTrusted: new Date(),
-            // ssl_sha512: ssl_sha512,
-        });
-    } else {
-        console.log("attestation failed " + details.url);
-        browser.tabs.update(tab.id, {
-            url : buildParamUrl(DIFFERS_ATTESTATION_PAGE, targetUrl, details.url)
-        });
-        return browser.tlsExt.SECStatus.SECFAILURE;
-    }
-
-    console.log("trusted successfully");
-    await showPageAction(tab.id, true);
-    return browser.tlsExt.SECStatus.SECSUCCESS;
 }
 
 browser.tlsExt.onHandleTlsExtension.addListener(listenerOnHandleTlsExtension, ".*", 420);

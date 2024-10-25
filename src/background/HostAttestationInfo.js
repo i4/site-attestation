@@ -35,10 +35,10 @@ export class HostAttestationInfo {
     }
 
     get reportDataStr() {
-        const buffer = this.attestationReport.report_data;
+        // const buffer = this.attestationReport.report_data;
         // return Array.prototype.map.call(new Uint8Array(buffer), x => (('00' + x.toString(16)).slice(-2))).join('');
         // like sha512 in util.js
-        return util.arrayBufferToHex(buffer);
+        return util.arrayBufferToHex(this.attestationReport.report_data);
     }
 
     get vcekCert() {
@@ -65,7 +65,6 @@ ${exportedAsBase64.substring(0, 64)}
 ${exportedAsBase64.substring(64, 64 * 2)}
 ${exportedAsBase64.substring(64 * 2, 64 * 3)}
 -----END PUBLIC KEY-----\n`;
-
 // ${exportedAsBase64.substring(64 * 3, 64 * 4)} // TODO: somehow only the first 3 lines are needed?
 // ${exportedAsBase64.substring(64 * 4, 64 * 5)}
 // ${exportedAsBase64.substring(64 * 5, 64 * 6)}

@@ -87,6 +87,8 @@ export async function validateAttestationReport(ar, vcek) {
     // it triggers a 'not supported' exception. Thus convert to JSON and back.
     const jsonPubKey = vcek.subjectPublicKeyInfo.subjectPublicKey.toJSON()
     const pubKey = await importPubKey(util.hex_decode(jsonPubKey.valueBlock.valueHex))
+    console.log("jsonPubKey", jsonPubKey);
+    console.log("pubKey", pubKey);
     return await verifyMessage(pubKey, ar.signature, ar.getSignedData)
 }
 
@@ -107,8 +109,9 @@ export async function checkHost(hostInfo, hostAttestationInfo) {
         console.log("report_data", hostAttestationInfo.reportDataStr);
         return false;
     }
+    console.log("verification hash valid");
 
-    console.log("validating AR and VCEK");
+    console.log("validating VCEK");
 
     // 2. Validate that the VCEK is correctly signed by AMD root cert
     if (!await validateWithCertChain(vcek)) {
@@ -116,16 +119,16 @@ export async function checkHost(hostInfo, hostAttestationInfo) {
         console.log("vcek invalid");
         return false;
     }
-
     console.log("VCEK validated");
 
+    console.log("validating AR");
+    console.log("measurement", util.arrayBufferToHex(ar.measurement));
     // 3. Validate that the attestation report is correctly signed using the VCEK
     if (!await validateAttestationReport(ar, vcek)) {
         // attestation report could not be verified using VCEK
         console.log("attestation report invalid")
         return false;
     }
-
     console.log("AR validated");
 
     return true;

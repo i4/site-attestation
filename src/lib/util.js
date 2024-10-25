@@ -1,6 +1,7 @@
 import format from "./attestation-info.json";
 import * as asn1js from "asn1js";
 import * as pkijs from "pkijs";
+import * as base64 from "base64-arraybuffer";
 
 export function arrayBufferToHex (arrayBuffer,fmt = false) {
     if (typeof arrayBuffer !== 'object' || arrayBuffer === null || typeof arrayBuffer.byteLength !== 'number') {
@@ -88,38 +89,42 @@ export function hasDateChanged(date1, date2) {
 //     return bytes.buffer;
 // }
 
-export function base64ToArrayBuffer(base64) {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-    let bufferLength = base64.length * 0.75;
-    let len = base64.length;
+// export function base64ToArrayBuffer(base64) {
+//     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+//     let bufferLength = base64.length * 0.75;
+//     let len = base64.length;
+//
+//     if (base64[len - 1] === '=') {
+//         bufferLength--;
+//         if (base64[len - 2] === '=') {
+//             bufferLength--;
+//         }
+//     }
+//
+//     const arrayBuffer = new ArrayBuffer(bufferLength);
+//     const bytes = new Uint8Array(arrayBuffer);
+//
+//     let l = 0;
+//     for (let i = 0; i < len; i += 4) {
+//         const encoded1 = chars.indexOf(base64[i]);
+//         const encoded2 = chars.indexOf(base64[i + 1]);
+//         const encoded3 = chars.indexOf(base64[i + 2]);
+//         const encoded4 = chars.indexOf(base64[i + 3]);
+//
+//         const byte1 = (encoded1 << 2) | (encoded2 >> 4);
+//         const byte2 = ((encoded2 & 15) << 4) | (encoded3 >> 2);
+//         const byte3 = ((encoded3 & 3) << 6) | encoded4;
+//
+//         bytes[l++] = byte1;
+//         if (encoded3 !== 64) bytes[l++] = byte2;
+//         if (encoded4 !== 64) bytes[l++] = byte3;
+//     }
+//
+//     return arrayBuffer;
+// }
 
-    if (base64[len - 1] === '=') {
-        bufferLength--;
-        if (base64[len - 2] === '=') {
-            bufferLength--;
-        }
-    }
-
-    const arrayBuffer = new ArrayBuffer(bufferLength);
-    const bytes = new Uint8Array(arrayBuffer);
-
-    let l = 0;
-    for (let i = 0; i < len; i += 4) {
-        const encoded1 = chars.indexOf(base64[i]);
-        const encoded2 = chars.indexOf(base64[i + 1]);
-        const encoded3 = chars.indexOf(base64[i + 2]);
-        const encoded4 = chars.indexOf(base64[i + 3]);
-
-        const byte1 = (encoded1 << 2) | (encoded2 >> 4);
-        const byte2 = ((encoded2 & 15) << 4) | (encoded3 >> 2);
-        const byte3 = ((encoded3 & 3) << 6) | encoded4;
-
-        bytes[l++] = byte1;
-        if (encoded3 !== 64) bytes[l++] = byte2;
-        if (encoded4 !== 64) bytes[l++] = byte3;
-    }
-
-    return arrayBuffer;
+export function base64ToArrayBuffer(str) {
+    return base64.decode(str);
 }
 
 // TODO: refactor
