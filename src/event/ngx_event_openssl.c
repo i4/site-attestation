@@ -350,6 +350,36 @@ static void create_report(RAContext* ctx) {
     }
 }
 
+// Just in case we need it.
+// static void create_vcek(RAContext* ctx) {
+//     pid_t pid = fork();
+//     if (pid == 0) { // child
+//
+//         // sudo target/debug/snpguest fetch vcek pem genoa /home/ubuntu/snpguest/ /usr/local/nginx/reports/626F62
+//         execlp("/home/ubuntu/snpguest/target/debug/snpguest",
+//                "snpguest",
+//                "fetch",
+//                "vcek",
+//                "pem",
+//                "genoa",
+//                ctx->vcek_file, // target
+//                ctx->outfile, // report
+//                NULL);
+//
+//         exit(1);
+//     } else if (pid < 0) {
+//         perror("fork");
+//         exit(EXIT_FAILURE);
+//     }
+//
+//     int status;
+//     pid_t wpid = waitpid(pid, &status, 0); // collect zombie
+//     if (wpid == -1 && WIFEXITED(status)) {
+//         perror("waitpid");
+//         exit(EXIT_FAILURE);
+//     }
+// }
+
 static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                         unsigned int context,
                                         const unsigned char** out,
