@@ -227,8 +227,8 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
 
         // can the already known host be trusted?
         const storedAR = await storage.getAttestationReport(details.url);
-        if (storedAR && // TODO ! ar is undefined here !
-            arrayBufferToHex(ar.measurement) === arrayBufferToHex(storedAR.measurement) // &&
+        if (storedAR &&
+            arrayBufferToHex(hostAttestationInfo.attestationReport.measurement) === arrayBufferToHex(storedAR.measurement) // &&
             /*await checkHost({}, ar)*/) { // TODO can not do network requests while network socket is blocked -> use bundled VCEK
             // the measurement is correct and the host can be trusted
             // -> store new TLS key, update lastTrusted
