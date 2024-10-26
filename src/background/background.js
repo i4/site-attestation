@@ -121,23 +121,24 @@ async function queryRATLSTab(host) {
 }
 
 async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, details) {
-    if (messageSSLHandshakeType !== browser.tlsExt.SSLHandshakeType.SSL_HS_CLIENT_HELLO)
-        return null;
-
-    console.log("writer");
-    console.log(details);
-
-    // const nonce = "RA_REQ:ichbineinnonce"; // TODO generate proper nonce
-    const nonce = "5";
-    // const nonce = "hallo ich bin ein nonce"; // TODO
-
     try {
-        await storage.setNonce(details.url, nonce);
-    } catch (e) {
-        console.error(e);
-    }
+        if (messageSSLHandshakeType !== browser.tlsExt.SSLHandshakeType.SSL_HS_CLIENT_HELLO)
+            return null;
 
-    return nonce + '\0'; // TODO: there is something wrong with Firefox, that the \0 is required
+        console.log("writer");
+        console.log(details);
+
+        // const nonce = "RA_REQ:ichbineinnonce"; // TODO generate proper nonce
+        const nonce = "5";
+        // const nonce = "hallo ich bin ein nonce"; // TODO
+
+        await storage.setNonce(details.url, nonce);
+
+        return nonce + '\0'; // TODO: there is something wrong with Firefox, that the \0 is required
+    } catch (e) {
+        console.error("writer listener failed", e);
+        return null;
+    }
 }
 
 browser.tlsExt.onWriteTlsExtension.addListener(listenerOnWriteTlsExtension, ".*", 420);
@@ -249,7 +250,10 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
         await showPageAction(tab.id, true);
         return browser.tlsExt.SECStatus.SECSUCCESS;
     } catch (e) {
-        console.error(e);
+        console.error("handler listener failed", e);
+        // An error has occurred and could have been caused by a server mishandling the protocol, thus
+        // refuse the connection, in order to protect the client.
+        return browser.tlsExt.SECStatus.SECFAILURE;
     }
 }
 
