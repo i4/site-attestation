@@ -129,12 +129,13 @@ async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, deta
         console.log(details);
 
         // const nonce = "RA_REQ:ichbineinnonce"; // TODO generate proper nonce
-        const nonce = "5";
+        const nonce = "3";
         // const nonce = "hallo ich bin ein nonce"; // TODO
 
         await storage.setNonce(details.url, nonce);
 
-        return nonce + '\0'; // TODO: there is something wrong with Firefox, that the \0 is required
+        // return nonce + '\0'; // TODO: there is something wrong with Firefox, that the \0 is required
+        return nonce;
     } catch (e) {
         console.error("writer listener failed", e);
         return null;
