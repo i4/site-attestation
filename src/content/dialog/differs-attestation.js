@@ -15,6 +15,7 @@ import {
 import {AttestationReport} from "../../lib/attestation";
 import {getMeasurementFromRepo} from "../../lib/net";
 import {checkHost} from "../../lib/crypto";
+import {HostAttestationInfo} from "../../background/HostAttestationInfo";
 
 const titleText = document.getElementById("title");
 const domainText = document.getElementById("domain");
@@ -29,15 +30,15 @@ const trustMeasurementButton = document.getElementById("trust-measurement-button
 const trustRepoButton = document.getElementById("trust-repo-button");
 const trustAuthorKeyButton = document.getElementById("trust-author-key-button");
 
+let ar;
 const origin = getOriginParam();
 const host = getHostParam();
 let hostInfo;
-let ar;
 
 trustMeasurementButton.addEventListener("click", async () => {
     // remove current form of trust
     await storage.removeHost(hostInfo.host);
-    await listenerTrustMeasurement(hostInfo, ar);
+    await listenerTrustMeasurement(hostInfo, ar, origin);
 });
 
 trustRepoButton.addEventListener("click", async () => {
@@ -56,19 +57,24 @@ noTrustButton.addEventListener("click", async () => {
     await storage.setUntrusted(hostInfo.host, true);
     browser.runtime.sendMessage({
         type : types.redirect,
-        url : hostInfo.url
+        url : origin
     });
 });
 
 window.addEventListener("load", async () => {
+    console.log("Differs Attestation");
+
+    console.log("host is: " + host);
+    console.log(`origin is ${origin}`);
+
     hostInfo = await storage.getPendingAttestationInfo(host);
+    const hostAttestationInfo = new HostAttestationInfo().fromJson(hostInfo.hostAttestationInfo);
+    ar = hostAttestationInfo.attestationReport;
 
     // init UI
     domainText.innerText = hostInfo.host;
 
-    // TODO: fix, this is old code
-    ar = await getReport(hostInfo);
-    if (ar && await checkHost(ar)) {
+    if (await checkHost(hostAttestationInfo)) {
         let makeVisible = [];
         const storedHostInfo = await storage.getHost(hostInfo.host);
         const oldMeasurement = (storedHostInfo.ar_arrayBuffer) ?
