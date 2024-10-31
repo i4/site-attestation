@@ -36,9 +36,13 @@ async function showPageAction(tabId, success) {
     return browser.pageAction.show(tabId);
 }
 
-async function queryRATLSTab(host) {
+async function queryRATLSTab() {
     const queryInfo = {
-        // url: `*://${host}/*`,    // TODO issue with URL bar being set after a TLS connection is opened
+        // ! the url field can not be used, since a TLS connection is opened prior to the url bar reflecting the url
+        // ! thus we cannot query a tab based on its url
+        // ! This is a huge oversight, since race conditions could occur here, maybe there is a better solution?
+        // ! TODO
+        // url: `*://${host}/*`,
         currentWindow: true,
         active: true
     };
@@ -61,13 +65,10 @@ async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, deta
         console.log("writer");
         console.log(details);
 
-        // const nonce = "RA_REQ:ichbineinnonce"; // TODO generate proper nonce
+        // TODO generate proper nonce
         const nonce = "3";
-        // const nonce = "hallo ich bin ein nonce"; // TODO
 
         await storage.setNonce(details.url, nonce);
-
-        // return nonce + '\0'; // TODO: there is something wrong with Firefox, that the \0 is required
         return nonce;
     } catch (e) {
         console.error("writer listener failed", e);
@@ -98,7 +99,7 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
         console.log(arrayBufferToHex(hostAttestationInfo.attestationReport.measurement, true));
 
         const isKnown = await storage.isKnownHost(details.url);
-        const tab = await queryRATLSTab(details.url);   // TODO this might not work if a page's content refers to a RATLS page // ! in fact this does not really work, because it seems like a TLS connection is opened before the URL bar reflects the URL
+        const tab = await queryRATLSTab();
         if (!tab) {
             console.log(`could not find tab for ${details.url}`);
             return browser.tlsExt.SECStatus.SECFAILURE; // could not find the tab causing the TLS connection
