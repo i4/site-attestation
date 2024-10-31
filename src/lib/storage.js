@@ -9,6 +9,8 @@ import {isEmpty} from "lodash";
  * author_keys          | an array of author keys             | -
  * measurement_repos    | an array of url pointing to         | -
  *                      | measurement repos                   |
+ * crls                 | a map of architectures and their    | -
+ *                      | crl array buffer                    |
  */
 
 /**
@@ -22,6 +24,7 @@ const AUTHOR_KEYS = "author_keys";
 const MEASUREMENT_REPOS = "measurement_repos";
 const HOSTS = "hosts";
 const TABS = "tabs";
+const CRLS = "crls";
 
 async function getObject(request, storageArea = browser.storage.local){
     const item = await storageArea.get(request);
@@ -332,4 +335,12 @@ export async function setLastRequestTarget(tabId, target) {
 export async function getLastRequestTarget(tabId){
     // return getObjectProperty(tabId.toString(), "target", browser.storage.session);
     return mapGet(TABS, tabId.toString(), browser.storage.session);
+}
+
+export async function setCrl(architecture, crl_arrayBuffer) {
+    return mapSet(CRLS, architecture, crl_arrayBuffer, browser.storage.local);
+}
+
+export async function getCrl(architecture){
+    return mapGet(CRLS, architecture, browser.storage.local);
 }

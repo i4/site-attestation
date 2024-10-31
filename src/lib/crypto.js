@@ -11,9 +11,6 @@ import * as storage from "./storage";
 // and revocation list.
 // returns boolean
 export async function validateWithCertChain(vcek) {
-    // AMD key server
-    const AMD_ARK_ASK_REVOCATION = "https://kdsintf.amd.com/vcek/v1/Genoa/crl" // TODO: derive architecture from AR
-
     // Fetch assets of the web extension such as ask and ark
     async function loadData(resourcePath) {
         var url = browser.runtime.getURL(resourcePath);
@@ -28,13 +25,8 @@ export async function validateWithCertChain(vcek) {
     const ask_cert = decodeCert(await loadData(ask));
     const ark_cert = decodeCert(await loadData(ark));
 
-    // TODO revocation List async, not during every attestation
-    console.log("fetching revocation list");
-    const text = await fetchArrayBuffer(AMD_ARK_ASK_REVOCATION);
-    console.log("fetched revocation list");
-
     const crls = [];
-    const crl = pkijs.CertificateRevocationList.fromBER(text);
+    const crl = pkijs.CertificateRevocationList.fromBER(await storage.getCrl("Genoa"));
     crls.push(crl);
 
     // Create certificate's array (end-user certificate + intermediate certificates)

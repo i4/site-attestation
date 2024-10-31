@@ -2,7 +2,7 @@ import * as pkijs from "pkijs";
 import * as asn1js from "asn1js";
 
 import * as util from "../lib/util";
-import {fetchAttestationInfo, getMeasurementFromRepo} from "../lib/net";
+import {fetchArrayBuffer, fetchAttestationInfo, getMeasurementFromRepo} from "../lib/net";
 import * as storage from "../lib/storage";
 import * as messaging from "../lib/messaging";
 import {DialogType} from "../lib/ui";
@@ -229,11 +229,26 @@ async function listenerOnMessageReceived(message, sender) {
 
 browser.runtime.onMessage.addListener(listenerOnMessageReceived);
 
-browser.runtime.onStartup.addListener(async () => {
-    // clear the list of unsupported hosts on browser startup, so that the extension
-    // does not acquire huge amounts of user data and storage.
-    await removeUnsupported();
-});
+async function onStartup() {
+    console.log("startup");
+    try {
+        // acquire revocation list on startup // TODO: currently only for one architecture
+        // AMD key server
+        const AMD_ARK_ASK_REVOCATION = "https://kdsintf.amd.com/vcek/v1/Genoa/crl" // TODO: derive architecture from AR
+
+        console.log("fetching revocation list");
+        const crl_arrayBuffer = await fetchArrayBuffer(AMD_ARK_ASK_REVOCATION);
+        console.log("fetched revocation list");
+
+        // TODO: error handling
+        await storage.setCrl("Genoa", crl_arrayBuffer);
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+browser.runtime.onStartup.addListener(onStartup);
+onStartup(); // TODO: somehow onStartup listener is not called, so call it manually
 
 async function listenerOnBeforeRequest(details) {
     console.log("webrequest for ", details.url, " in tab ", details.tabId);
