@@ -256,6 +256,5 @@ async function listenerOnBeforeRequest(details) {
 }
 
 browser.webRequest.onBeforeRequest.addListener(
-    listenerOnBeforeRequest,
-    {urls: ['https://*/*'], types: ['main_frame']},
-    ["blocking"]); // TODO required?
+    listenerOnBeforeRequest,  // ! if racing conditions for the url occur, make this listener blocking ;)
+    {urls: ['https://*/*'], types: ['main_frame']});
