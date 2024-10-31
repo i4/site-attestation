@@ -22,73 +22,6 @@ const BLOCKED_ATTESTATION_PAGE = browser.runtime.getURL("blocked-remote-attestat
 const MISSING_ATTESTATION_PAGE = browser.runtime.getURL("missing-remote-attestation.html");
 const DIFFERS_ATTESTATION_PAGE = browser.runtime.getURL("differs-remote-attestation.html");
 
-// Function requests the SecurityInfo of the established https connection
-// and extracts the public key.
-// return: sha521 of the public key
-// TODO: refactor / rewrite?
-async function querySSLFingerprint(requestId) {
-    async function exportAndFormatCryptoKey(key) {
-        const exported = await window.crypto.subtle.exportKey(
-            "spki",
-            key
-        );
-        const exportedAsString = util.ab2str(exported);
-        const exportedAsBase64 = window.btoa(exportedAsString);
-
-        return `-----BEGIN PUBLIC KEY-----
-${exportedAsBase64.substring(0, 64)}
-${exportedAsBase64.substring(64, 64 * 2)}
-${exportedAsBase64.substring(64 * 2, 64 * 3)}
-${exportedAsBase64.substring(64 * 3, 64 * 4)}
-${exportedAsBase64.substring(64 * 4, 64 * 5)}
-${exportedAsBase64.substring(64 * 5, 64 * 6)}
-${exportedAsBase64.substring(64 * 6, 64 * 6 + 8)}
------END PUBLIC KEY-----\n`;
-    }
-
-    const securityInfo = await browser.webRequest.getSecurityInfo(requestId, {
-        "rawDER": true,
-    });
-
-    try {
-        if (securityInfo.state === "secure" || securityInfo.state === "unsafe") {
-
-            const serverCert = securityInfo.certificates[0];
-
-            // raw ASN1 encoded certificate data
-            const rawDER = new Uint8Array(serverCert.rawDER).buffer
-
-            // We collect the rawDER encoded certificate
-            const asn1 = asn1js.fromBER(rawDER);
-            if (asn1.offset === -1) {
-                // TODO: exception caught locally
-                throw new Error("Incorrect encoded ASN.1 data");
-            }
-            const cert_simpl = new pkijs.Certificate({schema: asn1.result});
-            var pubKey = await cert_simpl.getPublicKey();
-            // TODO: securityInfo already has the "subjectPublicKeyInfoDigest" field, which is "Base64 encoded SHA-256 hash of the DER-encoded public key info"
-
-            const exported = await exportAndFormatCryptoKey(pubKey);
-            // console.log(exported);
-            return await util.sha512(exported);
-        } else {
-            console.error("querySSLFingerprint: Cannot validate connection in state " + securityInfo.state);
-        }
-    } catch (error) {
-        console.error("querySSLFingerprint: " + error);
-    }
-}
-
-// checks if the host behind the url supports remote attestation
-async function getAttestationInfo(url) {
-    try {
-        return await fetchAttestationInfo(new URL(ATTESTATION_INFO_PATH, url.href).href)
-    } catch (e) {
-        // console.log(e)
-        return null
-    }
-}
-
 async function showPageAction(tabId, success) {
     if (success)
         await browser.pageAction.setIcon({
@@ -163,11 +96,6 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
         console.log(hostAttestationInfo)
 
         console.log(arrayBufferToHex(hostAttestationInfo.attestationReport.measurement, true));
-
-        // TODO: does AR contain given nonce? nonce in the AR might be hashed
-        // if (ar.report_data !== nonce)
-        //     return browser.tlsExt.SECStatus.SECFAILURE;
-        // ! This won't work: The Extension has to build a structure like '<nonce>\n<pubkey> on its won, hash it and compare it
 
         const isKnown = await storage.isKnownHost(details.url);
         const tab = await queryRATLSTab(details.url);   // TODO this might not work if a page's content refers to a RATLS page // ! in fact this does not really work, because it seems like a TLS connection is opened before the URL bar reflects the URL
