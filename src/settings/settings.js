@@ -157,6 +157,10 @@ function showModal(host, hostData) {
     infoModal.showModal();
 }
 
+function hostToURL(host) {
+    return "https://" + host;
+}
+
 function createTitleCell(title, isLink) {
     const div = document.createElement("div");
     const checkbox = document.createElement("input");
@@ -169,7 +173,7 @@ function createTitleCell(title, isLink) {
     label.setAttribute("for", title);
     if (isLink) {
         const link = document.createElement("a");
-        link.setAttribute("href", title);
+        link.setAttribute("href", hostToURL(title));
         link.setAttribute("target", "_blank");
         link.innerText = title;
         label.appendChild(link);
