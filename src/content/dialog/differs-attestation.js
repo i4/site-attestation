@@ -66,8 +66,9 @@ window.addEventListener("load", async () => {
     // init UI
     domainText.innerText = hostInfo.host;
 
+    // TODO: fix, this is old code
     ar = await getReport(hostInfo);
-    if (ar && await checkHost(hostInfo, ar)) {
+    if (ar && await checkHost(ar)) {
         let makeVisible = [];
         const storedHostInfo = await storage.getHost(hostInfo.host);
         const oldMeasurement = (storedHostInfo.ar_arrayBuffer) ?

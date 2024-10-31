@@ -80,7 +80,7 @@ window.addEventListener("load", async () => {
     // init UI
     domainText.innerText = host;
 
-    if (await checkHost(hostInfo, hostAttestationInfo)) {
+    if (await checkHost(hostAttestationInfo)) {
         let makeVisible = [];
 
         // 4. Trust the measurement? wait for user input

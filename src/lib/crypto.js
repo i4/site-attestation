@@ -29,7 +29,9 @@ export async function validateWithCertChain(vcek) {
     const ark_cert = decodeCert(await loadData(ark));
 
     // TODO revocation List async, not during every attestation
+    console.log("fetching revocation list");
     const text = await fetchArrayBuffer(AMD_ARK_ASK_REVOCATION);
+    console.log("fetched revocation list");
 
     const crls = [];
     const crl = pkijs.CertificateRevocationList.fromBER(text);
@@ -92,10 +94,8 @@ export async function validateAttestationReport(ar, vcek) {
     return await verifyMessage(pubKey, ar.signature, ar.getSignedData)
 }
 
-export async function checkHost(hostInfo, hostAttestationInfo) {
-    // const ssl_sha512 = hostInfo.ssl_sha512;
-
-    console.log("checking host");
+export async function checkHost(hostAttestationInfo) {
+     console.log("checking host");
 
     const ar = hostAttestationInfo.attestationReport;
     const vcek = hostAttestationInfo.vcekCert;
@@ -151,7 +151,7 @@ export async function validateMeasurement(hostInfo, measurementHex) {
         return false;
     }
 
-    if (!await checkHost(hostInfo, ar)) {
+    if (!await checkHost(ar)) {
         return false;
     }
 
@@ -168,7 +168,7 @@ export async function validateAuthorKey(hostInfo) {
         const ar = await fetchAttestationReport(hostInfo.host, hostInfo.attestationInfo.path);
         if (ar && ar.author_key_en &&
             await storage.containsAuthorKey(arrayBufferToHex(ar.author_key_digest)) &&
-            await checkHost(hostInfo.host, ar)) {
+            await checkHost(ar)) {
             // host supplies a known author key
             return ar;
         }
