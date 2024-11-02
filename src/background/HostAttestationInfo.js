@@ -28,9 +28,6 @@ export class HostAttestationInfo {
     }
 
     get attestationReport() {
-        // TODO: testing:
-        // let removedNewlines = this.report.replace(/[\r\n]/g, '');
-        // let removedSpaces = removedNewlines.replace(/\s/g, '');
         return new AttestationReport(base64ToArrayBuffer(this.report));
     }
 
