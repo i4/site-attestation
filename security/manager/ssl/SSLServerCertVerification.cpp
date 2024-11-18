@@ -882,6 +882,8 @@ SECStatus AuthCertificateHookInternal(
       certVerifierFlags, resultTask);
 }
 
+LazyLogModule gTLSEXTLog("tlsext"); // TODO remove
+
 // Extracts whatever information we need out of fd (using SSL_*) and passes it
 // to AuthCertificateHookInternal. AuthCertificateHookInternal will call
 // SSLServerCertVerificationJob::Dispatch. SSLServerCertVerificationJob
@@ -890,6 +892,9 @@ SECStatus AuthCertificateHook(void* arg, PRFileDesc* fd, PRBool checkSig,
                               PRBool isServer) {
   MOZ_LOG(gPIPNSSLog, LogLevel::Debug,
           ("[%p] starting AuthCertificateHook\n", fd));
+
+  MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+          ("[%p] AuthCertificateHook\n", fd));
 
   // Modern libssl always passes PR_TRUE for checkSig, and we have no means of
   // doing verification without checking signatures.

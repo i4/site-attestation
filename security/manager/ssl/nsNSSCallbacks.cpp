@@ -982,7 +982,12 @@ static void AccumulateCipherSuite(const SSLChannelInfo& channelInfo) {
   Telemetry::Accumulate(Telemetry::TLS_CIPHER_SUITE, value);
 }
 
+// extern LazyLogModule gTLSEXTLog; // TODO remove
+
 void HandshakeCallback(PRFileDesc* fd, void* client_data) {
+  MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+          ("[%p] HandshakeCallback\n", fd));
+
   // Do the bookkeeping that needs to be done after the
   // server's ServerHello...ServerHelloDone have been processed, but that
   // doesn't need the handshake to be completed.

@@ -57,6 +57,12 @@ interface nsITlsExtensionHandlerObserver : nsITlsExtensionObserver {
                                 in AString tlsCertString);
 };
 
+[scriptable, function, uuid(7b30af2d-1fa7-4fb7-90d9-40fea7afd887)]
+interface nsITlsAuthCertificateObserver : nsITlsExtensionObserver {
+  // Promise<SECStatus>
+  Promise onAuthCertificate(    in string tlsSessionId);
+};
+
 // `scriptable` designates that this object will be used with JavaScript
 /**
  * ... documentation
@@ -82,6 +88,10 @@ interface nsITlsExtensionService : nsISupports {
   void addHandlerObserver(in string urlPattern, in PRUint16 extension, in nsITlsExtensionHandlerObserver observer);
   void removeHandlerObserver(in PRUint16 extension);
   boolean hasHandlerObserver(in PRUint16 extension);
+
+  void addAuthCertificateObserver(in string urlPattern, in nsITlsAuthCertificateObserver observer);
+  void removeAuthCertificateObserver(in string urlPattern);
+  boolean hasAuthCertificateObserver(in string urlPattern);
 
   // for debugging
   // void callWriterObserver(in PRUint16 extension);

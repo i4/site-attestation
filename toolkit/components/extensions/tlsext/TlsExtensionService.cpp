@@ -33,7 +33,7 @@ void postHandshakeCleanup(SSLHandshakeType messageType, TlsExtHookArg* callbackA
 PRBool
 TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType messageType, PRUint8 *data, unsigned int *len, unsigned int maxLen, void *callbackArg) {
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Writer Hook was called!\n"));
+            ("[%p] Writer Hook was called!\n", fd));
 
     auto* hookArg = static_cast<TlsExtHookArg*>(callbackArg);
     auto* obsInfo = hookArg->obsInfo;
@@ -88,8 +88,7 @@ TlsExtensionService::onNSS_SSLExtensionWriter(PRFileDesc *fd, SSLHandshakeType m
 SECStatus
 TlsExtensionService::onNSS_SSLExtensionHandler(PRFileDesc *fd, SSLHandshakeType messageType, const PRUint8 *data, unsigned int len, SSLAlertDescription *alert, void *callbackArg) {
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Handler Hook was called!\n"));
-
+            ("[%p] Handler Hook was called!\n", fd));
     auto* hookArg = static_cast<TlsExtHookArg*>(callbackArg);
     auto* obsInfo = hookArg->obsInfo;
 
