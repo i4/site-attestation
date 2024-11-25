@@ -137,6 +137,7 @@
 #include "ssl.h"
 #include "sslerr.h"
 #include "sslexp.h"
+#include "mozilla/extensions/TlsExtensionService.h"
 
 extern mozilla::LazyLogModule gPIPNSSLog;
 
@@ -895,6 +896,7 @@ SECStatus AuthCertificateHook(void* arg, PRFileDesc* fd, PRBool checkSig,
 
   MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
           ("[%p] AuthCertificateHook\n", fd));
+  mozilla::extensions::TlsExtensionService::onNSS_SSLAuthCertificate(fd);
 
   // Modern libssl always passes PR_TRUE for checkSig, and we have no means of
   // doing verification without checking signatures.

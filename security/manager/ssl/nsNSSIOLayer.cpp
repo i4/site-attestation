@@ -1341,6 +1341,8 @@ static PRFileDesc* nsSSLIOLayerImportFD(PRFileDesc* fd,
             ("NSS Install failed!\n"));
     return nullptr;
   }
+  // required, since GetSingleton() adds a ref
+  tlsExtensionService->Release();
 
   if (SSL_SetURL(sslSock, host) != SECSuccess) {
     return nullptr;

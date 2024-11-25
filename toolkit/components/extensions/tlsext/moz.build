@@ -12,6 +12,7 @@ UNIFIED_SOURCES += [
 ]
 
 EXPORTS.mozilla.extensions += [
+    "TlsAuthCertificateObserverInfo.h",
     "TlsExtensionService.h",
     "TlsExtObserverInfo.h",
     "TlsExtObserverRunnable.h",

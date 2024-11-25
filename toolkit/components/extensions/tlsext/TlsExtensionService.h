@@ -12,6 +12,7 @@
 #include "ssl.h"
 #include "prlock.h"
 #include "mozilla/extensions/TlsExtObserverInfo.h"
+#include "mozilla/extensions/TlsAuthCertificateObserverInfo.h"
 
 namespace mozilla::extensions {
 
@@ -40,6 +41,10 @@ class TlsExtensionService final : public nsITlsExtensionService {
         void *callbackArg
     );
 
+    static SECStatus onNSS_SSLAuthCertificate(
+        PRFileDesc *fd
+    );
+
     SECStatus InstallObserverHooks(PRFileDesc* sslSock, const char* host);
 
     std::map<PRUint16, TlsExtObserverInfo*> GetObservers();
@@ -47,6 +52,9 @@ class TlsExtensionService final : public nsITlsExtensionService {
     private:
     std::map<PRUint16, TlsExtObserverInfo*> observers;
     PRLock* observersLock;
+
+    std::map<PRFileDesc*, nsITlsAuthCertificateObserver*> authCertObservers;
+    PRLock* authCertObserversLock;
 
     TlsExtensionService();
     ~TlsExtensionService();
