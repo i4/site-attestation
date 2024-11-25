@@ -109,6 +109,28 @@
           "$ref": "SECStatus",
           "description": "..."
         }
+      },
+      {
+        "name": "onAuthCertificate",
+        "type": "function",
+        "description": "...",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "type": "string"
+          }
+        ],
+        "extraParameters": [
+          {
+            "name": "sessionId",
+            "description": "...",
+            "type": "string"
+          }
+        ],
+        "returns": {
+          "$ref": "SECStatus",
+          "description": "..."
+        }
       }
     ],
     "types": [

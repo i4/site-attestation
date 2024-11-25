@@ -58,6 +58,17 @@ function createHandleObserver(fire) {
   };
 }
 
+function createAuthCertObserver(fire) {
+  return async function (tlsSessionId) {
+    console.log("authCert observer called");
+    if (fire !== null) {
+      const secStatus = await fire.async(tlsSessionId);
+      return SECStatusDict[secStatus];
+    }
+    return Promise.resolve(SECStatusDict.SECSuccess);
+  };
+}
+
 this.tlsExt = class extends ExtensionAPI {
 
   getAPI(context) {
@@ -85,6 +96,18 @@ this.tlsExt = class extends ExtensionAPI {
             Services.tlsExtensions.addHandlerObserver(urlPattern, extension, observer);
             return () => {
               Services.tlsExtensions.removeHandlerObserver(extension);
+            };
+          }
+        }).api(),
+
+        onAuthCertificate: new EventManager({
+          context,
+          name: "tlsExt.onAuthCertificate",
+          register: (fire, tlsSessionId) => {
+            const observer = createHandleObserver(fire);
+            Services.tlsExtensions.addAuthCertificateObserver(tlsSessionId, observer);
+            return () => {
+              Services.tlsExtensions.removeAuthCertificateObserver(extension);
             };
           }
         }).api(),
