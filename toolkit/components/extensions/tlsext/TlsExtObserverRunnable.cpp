@@ -1,5 +1,6 @@
 #include "mozilla/extensions/TlsExtObserverRunnable.h"
 #include "mozilla/extensions/TlsExtPromiseHandler.h"
+#include "mozilla/extensions/TlsExtUtil.h"
 #include "sys/stat.h"
 #include <fstream>
 #include <sstream>
@@ -12,12 +13,6 @@ extern LazyLogModule gTLSEXTLog;
 
 NS_IMPL_ISUPPORTS(TlsExtWriterObsRunnable, nsIRunnable)
 NS_IMPL_ISUPPORTS(TlsExtHandlerObsRunnable, nsIRunnable)
-
-std::string PtrToStr(const void* ptr) {
-    std::stringstream s;
-    s << ptr;
-    return s.str();
-}
 
 // returns empty string on error
 std::string GetTlsCert(PRFileDesc* fd) {
@@ -70,7 +65,7 @@ TlsExtWriterObsRunnable::Run() {
             ("Reached WriterObsRunnable!\n"));
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("ID is: %s\n", PtrToStr(fd).c_str()));
+            ("ID is: %s\n", TlsExtUtil::PtrToStr(fd).c_str()));
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("CallbackArg is: %p\n", callbackArg));
@@ -82,7 +77,7 @@ TlsExtWriterObsRunnable::Run() {
     mozilla::dom::Promise* promise;
     nsresult rv = obsInfo->writerObserver->OnWriteTlsExtension(
         obsInfo->extension,
-        PtrToStr(fd).c_str(),   // TODO does this leak?
+        TlsExtUtil::PtrToStr(fd).c_str(),   // TODO does this leak?
         callbackArg->hostName,
         (nsITlsExtensionObserver::SSLHandshakeType) messageType,
         maxLen,
@@ -150,7 +145,7 @@ TlsExtHandlerObsRunnable::Run() {
     mozilla::dom::Promise* promise;
     nsresult rv = obsInfo->handlerObserver->OnHandleTlsExtension(
         obsInfo->extension,
-        PtrToStr(fd).c_str(),   // TODO does this leak?
+        TlsExtUtil::PtrToStr(fd).c_str(),   // TODO does this leak?
         callbackArg->hostName,
         (nsITlsExtensionObserver::SSLHandshakeType) messageType,
         jsString,     // TODO C++ style cast

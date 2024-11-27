@@ -4,8 +4,7 @@
 #include "sslexp.h"
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/extensions/TlsExtObserverRunnable.h"
-#include <sstream>
-#include <string>
+#include "mozilla/extensions/TlsExtUtil.h"
 
 namespace mozilla::extensions {
 
@@ -313,16 +312,9 @@ TlsExtensionService::HasHandlerObserver(PRUint16 extension, bool *_retval) {
     return NS_OK;
 }
 
-void* StrToPtr(const std::string& str) {
-    void* ptr = nullptr;
-    std::stringstream s(str);
-    s >> ptr; // Extract the pointer from the string
-    return ptr;
-}
-
 NS_IMETHODIMP
 TlsExtensionService::AddAuthCertificateObserver(const char * tlsSessionId, nsITlsAuthCertificateObserver* observer) {
-    PRFileDesc* fd = (PRFileDesc*) StrToPtr(tlsSessionId);
+    PRFileDesc* fd = (PRFileDesc*) TlsExtUtil::StrToPtr(tlsSessionId);
     PR_Lock(authCertObserversLock);
     authCertObservers.insert({fd, observer});
     PR_Unlock(authCertObserversLock);
@@ -331,7 +323,7 @@ TlsExtensionService::AddAuthCertificateObserver(const char * tlsSessionId, nsITl
 
 NS_IMETHODIMP
 TlsExtensionService::RemoveAuthCertificateObserver(const char * tlsSessionId) {
-    PRFileDesc* fd = (PRFileDesc*) StrToPtr(tlsSessionId);
+    PRFileDesc* fd = (PRFileDesc*) TlsExtUtil::StrToPtr(tlsSessionId);
     PR_Lock(authCertObserversLock);
     authCertObservers.erase(fd);
     PR_Unlock(authCertObserversLock);
@@ -340,7 +332,7 @@ TlsExtensionService::RemoveAuthCertificateObserver(const char * tlsSessionId) {
 
 NS_IMETHODIMP
 TlsExtensionService::HasAuthCertificateObserver(const char * tlsSessionId, bool *_retval) {
-    PRFileDesc* fd = (PRFileDesc*) StrToPtr(tlsSessionId);
+    PRFileDesc* fd = (PRFileDesc*) TlsExtUtil::StrToPtr(tlsSessionId);
     PR_Lock(authCertObserversLock);
     std::map<PRFileDesc*, nsITlsAuthCertificateObserver*>::iterator it = authCertObservers.find(fd);
     *_retval = it != authCertObservers.end();

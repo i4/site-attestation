@@ -10,17 +10,19 @@ UNIFIED_SOURCES += [
     "TlsAuthCertPromiseHandler.cpp",
     "TlsExtensionService.cpp",
     "TlsExtObserverRunnable.cpp",
-    "TlsExtPromiseHandler.cpp"
+    "TlsExtPromiseHandler.cpp",
+    "TlsExtUtil.cpp"
 ]
 
 EXPORTS.mozilla.extensions += [
+    "TlsAuthCertificateObserverInfo.h",
     "TlsAuthCertObserverRunnable.h",
     "TlsAuthCertPromiseHandler.h",
-    "TlsAuthCertificateObserverInfo.h",
     "TlsExtensionService.h",
     "TlsExtObserverInfo.h",
     "TlsExtObserverRunnable.h",
-    "TlsExtPromiseHandler.h"
+    "TlsExtPromiseHandler.h",
+    "TlsExtUtil.h"
 ]
 
 XPCOM_MANIFESTS += [

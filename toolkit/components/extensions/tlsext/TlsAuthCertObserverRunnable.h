@@ -5,20 +5,23 @@
 #include "nsITlsExtensionService.h"
 #include "nsThreadUtils.h"
 #include "prio.h"
+#include "seccomon.h"
 
 namespace mozilla::extensions {
-class TlsAuthCertObserverRunnable : public mozilla::Runnable {
+class TlsAuthCertObsRunnable : public mozilla::Runnable {
     public:
     NS_DECL_ISUPPORTS
     NS_DECL_NSIRUNNABLE
 
-    TlsAuthCertObserverRunnable(PRFileDesc* fd, nsITlsAuthCertificateObserver* obs, mozilla::Monitor& monitor):
-        mozilla::Runnable("TlsAuthCertObserverRunnable"), fd(fd), obs(obs), monitor(monitor) {};
+    TlsAuthCertObsRunnable(PRFileDesc* fd, nsITlsAuthCertificateObserver* obs, mozilla::Monitor& monitor, SECStatus& result);
 
     private:
+    ~TlsAuthCertObsRunnable() = default;
+
     PRFileDesc* fd;
     nsITlsAuthCertificateObserver* obs;
     mozilla::Monitor& monitor;
+    SECStatus& result;
 };
 }
 
