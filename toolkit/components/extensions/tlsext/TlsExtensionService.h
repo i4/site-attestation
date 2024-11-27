@@ -53,7 +53,7 @@ class TlsExtensionService final : public nsITlsExtensionService {
     std::map<PRUint16, TlsExtObserverInfo*> observers;
     PRLock* observersLock;
 
-    std::map<PRFileDesc*, nsITlsAuthCertificateObserver*> authCertObservers;
+    std::map<PRFileDesc*, nsCOMPtr<nsITlsAuthCertificateObserver>> authCertObservers;
     PRLock* authCertObserversLock;
 
     TlsExtensionService();

@@ -104,10 +104,11 @@ this.tlsExt = class extends ExtensionAPI {
           context,
           name: "tlsExt.onAuthCertificate",
           register: (fire, tlsSessionId) => {
-            const observer = createHandleObserver(fire);
+            console.log("registering onAuthCertificate");
+            const observer = createAuthCertObserver(fire);
             Services.tlsExtensions.addAuthCertificateObserver(tlsSessionId, observer);
             return () => {
-              Services.tlsExtensions.removeAuthCertificateObserver(extension);
+              Services.tlsExtensions.removeAuthCertificateObserver(tlsSessionId);
             };
           }
         }).api(),

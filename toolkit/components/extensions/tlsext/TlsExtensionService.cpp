@@ -130,21 +130,60 @@ TlsExtensionService::onNSS_SSLAuthCertificate(PRFileDesc *fd) {
     auto* tlsExtensionService = mozilla::extensions::TlsExtensionService::GetSingleton().take();
 
     PR_Lock(tlsExtensionService->authCertObserversLock);
-    std::map<PRFileDesc*, nsITlsAuthCertificateObserver*>::iterator it = tlsExtensionService->authCertObservers.find(fd);
-    if (it == tlsExtensionService->authCertObservers.end()) {
-        // no observer registered for the socket 'fd'
+
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("[%zu] size of map\n", tlsExtensionService->authCertObservers.size()));
+
+    // std::map<PRFileDesc*, nsITlsAuthCertificateObserver*>::iterator it = tlsExtensionService->authCertObservers.find(fd);
+    // if (it == tlsExtensionService->authCertObservers.end()) {
+    //     // no observer registered for the socket 'fd'
+    //     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+    //         ("[%p] no observer registered for the socket\n", fd));
+
+    //     PR_Unlock(tlsExtensionService->authCertObserversLock);
+    //     return SECSuccess;
+    // }
+    // Testing
+    std::map<PRFileDesc*, nsCOMPtr<nsITlsAuthCertificateObserver>>::iterator it = tlsExtensionService->authCertObservers.begin();
+    for(; it != tlsExtensionService->authCertObservers.end(); ++it) {
+        MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("[%p] key in map, searching for [%p]\n", it->first, (PRFileDesc*) 0x123));
+        if (it->first == (PRFileDesc*) 0x123) {
+            MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("breaking, since we found [%p]\n", it->first));
+            break;
+        }
+    }
+    if (it->first != (PRFileDesc*) 0x123) {
+        MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("did not find [%p]\n", (PRFileDesc*) 0x123));
         PR_Unlock(tlsExtensionService->authCertObserversLock);
         return SECSuccess;
     }
     PR_Unlock(tlsExtensionService->authCertObserversLock);
 
-    // 'it.second' is the observer to be called
-    nsITlsAuthCertificateObserver* obs = it->second;
+    return SECSuccess; //TODO testing
 
+    // 'it.second' is the observer to be called
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Getting obs\n"));
+    nsCOMPtr<nsITlsAuthCertificateObserver> obs = std::move(it->second);
+
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Creating monitor\n"));
     mozilla::Monitor monitor("AuthCertObservableRunnerMonitor");
     SECStatus result;
 
-    RefPtr<TlsAuthCertObsRunnable> obsRun = new TlsAuthCertObsRunnable(fd, obs, monitor, result);
+    return SECSuccess; //TODO testing
+
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("Creating runnable\n"));
+    RefPtr<TlsAuthCertObsRunnable> obsRun = new TlsAuthCertObsRunnable(fd, std::move(obs), monitor, result);
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("[%p] dispatching TlsAuthCertObsRunnable\n", fd));
+
+    return SECSuccess; //TODO testing
+
     NS_DispatchToMainThread(obsRun);
 
     {
@@ -154,9 +193,12 @@ TlsExtensionService::onNSS_SSLAuthCertificate(PRFileDesc *fd) {
         monitor.Wait();
     }
 
+    return SECSuccess; //TODO testing
+
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug, ("SSLAuthCert SecStatus: %i\n", result));
 
     tlsExtensionService->Release();
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug, ("released tlsExtServ"));
     return result;
 }
 
@@ -338,7 +380,12 @@ TlsExtensionService::HasHandlerObserver(PRUint16 extension, bool *_retval) {
 
 NS_IMETHODIMP
 TlsExtensionService::AddAuthCertificateObserver(const char * tlsSessionId, nsITlsAuthCertificateObserver* observer) {
+    NS_ADDREF(observer);
+
     PRFileDesc* fd = (PRFileDesc*) TlsExtUtil::StrToPtr(tlsSessionId);
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("[%p] AddAuthCertificateObserver\n", fd));
+
     PR_Lock(authCertObserversLock);
     authCertObservers.insert({fd, observer});
     PR_Unlock(authCertObserversLock);
@@ -358,7 +405,7 @@ NS_IMETHODIMP
 TlsExtensionService::HasAuthCertificateObserver(const char * tlsSessionId, bool *_retval) {
     PRFileDesc* fd = (PRFileDesc*) TlsExtUtil::StrToPtr(tlsSessionId);
     PR_Lock(authCertObserversLock);
-    std::map<PRFileDesc*, nsITlsAuthCertificateObserver*>::iterator it = authCertObservers.find(fd);
+    std::map<PRFileDesc*, nsCOMPtr<nsITlsAuthCertificateObserver>>::iterator it = authCertObservers.find(fd);
     *_retval = it != authCertObservers.end();
     PR_Unlock(authCertObserversLock);
     return NS_OK;
