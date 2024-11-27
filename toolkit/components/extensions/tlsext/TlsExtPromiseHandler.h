@@ -46,6 +46,17 @@ class TlsExtHandlerPromiseHandler : public TlsExtPromiseHandler {
     private:
     SECStatus& result;
 };
+
+class TlsAuthCertPromiseHandler : public TlsExtPromiseHandler {
+    public:
+    TlsAuthCertPromiseHandler(mozilla::Monitor& monitor, SECStatus& result);
+
+    void ResolvedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv);
+    void RejectedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv);
+
+    private:
+    SECStatus& result;
+};
 }
 
 #endif
