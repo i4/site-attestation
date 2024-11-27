@@ -128,7 +128,11 @@ TlsExtensionService::onNSS_SSLAuthCertificate(PRFileDesc *fd) {
 
     PR_Lock(tlsExtensionService->authCertObserversLock);
     std::map<PRFileDesc*, nsITlsAuthCertificateObserver*>::iterator it = tlsExtensionService->authCertObservers.find(fd);
-    if (it == tlsExtensionService->authCertObservers.end()) return SECSuccess;
+    if (it == tlsExtensionService->authCertObservers.end()) {
+        // no observer registered for the socket 'fd'
+        PR_Unlock(tlsExtensionService->authCertObserversLock);
+        return SECSuccess;
+    }
     PR_Unlock(tlsExtensionService->authCertObserversLock);
 
     // 'it.second' is the observer to be called
