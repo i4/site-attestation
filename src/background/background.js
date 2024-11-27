@@ -57,6 +57,13 @@ async function queryRATLSTab() {
     }
 }
 
+async function listenerOnAuthCertificate(sessionId) {
+    console.log("works", sessionId);
+    return browser.tlsExt.SECStatus.SECSUCCESS;
+}
+
+browser.tlsExt.onAuthCertificate.addListener(listenerOnAuthCertificate, "123");
+
 async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, details) {
     try {
         if (messageSSLHandshakeType !== browser.tlsExt.SSLHandshakeType.SSL_HS_CLIENT_HELLO)
@@ -67,6 +74,12 @@ async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, deta
 
         // TODO generate proper nonce
         const nonce = "3";
+        // console.log("adding auth cert hook for ", details.sessionId);
+        // if (!browser.tlsExt.onAuthCertificate.hasListener(listenerOnAuthCertificate))
+        //     browser.tlsExt.onAuthCertificate.addListener(listenerOnAuthCertificate, details.sessionId);
+        //     // browser.tlsExt.onAuthCertificate.addListener(function(sessionId) {console.log("works ", sessionId); return browser.tlsExt.SECStatus.SECSUCCESS;}, details.sessionId);
+        // // TODO: use anon function?
+        // console.log("has listener", browser.tlsExt.onAuthCertificate.hasListener(listenerOnAuthCertificate));
 
         await storage.setNonce(details.url, nonce);
         return nonce;
