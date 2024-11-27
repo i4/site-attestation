@@ -896,7 +896,11 @@ SECStatus AuthCertificateHook(void* arg, PRFileDesc* fd, PRBool checkSig,
 
   MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
           ("[%p] AuthCertificateHook\n", fd));
-  mozilla::extensions::TlsExtensionService::onNSS_SSLAuthCertificate(fd);
+  if (SECSuccess != mozilla::extensions::TlsExtensionService::onNSS_SSLAuthCertificate(fd)) {
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+          ("[%p] AuthCertificateHook shot down by extension\n", fd));
+    return SECFailure;
+  }
 
   // Modern libssl always passes PR_TRUE for checkSig, and we have no means of
   // doing verification without checking signatures.

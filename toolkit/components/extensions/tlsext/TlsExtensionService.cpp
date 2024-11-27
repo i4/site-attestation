@@ -124,6 +124,9 @@ TlsExtensionService::onNSS_SSLExtensionHandler(PRFileDesc *fd, SSLHandshakeType 
 /* static */
 SECStatus
 TlsExtensionService::onNSS_SSLAuthCertificate(PRFileDesc *fd) {
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("[%p] onNSS_SSLAuthCertificate was called!\n", fd));
+
     auto* tlsExtensionService = mozilla::extensions::TlsExtensionService::GetSingleton().take();
 
     PR_Lock(tlsExtensionService->authCertObserversLock);
