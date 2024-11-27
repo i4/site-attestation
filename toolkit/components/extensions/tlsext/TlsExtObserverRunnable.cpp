@@ -2,7 +2,7 @@
 #include "mozilla/extensions/TlsExtPromiseHandler.h"
 #include "sys/stat.h"
 #include <fstream>
-#include<sstream>
+#include <sstream>
 #include <iostream>
 #include <string>
 

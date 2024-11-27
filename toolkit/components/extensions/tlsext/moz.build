@@ -6,12 +6,16 @@ XPIDL_SOURCES += [
 XPIDL_MODULE = "webextensions"
 
 UNIFIED_SOURCES += [
+    "TlsAuthCertObserverRunnable.cpp",
+    "TlsAuthCertPromiseHandler.cpp",
     "TlsExtensionService.cpp",
     "TlsExtObserverRunnable.cpp",
     "TlsExtPromiseHandler.cpp"
 ]
 
 EXPORTS.mozilla.extensions += [
+    "TlsAuthCertObserverRunnable.h",
+    "TlsAuthCertPromiseHandler.h",
     "TlsAuthCertificateObserverInfo.h",
     "TlsExtensionService.h",
     "TlsExtObserverInfo.h",
