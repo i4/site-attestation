@@ -1,6 +1,7 @@
 #include "mozilla/extensions/TlsExtensionService.h"
 
 #include "mozilla/Logging.h"
+#include "mozilla/extensions/TlsAuthCertObserverRunnable.h"
 #include "sslexp.h"
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/extensions/TlsExtObserverRunnable.h"
@@ -130,10 +131,26 @@ TlsExtensionService::onNSS_SSLAuthCertificate(PRFileDesc *fd) {
     if (it == tlsExtensionService->authCertObservers.end()) return SECSuccess;
     PR_Unlock(tlsExtensionService->authCertObserversLock);
 
-    // 'it' is the observer to be called
+    // 'it.second' is the observer to be called
+    nsITlsAuthCertificateObserver* obs = it->second;
+
+    mozilla::Monitor monitor("AuthCertObservableRunnerMonitor");
+    SECStatus result;
+
+    RefPtr<TlsAuthCertObsRunnable> obsRun = new TlsAuthCertObsRunnable(fd, obs, monitor, result);
+    NS_DispatchToMainThread(obsRun);
+
+    {
+        MOZ_LOG(gTLSEXTLog, LogLevel::Debug, ("Locking!\n"));
+        mozilla::MonitorAutoLock lock(monitor);
+        MOZ_LOG(gTLSEXTLog, LogLevel::Debug, ("Waiting!\n"));
+        monitor.Wait();
+    }
+
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug, ("SSLAuthCert SecStatus: %i\n", result));
 
     tlsExtensionService->Release();
-    return SECSuccess;
+    return result;
 }
 
 TlsExtensionService::TlsExtensionService() {
