@@ -44,8 +44,6 @@ TlsExtWriterPromiseHandler::ResolvedCallback(JSContext* aCx, JS::Handle<JS::Valu
     Notify();
 }
 
-
-
 void
 TlsExtWriterPromiseHandler::RejectedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv) {
     success = PR_FALSE;
@@ -68,6 +66,26 @@ TlsExtHandlerPromiseHandler::ResolvedCallback(JSContext* aCx, JS::Handle<JS::Val
 
 void
 TlsExtHandlerPromiseHandler::RejectedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv) {
+    result = SECSuccess; // TODO Handle rejection as needed
+    Notify();
+}
+
+TlsAuthCertPromiseHandler::TlsAuthCertPromiseHandler(mozilla::Monitor& monitor, SECStatus& result):
+    TlsExtPromiseHandler(monitor), result(result) {}
+
+void
+TlsAuthCertPromiseHandler::ResolvedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv) {
+    if (aValue.isNumber()) {
+        auto number = aValue.toNumber();
+        result = static_cast<SECStatus>(number);
+    } else {
+        result = SECSuccess;
+    }
+    Notify();
+}
+
+void
+TlsAuthCertPromiseHandler::RejectedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue, mozilla::ErrorResult& aRv) {
     result = SECSuccess; // TODO Handle rejection as needed
     Notify();
 }
