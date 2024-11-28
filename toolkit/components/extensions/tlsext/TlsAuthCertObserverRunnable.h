@@ -13,13 +13,13 @@ class TlsAuthCertObsRunnable : public mozilla::Runnable {
     NS_DECL_ISUPPORTS
     NS_DECL_NSIRUNNABLE
 
-    TlsAuthCertObsRunnable(PRFileDesc* fd, nsCOMPtr<nsITlsAuthCertificateObserver> obs, mozilla::Monitor& monitor, SECStatus& result);
+    TlsAuthCertObsRunnable(PRFileDesc* fd, nsCOMPtr<nsITlsAuthCertificateObserver>& obs, mozilla::Monitor& monitor, SECStatus& result);
 
     private:
     ~TlsAuthCertObsRunnable() = default;
 
     PRFileDesc* fd;
-    nsCOMPtr<nsITlsAuthCertificateObserver> obs;
+    nsCOMPtr<nsITlsAuthCertificateObserver>& obs;
     mozilla::Monitor& monitor;
     SECStatus& result;
 };

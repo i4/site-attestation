@@ -9,12 +9,8 @@ extern LazyLogModule gTLSEXTLog;
 
 NS_IMPL_ISUPPORTS(TlsAuthCertObsRunnable, nsIRunnable)
 
-TlsAuthCertObsRunnable::TlsAuthCertObsRunnable(PRFileDesc* fd, nsCOMPtr<nsITlsAuthCertificateObserver> obs, mozilla::Monitor& monitor, SECStatus& result):
-    mozilla::Runnable("TlsAuthCertObsRunnable"), fd(fd), monitor(monitor), result(result) {
-        MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Copying obs!\n"));
-        this->obs = std::move(obs);
-    };
+TlsAuthCertObsRunnable::TlsAuthCertObsRunnable(PRFileDesc* fd, nsCOMPtr<nsITlsAuthCertificateObserver>& obs, mozilla::Monitor& monitor, SECStatus& result):
+    mozilla::Runnable("TlsAuthCertObsRunnable"), fd(fd), obs(obs), monitor(monitor), result(result) {};
 
 NS_IMETHODIMP
 TlsAuthCertObsRunnable::Run() {

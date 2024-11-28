@@ -9,7 +9,7 @@
 
 namespace mozilla::extensions {
 struct TlsAuthCertificateObserverInfo {
-    TlsAuthCertificateObserverInfo(std::regex* pattern, nsCOMPtr<nsITlsAuthCertificateObserver> observer): pattern(pattern), observer(std::move(observer)) {}
+    TlsAuthCertificateObserverInfo(std::regex* pattern, nsCOMPtr<nsITlsAuthCertificateObserver> observer): pattern(pattern), observer(observer) {}
 
     std::regex* pattern;
     nsCOMPtr<nsITlsAuthCertificateObserver> observer;

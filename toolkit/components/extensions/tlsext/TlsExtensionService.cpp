@@ -162,27 +162,24 @@ TlsExtensionService::onNSS_SSLAuthCertificate(PRFileDesc *fd) {
     }
     PR_Unlock(tlsExtensionService->authCertObserversLock);
 
-    return SECSuccess; //TODO testing
+    // return SECSuccess; //TODO testing
 
-    // 'it.second' is the observer to be called
-    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("Getting obs\n"));
-    nsCOMPtr<nsITlsAuthCertificateObserver> obs = std::move(it->second);
+    // 'it->second' is the observer to be called
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Creating monitor\n"));
     mozilla::Monitor monitor("AuthCertObservableRunnerMonitor");
     SECStatus result;
 
-    return SECSuccess; //TODO testing
+    // return SECSuccess; //TODO testing
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Creating runnable\n"));
-    RefPtr<TlsAuthCertObsRunnable> obsRun = new TlsAuthCertObsRunnable(fd, std::move(obs), monitor, result);
+    RefPtr<TlsAuthCertObsRunnable> obsRun = new TlsAuthCertObsRunnable(fd, it->second, monitor, result);
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("[%p] dispatching TlsAuthCertObsRunnable\n", fd));
 
-    return SECSuccess; //TODO testing
+    // return SECSuccess; //TODO testing
 
     NS_DispatchToMainThread(obsRun);
 
@@ -193,7 +190,7 @@ TlsExtensionService::onNSS_SSLAuthCertificate(PRFileDesc *fd) {
         monitor.Wait();
     }
 
-    return SECSuccess; //TODO testing
+    // return SECSuccess; //TODO testing
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug, ("SSLAuthCert SecStatus: %i\n", result));
 
