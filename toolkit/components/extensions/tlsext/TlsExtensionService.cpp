@@ -166,6 +166,10 @@ TlsExtensionService::onNSS_SSLAuthCertificate(PRFileDesc *fd) {
         monitor.Wait();
     }
 
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("[%p] Removing AuthCert Observer\n", fd));
+    // tlsExtensionService->RemoveAuthCertificateObserver(fd); // TODO: check for existance?
+
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug, ("SSLAuthCert SecStatus: %i\n", result));
 
     tlsExtensionService->Release();
@@ -365,13 +369,22 @@ TlsExtensionService::AddAuthCertificateObserver(const char * tlsSessionId, nsITl
     return NS_OK;
 }
 
-NS_IMETHODIMP
-TlsExtensionService::RemoveAuthCertificateObserver(const char * tlsSessionId) {
-    PRFileDesc* fd = (PRFileDesc*) TlsExtUtil::StrToPtr(tlsSessionId);
+void
+TlsExtensionService::RemoveAuthCertificateObserver(PRFileDesc* fd) {
     PR_Lock(authCertObserversLock);
     authCertObservers[fd]->Release();
     authCertObservers.erase(fd);
     PR_Unlock(authCertObserversLock);
+}
+
+NS_IMETHODIMP
+TlsExtensionService::RemoveAuthCertificateObserver(const char * tlsSessionId) {
+    bool hasObserver;
+    HasAuthCertificateObserver(tlsSessionId, &hasObserver);
+    if (!hasObserver) return NS_OK;
+
+    PRFileDesc* fd = (PRFileDesc*) TlsExtUtil::StrToPtr(tlsSessionId);
+    RemoveAuthCertificateObserver(fd);
     return NS_OK;
 }
 

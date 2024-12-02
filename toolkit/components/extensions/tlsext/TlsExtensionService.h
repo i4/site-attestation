@@ -61,6 +61,7 @@ class TlsExtensionService final : public nsITlsExtensionService {
 
     TlsExtObserverInfo* GetOrCreateObserver(PRUint16 extension);
     void RemoveObserver(PRUint16 extension);
+    void RemoveAuthCertificateObserver(PRFileDesc* fd);
 };
 }
 
