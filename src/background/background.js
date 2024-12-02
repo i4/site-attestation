@@ -57,13 +57,6 @@ async function queryRATLSTab() {
     }
 }
 
-async function listenerOnAuthCertificate(sessionId) {
-    console.log("works", sessionId);
-    return browser.tlsExt.SECStatus.SECSUCCESS;
-}
-
-browser.tlsExt.onAuthCertificate.addListener(listenerOnAuthCertificate, "123");
-
 async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, details) {
     try {
         if (messageSSLHandshakeType !== browser.tlsExt.SSLHandshakeType.SSL_HS_CLIENT_HELLO)
@@ -74,12 +67,26 @@ async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, deta
 
         // TODO generate proper nonce
         const nonce = "3";
-        // console.log("adding auth cert hook for ", details.sessionId);
-        // if (!browser.tlsExt.onAuthCertificate.hasListener(listenerOnAuthCertificate))
-        //     browser.tlsExt.onAuthCertificate.addListener(listenerOnAuthCertificate, details.sessionId);
-        //     // browser.tlsExt.onAuthCertificate.addListener(function(sessionId) {console.log("works ", sessionId); return browser.tlsExt.SECStatus.SECSUCCESS;}, details.sessionId);
-        // // TODO: use anon function?
-        // console.log("has listener", browser.tlsExt.onAuthCertificate.hasListener(listenerOnAuthCertificate));
+
+        console.log("adding auth cert hook for ", details.sessionId);
+        if (await storage.isTrusted(details.url)) {
+            await storage.setAwaitingRA(details.url, true);
+            browser.tlsExt.onAuthCertificate.addListener(async function(sessionId) {
+                    try {
+                        const awaitingRA = await storage.getAwaitingRA(details.url);
+                        console.log("got awaitingRA", awaitingRA);
+                        if (awaitingRA) {
+                            console.log("awaitingRA was not unset");
+                            return browser.tlsExt.SECStatus.SECFAILURE;
+                        }
+
+                        console.log("awaitingRA was unset");
+                        return browser.tlsExt.SECStatus.SECSUCCESS
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }, details.sessionId);
+        }
 
         await storage.setNonce(details.url, nonce);
         return nonce;
@@ -101,6 +108,9 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
         console.log("handler");
         console.log(data);
         console.log(details);
+
+        console.log("unsetting awaitingRA");
+        await storage.setAwaitingRA(details.url, false);
 
         const nonce = await storage.getNonce(details.url);
         if (!nonce)

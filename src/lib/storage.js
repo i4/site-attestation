@@ -344,3 +344,11 @@ export async function setCrl(architecture, crl_arrayBuffer) {
 export async function getCrl(architecture){
     return mapGet(CRLS, architecture, browser.storage.local);
 }
+
+export async function setAwaitingRA(host, awaitingRA) {
+    return setObjectProperties(host, {awaitingRA: awaitingRA}, browser.storage.session);
+}
+
+export async function getAwaitingRA(host) {
+    return getObjectProperty(host, "awaitingRA", browser.storage.session);
+}
