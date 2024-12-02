@@ -77,6 +77,12 @@ async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, deta
                         console.log("got awaitingRA", awaitingRA);
                         if (awaitingRA) {
                             console.log("awaitingRA was not unset");
+
+                            const tab = await queryRATLSTab();
+                            const targetUrl = await storage.getLastRequestTarget(tab.id);
+                            browser.tabs.update(tab.id, {
+                                url: buildParamUrl(MISSING_ATTESTATION_PAGE, targetUrl, details.url)
+                            });
                             return browser.tlsExt.SECStatus.SECFAILURE;
                         }
 
