@@ -897,14 +897,14 @@ SECStatus AuthCertificateHook(void* arg, PRFileDesc* fd, PRBool checkSig,
   MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
           ("[%p] AuthCertificateHook\n", fd));
 
-  SECStatus status = mozilla::extensions::TlsExtensionService::onNSS_SSLAuthCertificate((PRFileDesc*) 0x123); //fd
+  SECStatus status = mozilla::extensions::TlsExtensionService::onNSS_SSLAuthCertificate(fd);
   MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
           ("[%p] Returned from AuthCertificateHook\n", fd));
-  // if (SECSuccess != status) {
-  //   MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-  //         ("[%p] AuthCertificateHook shot down by extension\n", fd));
-  //   return SECFailure;
-  // }
+  if (SECSuccess != status) {
+    MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+          ("[%p] AuthCertificateHook shot down by extension\n", fd));
+    return SECFailure;
+  }
   MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
           ("[%p] AuthCertificateHook was successfull\n", fd));
 

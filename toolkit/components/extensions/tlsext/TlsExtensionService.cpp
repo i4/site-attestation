@@ -134,36 +134,16 @@ TlsExtensionService::onNSS_SSLAuthCertificate(PRFileDesc *fd) {
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("[%zu] size of map\n", tlsExtensionService->authCertObservers.size()));
 
-    // std::map<PRFileDesc*, nsITlsAuthCertificateObserver*>::iterator it = tlsExtensionService->authCertObservers.find(fd);
-    // if (it == tlsExtensionService->authCertObservers.end()) {
-    //     // no observer registered for the socket 'fd'
-    //     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-    //         ("[%p] no observer registered for the socket\n", fd));
+    std::map<PRFileDesc*, nsCOMPtr<nsITlsAuthCertificateObserver>>::iterator it = tlsExtensionService->authCertObservers.find(fd);
+    if (it == tlsExtensionService->authCertObservers.end()) {
+        // no observer registered for the socket 'fd'
+        MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
+            ("[%p] no observer registered for the socket\n", fd));
 
-    //     PR_Unlock(tlsExtensionService->authCertObserversLock);
-    //     return SECSuccess;
-    // }
-    // Testing
-    std::map<PRFileDesc*, nsCOMPtr<nsITlsAuthCertificateObserver>>::iterator it = tlsExtensionService->authCertObservers.begin();
-    for(; it != tlsExtensionService->authCertObservers.end(); ++it) {
-        MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("[%p] key in map, searching for [%p]\n", it->first, (PRFileDesc*) 0x123));
-        if (it->first == (PRFileDesc*) 0x123) {
-            MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("breaking, since we found [%p]\n", it->first));
-            break;
-        }
-    }
-    if (it->first != (PRFileDesc*) 0x123) {
-        MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
-            ("did not find [%p]\n", (PRFileDesc*) 0x123));
         PR_Unlock(tlsExtensionService->authCertObserversLock);
         return SECSuccess;
     }
     PR_Unlock(tlsExtensionService->authCertObserversLock);
-
-    // return SECSuccess; //TODO testing
-
     // 'it->second' is the observer to be called
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
@@ -171,15 +151,11 @@ TlsExtensionService::onNSS_SSLAuthCertificate(PRFileDesc *fd) {
     mozilla::Monitor monitor("AuthCertObservableRunnerMonitor");
     SECStatus result;
 
-    // return SECSuccess; //TODO testing
-
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("Creating runnable\n"));
     RefPtr<TlsAuthCertObsRunnable> obsRun = new TlsAuthCertObsRunnable(fd, it->second, monitor, result);
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug,
             ("[%p] dispatching TlsAuthCertObsRunnable\n", fd));
-
-    // return SECSuccess; //TODO testing
 
     NS_DispatchToMainThread(obsRun);
 
@@ -189,8 +165,6 @@ TlsExtensionService::onNSS_SSLAuthCertificate(PRFileDesc *fd) {
         MOZ_LOG(gTLSEXTLog, LogLevel::Debug, ("Waiting!\n"));
         monitor.Wait();
     }
-
-    // return SECSuccess; //TODO testing
 
     MOZ_LOG(gTLSEXTLog, LogLevel::Debug, ("SSLAuthCert SecStatus: %i\n", result));
 
@@ -342,6 +316,7 @@ TlsExtensionService::RemoveObserver(PRUint16 extension) {
 NS_IMETHODIMP
 TlsExtensionService::RemoveWriterObserver(PRUint16 extension) {
     PR_Lock(observersLock);
+    observers[extension]->writerObserver->Release();
     observers[extension]->writerObserver = nullptr;
     PR_Unlock(observersLock);
     RemoveObserver(extension);
@@ -351,6 +326,7 @@ TlsExtensionService::RemoveWriterObserver(PRUint16 extension) {
 NS_IMETHODIMP
 TlsExtensionService::RemoveHandlerObserver(PRUint16 extension) {
     PR_Lock(observersLock);
+    observers[extension]->handlerObserver->Release();
     observers[extension]->handlerObserver = nullptr;
     PR_Unlock(observersLock);
     RemoveObserver(extension);
@@ -393,6 +369,7 @@ NS_IMETHODIMP
 TlsExtensionService::RemoveAuthCertificateObserver(const char * tlsSessionId) {
     PRFileDesc* fd = (PRFileDesc*) TlsExtUtil::StrToPtr(tlsSessionId);
     PR_Lock(authCertObserversLock);
+    authCertObservers[fd]->Release();
     authCertObservers.erase(fd);
     PR_Unlock(authCertObserversLock);
     return NS_OK;
