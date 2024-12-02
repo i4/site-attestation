@@ -37,6 +37,19 @@
           "$ref": "SSLExtensionSupport",
           "description": "..."
         }
+      },
+      {
+        "name": "removeAuthCertificateListener",
+        "type": "function",
+        "async": true,
+        "description": "...",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "description": "...",
+            "type": "string"
+          }
+        ]
       }
     ],
     "events": [

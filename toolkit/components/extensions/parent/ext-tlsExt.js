@@ -75,6 +75,7 @@ this.tlsExt = class extends ExtensionAPI {
     return {
       tlsExt: {
         getTlsExtensionSupport: (extension) => SSLExtensionSupportDict[Services.tlsExtensions.getExtensionSupport(extension)],
+        removeAuthCertificateListener: (sessionId) => Services.tlsExtensions.removeAuthCertificateObserver(sessionId),
 
         onWriteTlsExtension: new EventManager({
           context,
