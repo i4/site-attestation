@@ -9,8 +9,8 @@ from selenium.webdriver.common.by import By
 
 # global config
 url = "https://localhost"
-number_of_tests = 10
-testcases = ["unknown", "raw"] # "known"
+number_of_tests = 1
+testcases = ["unknown", "raw", "known"]
 condition = EC.title_is("404 Not Found")
 
 # Set the path to your custom Firefox binary
@@ -54,8 +54,17 @@ for testcase in testcases:
             button.click()
 
         wait.until(condition)
+
+        if testcase == "known":
+            driver.get("about:blank")
+
+            start_time = time.time()
+            driver.get(url)
+            wait.until(condition)
+
         end_time = time.time()
-        loading_times[testcase].append(end_time - start_time)
+        load_time = end_time - start_time
+        loading_times[testcase].append(load_time * 1000)
 
         # clean up for next run
         driver.quit()
@@ -63,5 +72,5 @@ for testcase in testcases:
 ### OUTPUT ###
 for testcase in testcases:
     print(f"Testcase: {testcase}")
-    print(f"{loading_times[testcase] * 1000}")
+    print(f"{loading_times[testcase]}")
     print()
