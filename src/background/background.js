@@ -83,10 +83,16 @@ async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, deta
                             browser.tabs.update(tab.id, {
                                 url: buildParamUrl(MISSING_ATTESTATION_PAGE, targetUrl, details.url)
                             });
+
+                            // cleaning up listener
+                            browser.tlsExt.removeAuthCertificateListener(sessionId);
                             return browser.tlsExt.SECStatus.SECFAILURE;
                         }
 
                         console.log("awaitingRA was unset");
+
+                        // cleaning up listener // TODO: does this leave artifacts in Firefox?
+                        browser.tlsExt.removeAuthCertificateListener(sessionId);
                         return browser.tlsExt.SECStatus.SECSUCCESS
                     } catch (e) {
                         console.error(e);
