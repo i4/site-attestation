@@ -267,12 +267,8 @@ async function listenerOnMessageReceived(message, sender) {
             });
             console.log("updating tab to ", message.url);
             break;
-        // case messaging.types.block:
-        //     console.log("blocking tab for origin: ", message.origin, message.host);
-        //     browser.tabs.update(sender.tab.id, {
-        //         url : buildParamUrl(BLOCKED_ATTESTATION_PAGE, message.origin, message.host),
-        //     });
-        //     break;
+        case messaging.types.evaluationTrust:
+            await storage.setConfigMeasurement(message.url);
     }
 }
 
