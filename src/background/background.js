@@ -250,6 +250,18 @@ async function listenerOnTabUpdated(tabId, changeInfo, tab) {
 browser.tabs.onUpdated.addListener(listenerOnTabUpdated);
 
 async function listenerOnMessageReceived(message, sender) {
+    console.log("received message", message);
+    // evaluation purposes only
+    if (message.type === messaging.types.evaluationTrust) {
+        console.log("configuring measurement");
+        await storage.setObjectProperties(message.url, {
+            trustedSince: new Date(),
+            config_measurement: message.config_measurement,
+            trusted: true
+        });
+        return;
+    }
+
     if (sender.id !== browser.runtime.id) {
         // only accept messages by this extension
         console.log("Message by unknown sender received: " + message);
@@ -267,8 +279,6 @@ async function listenerOnMessageReceived(message, sender) {
             });
             console.log("updating tab to ", message.url);
             break;
-        case messaging.types.evaluationTrust:
-            await storage.setConfigMeasurement(message.url);
     }
 }
 
