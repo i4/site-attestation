@@ -51,9 +51,6 @@ addButton.addEventListener("click", () => {
 
 addNewHostButton.addEventListener("click", async () => {
     let host = addModal.querySelector("#addHostUrl").value;
-    // TODO: parse with URL class
-    if (!host.endsWith("/"))
-        host += "/";
     const measurement = addModal.querySelector("#addHostMeasurement").value;
     if (!await storage.isKnownHost(host)) {
         await storage.setObjectProperties(host, {
