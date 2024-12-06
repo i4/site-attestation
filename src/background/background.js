@@ -287,6 +287,14 @@ browser.runtime.onMessage.addListener(listenerOnMessageReceived);
 async function onStartup() {
     console.log("startup");
     try {
+        console.log("setting up evaluation");
+        await storage.setObjectProperties("localhost", {
+            trustedSince: new Date(),
+            config_measurement: "e5699e0c270f3e5bfd7e2d9dc846231e99297d55d0f7c6f894469eb384b3402239b72c0c28a49e231e8a1a62314309b4",
+            trusted: true
+        });
+        console.log("config measurement is ", await storage.getConfigMeasurement("localhost"));
+
         // acquire revocation list on startup // TODO: currently only for one architecture
         // AMD key server
         const AMD_ARK_ASK_REVOCATION = "https://kdsintf.amd.com/vcek/v1/Genoa/crl" // TODO: derive architecture from AR
