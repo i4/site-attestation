@@ -191,6 +191,8 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
 
         console.log("host is not untrusted");
 
+        // was a measurement pre-configured (e.g. in settings)
+        const configMeasurement = await storage.getConfigMeasurement(details.url);
         // can the already known host be trusted?
         const storedAR = await storage.getAttestationReport(details.url);
         if (storedAR &&
@@ -203,6 +205,17 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
                 lastTrusted: new Date(),
                 // ssl_sha512: ssl_sha512,
             });
+        } else if (configMeasurement &&
+            configMeasurement === arrayBufferToHex(hostAttestationInfo.attestationReport.measurement) &&
+            await checkHost(hostAttestationInfo)) {
+            console.log("configured measurement " + details.url);
+            await Promise.all([
+                storage.setTrusted(details.url, {
+                    lastTrusted: new Date(),
+                    ar_arrayBuffer: hostAttestationInfo.attestationReport.arrayBuffer,
+                }),
+                storage.removeConfigMeasurement(details.url)
+            ]);
         } else {
             console.log("attestation failed " + details.url);
             browser.tabs.update(tab.id, {

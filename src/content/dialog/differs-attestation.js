@@ -79,7 +79,7 @@ window.addEventListener("load", async () => {
         const storedHostInfo = await storage.getHost(hostInfo.host);
         const oldMeasurement = (storedHostInfo.ar_arrayBuffer) ?
             arrayBufferToHex(new AttestationReport(storedHostInfo.ar_arrayBuffer).measurement) :
-            storedHostInfo.configMeasurement; // TODO
+            storedHostInfo.config_measurement; // TODO
 
         // attestation of the new measurement was successful
         descriptionText.innerHTML =
