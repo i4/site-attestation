@@ -107,7 +107,7 @@ export function newTrusted(host, trustedSince, lastTrusted, type, ar_arrayBuffer
 }
 
 export async function setTrusted(host, infoObj) {
-    return setObjectProperties(host, infoObj);
+    return setObjectProperties(host, {trusted: true, ...infoObj});
 }
 
 export async function isTrusted(host) {

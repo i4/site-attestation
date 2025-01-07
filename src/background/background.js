@@ -209,14 +209,13 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
         } else if (configMeasurement &&
             configMeasurement === arrayBufferToHex(hostAttestationInfo.attestationReport.measurement) &&
             await checkHost(hostAttestationInfo)) {
-            console.log("configured measurement " + details.url);
-            await Promise.all([
-                storage.setTrusted(details.url, {
-                    lastTrusted: new Date(),
-                    ar_arrayBuffer: hostAttestationInfo.attestationReport.arrayBuffer,
-                }),
-                storage.removeConfigMeasurement(details.url)
-            ]);
+
+            // remove the configured measurement and store the actual attestation report
+            await storage.setTrusted(details.url, {
+                lastTrusted: new Date(),
+                ar_arrayBuffer: hostAttestationInfo.attestationReport.arrayBuffer,
+            });
+            await storage.removeConfigMeasurement(details.url);
         } else {
             console.log("attestation failed " + details.url);
             browser.tabs.update(tab.id, {
@@ -294,7 +293,13 @@ async function onStartup() {
             config_measurement: "e5699e0c270f3e5bfd7e2d9dc846231e99297d55d0f7c6f894469eb384b3402239b72c0c28a49e231e8a1a62314309b4",
             trusted: true
         });
-        console.log("config measurement is ", await storage.getConfigMeasurement("localhost"));
+        console.log("localhost config measurement is ", await storage.getConfigMeasurement("localhost"));
+        await storage.setObjectProperties("i4epyc1.cs.fau.de", {
+            trustedSince: new Date(),
+            config_measurement: "e5699e0c270f3e5bfd7e2d9dc846231e99297d55d0f7c6f894469eb384b3402239b72c0c28a49e231e8a1a62314309b4",
+            trusted: true
+        });
+        console.log("i4epyc1.cs.fau.de config measurement is ", await storage.getConfigMeasurement("localhost"));
 
         // acquire revocation list on startup // TODO: currently only for one architecture
         // AMD key server
