@@ -8,11 +8,11 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
 # global config
-url = "https://localhost"
-url_hostname = "localhost"
+url = "https://i4epyc1.cs.fau.de"
+url_hostname = "i4epyc1.cs.fau.de"
 number_of_tests = 10
 testcases = ["unknown", "raw", "known"]
-condition = EC.title_is("404 Not Found")
+condition = EC.title_is("bRAwser")
 config_measurement = "e5699e0c270f3e5bfd7e2d9dc846231e99297d55d0f7c6f894469eb384b3402239b72c0c28a49e231e8a1a62314309b4"
 
 # Set the path to your custom Firefox binary
@@ -22,8 +22,8 @@ custom_firefox_path = "/Users/luca/Dev/Firefox/obj-aarch64-apple-darwin24.0.0/di
 profile_path = "./profiles/evaluation-minica-profile"
 
 # Set the custom extension path
-unknown_extension_path = "/Users/luca/Dev/RATLS-WebExt/build/web-ext-artifacts/17840039dd4943e1851d-1.3.6.xpi"
-known_extension_path = "/Users/luca/Dev/RATLS-WebExt/build/web-ext-artifacts/17840039dd4943e1851d-1.3.7.xpi"
+unknown_extension_path = "./17840039dd4943e1851d-1.3.8.xpi"
+known_extension_path = "./17840039dd4943e1851d-1.3.9.xpi"
 
 service = Service("/opt/homebrew/bin/geckodriver", log_path="geckodriver.log")
 options = Options()

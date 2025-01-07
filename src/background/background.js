@@ -287,6 +287,7 @@ browser.runtime.onMessage.addListener(listenerOnMessageReceived);
 async function onStartup() {
     console.log("startup");
     try {
+        // TODO: for evaluation build only!
         console.log("setting up evaluation");
         await storage.setObjectProperties("localhost", {
             trustedSince: new Date(),
@@ -308,6 +309,11 @@ async function onStartup() {
         console.log("fetching revocation list");
         const crl_arrayBuffer = await fetchArrayBuffer(AMD_ARK_ASK_REVOCATION);
         console.log("fetched revocation list");
+
+        if (!crl_arrayBuffer)
+            console.error("CRL could not be loaded");
+
+        console.log(crl_arrayBuffer);
 
         // TODO: error handling
         await storage.setCrl("Genoa", crl_arrayBuffer);

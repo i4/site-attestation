@@ -22,6 +22,7 @@ const node_package = require('./package.json')
 const _mode = 'development'
 
 // TODO: use none for production - https://webpack.js.org/configuration/devtool/
+// NO: creates errors
 const _devtool = "cheap-module-source-map"
 
 const _resolve = {
