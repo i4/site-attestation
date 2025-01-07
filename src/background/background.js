@@ -8,7 +8,7 @@ import * as messaging from "../lib/messaging";
 import {DialogType} from "../lib/ui";
 import {checkHost, validateAuthorKey, validateMeasurement} from "../lib/crypto";
 import {AttestationReport} from "../lib/attestation";
-import {arrayBufferToHex, checkAttestationInfoFormat, hasDateChanged} from "../lib/util";
+import {arrayBufferToHex, checkAttestationInfoFormat, generateNonce, hasDateChanged} from "../lib/util";
 // import {pmark, pmeasure} from "../lib/evaluation";
 import {removeUnsupported} from "../lib/storage";
 import * as attestation from "../lib/attestation";
@@ -66,7 +66,8 @@ async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, deta
         console.log(details);
 
         // TODO generate proper nonce
-        const nonce = "3";
+        // const nonce = "3";
+        const nonce = generateNonce();
 
         console.log("adding auth cert hook for ", details.sessionId);
         if (await storage.isTrusted(details.url)) {

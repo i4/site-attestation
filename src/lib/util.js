@@ -130,3 +130,13 @@ export async function sha512(str) {
     // const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     // return hashHex;
 }
+
+export function generateNonce() {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    let nonce = '';
+    for (let i = 0; i < 8; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        nonce += characters[randomIndex];
+    }
+    return nonce;
+}
