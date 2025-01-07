@@ -22,8 +22,8 @@ custom_firefox_path = "/Users/luca/Dev/Firefox/obj-aarch64-apple-darwin24.0.0/di
 profile_path = "./profiles/evaluation-minica-profile"
 
 # Set the custom extension path
-unknown_extension_path = "/Users/luca/Dev/RATLS-WebExt/build/web-ext-artifacts/17840039dd4943e1851d-1.3.3.xpi"
-known_extension_path = "/Users/luca/Dev/RATLS-WebExt/build/web-ext-artifacts/17840039dd4943e1851d-1.3.5.xpi"
+unknown_extension_path = "/Users/luca/Dev/RATLS-WebExt/build/web-ext-artifacts/17840039dd4943e1851d-1.3.6.xpi"
+known_extension_path = "/Users/luca/Dev/RATLS-WebExt/build/web-ext-artifacts/17840039dd4943e1851d-1.3.7.xpi"
 
 service = Service("/opt/homebrew/bin/geckodriver", log_path="geckodriver.log")
 options = Options()
