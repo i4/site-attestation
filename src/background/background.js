@@ -22,6 +22,8 @@ const BLOCKED_ATTESTATION_PAGE = browser.runtime.getURL("blocked-remote-attestat
 const MISSING_ATTESTATION_PAGE = browser.runtime.getURL("missing-remote-attestation.html");
 const DIFFERS_ATTESTATION_PAGE = browser.runtime.getURL("differs-remote-attestation.html");
 
+onStartup(); // TODO: somehow onStartup listener is not called, so call it manually as first action
+
 async function showPageAction(tabId, success) {
     if (success)
         await browser.pageAction.setIcon({
@@ -323,7 +325,6 @@ async function onStartup() {
 }
 
 browser.runtime.onStartup.addListener(onStartup);
-onStartup(); // TODO: somehow onStartup listener is not called, so call it manually
 
 async function listenerOnBeforeRequest(details) {
     console.log("webrequest for ", details.url, " in tab ", details.tabId);

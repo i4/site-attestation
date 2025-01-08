@@ -22,8 +22,8 @@ custom_firefox_path = "/Users/luca/Dev/Firefox/obj-aarch64-apple-darwin24.0.0/di
 profile_path = "./profiles/evaluation-minica-profile"
 
 # Set the custom extension path
-unknown_extension_path = "./17840039dd4943e1851d-1.3.8.xpi"
-known_extension_path = "./17840039dd4943e1851d-1.3.9.xpi"
+unknown_extension_path = "./17840039dd4943e1851d-1.3.10.xpi"
+known_extension_path = "./17840039dd4943e1851d-1.3.12.xpi"
 
 service = Service("/opt/homebrew/bin/geckodriver", log_path="geckodriver.log")
 options = Options()
