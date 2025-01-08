@@ -60,12 +60,14 @@ for testcase in testcases:
             print(f"repetition: {repetition} of {number_of_tests}")
 
         driver = webdriver.Firefox(service=service, options=options)
-        wait = WebDriverWait(driver, 20)
+        wait = WebDriverWait(driver, timeout=20, poll_frequency=.0001)
 
         if testcase == "unknown":
             driver.install_addon(unknown_extension_path, temporary=True)
+            time.sleep(2)
         elif testcase == "known":
             driver.install_addon(known_extension_path, temporary=True)
+            time.sleep(2)
 
         start_time = time.time()
         driver.get(url)

@@ -22,7 +22,8 @@ const BLOCKED_ATTESTATION_PAGE = browser.runtime.getURL("blocked-remote-attestat
 const MISSING_ATTESTATION_PAGE = browser.runtime.getURL("missing-remote-attestation.html");
 const DIFFERS_ATTESTATION_PAGE = browser.runtime.getURL("differs-remote-attestation.html");
 
-onStartup(); // TODO: somehow onStartup listener is not called, so call it manually as first action
+browser.runtime.onStartup.addListener(onStartup);
+onStartup(); // onStartup Event is not called, if the extension is newly installed
 
 async function showPageAction(tabId, success) {
     if (success)
@@ -324,11 +325,10 @@ async function onStartup() {
     }
 }
 
-browser.runtime.onStartup.addListener(onStartup);
-
 async function listenerOnBeforeRequest(details) {
     console.log("webrequest for ", details.url, " in tab ", details.tabId);
     await storage.setLastRequestTarget(details.tabId, details.url);
+    // TODO: better approach using tabs API: https://stackoverflow.com/a/46644672
 }
 
 browser.webRequest.onBeforeRequest.addListener(
