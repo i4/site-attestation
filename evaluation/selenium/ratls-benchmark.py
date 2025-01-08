@@ -29,6 +29,7 @@ service = Service("/opt/homebrew/bin/geckodriver", log_path="geckodriver.log")
 options = Options()
 
 options.binary_location = custom_firefox_path
+options.add_argument("--headless") # run in headless mode without UI
 
 # Set profile to start with
 options.profile = profile_path
