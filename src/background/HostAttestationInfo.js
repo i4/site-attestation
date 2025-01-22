@@ -61,11 +61,12 @@ export class HostAttestationInfo {
 ${exportedAsBase64.substring(0, 64)}
 ${exportedAsBase64.substring(64, 64 * 2)}
 ${exportedAsBase64.substring(64 * 2, 64 * 3)}
+${exportedAsBase64.substring(64 * 3, 64 * 4)}
+${exportedAsBase64.substring(64 * 4, 64 * 5)}
+${exportedAsBase64.substring(64 * 5, 64 * 6)}
+${exportedAsBase64.substring(64 * 6, 64 * 6 + 8)}
 -----END PUBLIC KEY-----\n`;
-// ${exportedAsBase64.substring(64 * 3, 64 * 4)} // TODO: somehow only the first 3 lines are needed?
-// ${exportedAsBase64.substring(64 * 4, 64 * 5)}
-// ${exportedAsBase64.substring(64 * 5, 64 * 6)}
-// ${exportedAsBase64.substring(64 * 6, 64 * 6 + 8)}
+        // TODO: somehow only the first 3 lines are needed?
     }
 
     // returns the hash, that is exactly, what should be present in an attestation report's report_data field in

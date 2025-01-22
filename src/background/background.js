@@ -61,6 +61,7 @@ async function queryRATLSTab() {
 }
 
 async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, details) {
+    console.log("writer", details.url);
     try {
         if (messageSSLHandshakeType !== browser.tlsExt.SSLHandshakeType.SSL_HS_CLIENT_HELLO)
             return null;
@@ -104,6 +105,7 @@ async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, deta
                 }, details.sessionId);
         }
 
+        console.log("writing nonce", nonce);
         await storage.setNonce(details.url, nonce);
         return nonce;
     } catch (e) {
@@ -199,7 +201,7 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
         const configMeasurement = await storage.getConfigMeasurement(details.url);
         // can the already known host be trusted?
         const storedAR = await storage.getAttestationReport(details.url);
-        if (storedAR &&
+        if (storedAR && // TODO: !!! nicht aussagekräftige Fehlermeldung !!! Wenn crypto Validierung fehlschlägt wird DIFFERS Dialog statt FAILED Dialog angezeigt!
             arrayBufferToHex(hostAttestationInfo.attestationReport.measurement) === arrayBufferToHex(storedAR.measurement) &&
             await checkHost(hostAttestationInfo)) {
             // the measurement is correct and the host can be trusted
@@ -291,19 +293,19 @@ async function onStartup() {
     console.log("startup");
     try {
         // TODO: for evaluation build only!
-        console.log("setting up evaluation");
-        await storage.setObjectProperties("localhost", {
-            trustedSince: new Date(),
-            config_measurement: "e5699e0c270f3e5bfd7e2d9dc846231e99297d55d0f7c6f894469eb384b3402239b72c0c28a49e231e8a1a62314309b4",
-            trusted: true
-        });
-        console.log("localhost config measurement is ", await storage.getConfigMeasurement("localhost"));
-        await storage.setObjectProperties("i4epyc1.cs.fau.de", {
-            trustedSince: new Date(),
-            config_measurement: "e5699e0c270f3e5bfd7e2d9dc846231e99297d55d0f7c6f894469eb384b3402239b72c0c28a49e231e8a1a62314309b4",
-            trusted: true
-        });
-        console.log("i4epyc1.cs.fau.de config measurement is ", await storage.getConfigMeasurement("localhost"));
+        // console.log("setting up evaluation");
+        // await storage.setObjectProperties("localhost", {
+        //     trustedSince: new Date(),
+        //     config_measurement: "e5699e0c270f3e5bfd7e2d9dc846231e99297d55d0f7c6f894469eb384b3402239b72c0c28a49e231e8a1a62314309b4",
+        //     trusted: true
+        // });
+        // console.log("localhost config measurement is ", await storage.getConfigMeasurement("localhost"));
+        // await storage.setObjectProperties("i4epyc1.cs.fau.de", {
+        //     trustedSince: new Date(),
+        //     config_measurement: "e5699e0c270f3e5bfd7e2d9dc846231e99297d55d0f7c6f894469eb384b3402239b72c0c28a49e231e8a1a62314309b4",
+        //     trusted: true
+        // });
+        // console.log("i4epyc1.cs.fau.de config measurement is ", await storage.getConfigMeasurement("localhost"));
 
         // acquire revocation list on startup // TODO: currently only for one architecture
         // AMD key server

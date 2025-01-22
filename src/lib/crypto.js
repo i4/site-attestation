@@ -93,6 +93,10 @@ export async function checkHost(hostAttestationInfo) {
     const vcek = hostAttestationInfo.vcekCert;
     const verificationHash = await hostAttestationInfo.getVerificationHash();
 
+    console.log("validating AR report data");
+    console.log("verificationHash", verificationHash);
+    console.log("report_data", hostAttestationInfo.reportDataStr);
+
     // 1. verify TLS connection
     if (verificationHash !== hostAttestationInfo.reportDataStr) {
         // AR verification string "${NONCE}\n${PUBKEY}" is not valid and / or fresh
