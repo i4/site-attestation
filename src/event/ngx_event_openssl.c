@@ -388,60 +388,66 @@ static int callbackAddExtensionRAServer(SSL *ssl, unsigned int extType,
                                         int *al, void *addArg) {
     if (extType == EXT_RATLS) {
         if (context == SSL_EXT_TLS1_3_CERTIFICATE) {
-            RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
-            snprintf(&(ctx->challenge[strlen(ctx->challenge)]), 2, "\n");
+            // if report exists, skip generation!
+            struct stat stat_buf;
+            if (stat(ctx->outfile, &stat_buf) == -1) {
+                // existiert nicht
+                RAContext* ctx = SSL_get_ex_data(ssl, RA_SESSION_FLAG_INDEX);
 
-            EVP_PKEY* pkey = X509_get_pubkey(x);
-            if (!pkey) {
-                fprintf(stderr, "Failed to get public key from certificate\n");
-                ERR_print_errors_fp(stderr);  // Print OpenSSL error details
-                return 0;
-            }
-            BIO* mem_bio = BIO_new(BIO_s_mem());
-            if (!mem_bio) {
-                fprintf(stderr, "Failed to create BIO\n");
-                ERR_print_errors_fp(stderr);  // Print OpenSSL error details
-                EVP_PKEY_free(pkey);
-                return 0;
-            }
+                snprintf(&(ctx->challenge[strlen(ctx->challenge)]), 2, "\n");
 
-            if (!PEM_write_bio_PUBKEY(mem_bio, pkey)) {
-                fprintf(stderr, "Failed to write public key to memory BIO\n");
-                ERR_print_errors_fp(stderr);  // Print OpenSSL error details
+                EVP_PKEY* pkey = X509_get_pubkey(x);
+                if (!pkey) {
+                    fprintf(stderr, "Failed to get public key from certificate\n");
+                    ERR_print_errors_fp(stderr);  // Print OpenSSL error details
+                    return 0;
+                }
+                BIO* mem_bio = BIO_new(BIO_s_mem());
+                if (!mem_bio) {
+                    fprintf(stderr, "Failed to create BIO\n");
+                    ERR_print_errors_fp(stderr);  // Print OpenSSL error details
+                    EVP_PKEY_free(pkey);
+                    return 0;
+                }
+
+                if (!PEM_write_bio_PUBKEY(mem_bio, pkey)) {
+                    fprintf(stderr, "Failed to write public key to memory BIO\n");
+                    ERR_print_errors_fp(stderr);  // Print OpenSSL error details
+                    EVP_PKEY_free(pkey);
+                    BIO_free(mem_bio);
+                    return 0;
+                }
+
+                char* key_data = NULL;
+                long key_len = BIO_get_mem_data(mem_bio, &key_data);
+                if (key_len <= 0) {
+                    fprintf(stderr, "Failed to get public key data from memory BIO\n");
+                    ERR_print_errors_fp(stderr);  // Print OpenSSL error details
+                    EVP_PKEY_free(pkey);
+                    BIO_free(mem_bio);
+                    return 0;
+                }
+
+                char* buffer = &(ctx->challenge[strlen(ctx->challenge)]);
+                strncpy(buffer, key_data, key_len); // Use strncpy to avoid truncation issues
+                buffer[key_len] = '\0'; // Null-terminate the string
+
                 EVP_PKEY_free(pkey);
                 BIO_free(mem_bio);
-                return 0;
+
+                unsigned char md_buf[65];
+
+                // unsigned char *SHA512(const unsigned char *data, size_t count, unsigned char *md_buf);
+                SHA512((unsigned char*) ctx->challenge, strlen(ctx->challenge), md_buf);
+
+                FILE *hfile = sfopen(ctx->hashfile, "w");
+                fwrite(md_buf, 64, 1, hfile);
+
+                fclose(hfile);
+
+                create_report(ctx);
             }
-
-            char* key_data = NULL;
-            long key_len = BIO_get_mem_data(mem_bio, &key_data);
-            if (key_len <= 0) {
-                fprintf(stderr, "Failed to get public key data from memory BIO\n");
-                ERR_print_errors_fp(stderr);  // Print OpenSSL error details
-                EVP_PKEY_free(pkey);
-                BIO_free(mem_bio);
-                return 0;
-            }
-
-            char* buffer = &(ctx->challenge[strlen(ctx->challenge)]);
-            strncpy(buffer, key_data, key_len); // Use strncpy to avoid truncation issues
-            buffer[key_len] = '\0'; // Null-terminate the string
-
-            EVP_PKEY_free(pkey);
-            BIO_free(mem_bio);
-
-            unsigned char md_buf[65];
-
-            // unsigned char *SHA512(const unsigned char *data, size_t count, unsigned char *md_buf);
-            SHA512((unsigned char*) ctx->challenge, strlen(ctx->challenge), md_buf);
-
-            FILE *hfile = sfopen(ctx->hashfile, "w");
-            fwrite(md_buf, 64, 1, hfile);
-
-            fclose(hfile);
-
-            create_report(ctx);
 
             FILE* report_file = sfopen(ctx->outfile, "r");
 
@@ -4814,7 +4820,7 @@ ngx_ssl_session_ticket_keys(ngx_conf_t *cf, ngx_ssl_t *ssl, ngx_array_t *paths)
         if ((size_t) n != size) {
             ngx_conf_log_error(NGX_LOG_CRIT, cf, 0,
                                ngx_read_file_n " \"%V\" returned only "
-                               "%z bytes instead of %uz", &file.name, n, size);
+                            "%z bytes instead of %uz", &file.name, n, size);
             goto failed;
         }
 
