@@ -18,6 +18,8 @@ import {isEmpty} from "lodash";
  * key------------------|-value-------------------------------|-comment-----------------------------
  * hosts                | a map of hosts                      | -
  * tabs                 | a map of tabs and their last targets| -
+ * sessions             | a map of sessionIds and information | -
+ *                      | about them like their nonce         |
  */
 
 const AUTHOR_KEYS = "author_keys";
@@ -25,6 +27,7 @@ const MEASUREMENT_REPOS = "measurement_repos";
 const HOSTS = "hosts";
 const TABS = "tabs";
 const CRLS = "crls";
+const SESSIONS = "sessions";
 
 async function getObject(request, storageArea = browser.storage.local){
     const item = await storageArea.get(request);
@@ -302,17 +305,17 @@ export async function removeConfigMeasurement(host) {
     return removeObjectProperty(host, "config_measurement");
 }
 
-export async function setNonce(host, nonce) {
-    let hostInfo = await mapGet(HOSTS, host, browser.storage.session);
-    if (!hostInfo) hostInfo = {}; // if key is unknown, hostInfo would be undefined
-    console.log("old hostinfo is ", hostInfo);
-    hostInfo.nonce = nonce;
-    return mapSet(HOSTS, host, hostInfo, browser.storage.session);
+export async function setNonce(sessionId, nonce) {
+    let sessionInfo = await mapGet(SESSIONS, sessionId, browser.storage.session);
+    if (!sessionInfo) sessionInfo = {}; // if key is unknown, hostInfo would be undefined
+    console.log("old sessionInfo is ", sessionInfo);
+    sessionInfo.nonce = nonce;
+    return mapSet(SESSIONS, sessionId, sessionInfo, browser.storage.session);
 }
 
-export async function getNonce(host){
-    const hostInfo = await mapGet(HOSTS, host, browser.storage.session);
-    return hostInfo.nonce;
+export async function getNonce(sessionId){
+    const sessionInfo = await mapGet(SESSIONS, sessionId, browser.storage.session);
+    return sessionInfo.nonce;
 }
 
 export async function setPendingAttestationInfo(host, attestationInfo) {

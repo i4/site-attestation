@@ -16,7 +16,6 @@ import {buildParamUrl} from "../content/dialog/dialog";
 import {isEmpty} from "lodash";
 import {HostAttestationInfo} from "./HostAttestationInfo";
 
-const ATTESTATION_INFO_PATH = "/remote-attestation.json";
 const NEW_ATTESTATION_PAGE = browser.runtime.getURL("new-remote-attestation.html");
 const BLOCKED_ATTESTATION_PAGE = browser.runtime.getURL("blocked-remote-attestation.html");
 const MISSING_ATTESTATION_PAGE = browser.runtime.getURL("missing-remote-attestation.html");
@@ -106,7 +105,7 @@ async function listenerOnWriteTlsExtension(messageSSLHandshakeType, maxLen, deta
         }
 
         console.log("writing nonce", nonce);
-        await storage.setNonce(details.url, nonce);
+        await storage.setNonce(details.sessionId, nonce);
         return nonce;
     } catch (e) {
         console.error("writer listener failed", e);
@@ -130,7 +129,7 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
         console.log("unsetting awaitingRA");
         await storage.setAwaitingRA(details.url, false);
 
-        const nonce = await storage.getNonce(details.url);
+        const nonce = await storage.getNonce(details.sessionId);
         if (!nonce)
             return browser.tlsExt.SECStatus.SECSUCCESS;
 
