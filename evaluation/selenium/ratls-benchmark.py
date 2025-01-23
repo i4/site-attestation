@@ -11,7 +11,7 @@ from selenium.webdriver.common.by import By
 url = "https://i4epyc1.cs.fau.de"
 url_hostname = "i4epyc1.cs.fau.de"
 number_of_tests = 5
-testcases = ["unknown", "raw", "known"]
+testcases = ["unknown", "raw", "known", "unknown_no_freshness", "known_no_freshness"]
 condition = EC.title_is("bRAwser")
 config_measurement = "e5699e0c270f3e5bfd7e2d9dc846231e99297d55d0f7c6f894469eb384b3402239b72c0c28a49e231e8a1a62314309b4"
 
@@ -24,6 +24,8 @@ profile_path = "./profiles/evaluation-minica-profile"
 # Set the custom extension path
 unknown_extension_path = "./17840039dd4943e1851d-1.3.13.xpi"
 known_extension_path = "./17840039dd4943e1851d-1.3.14.xpi"
+unknown_no_freshness_extension_path = "./17840039dd4943e1851d-1.3.15.xpi"
+known_no_freshness_extension_path = "./17840039dd4943e1851d-1.3.16.xpi"
 
 service = Service("/opt/homebrew/bin/geckodriver", log_path="geckodriver.log")
 options = Options()
@@ -69,12 +71,16 @@ for testcase in testcases:
         elif testcase == "known":
             driver.install_addon(known_extension_path, temporary=True)
             # time.sleep(2)
+        elif testcase == "unknown_no_freshness":
+            driver.install_addon(unknown_no_freshness_extension_path, temporary=True)
+        elif testcase == "known_no_freshness":
+            driver.install_addon(known_no_freshness_extension_path, temporary=True)
         time.sleep(2)
 
         start_time = time.time()
         driver.get(url)
 
-        if testcase == "unknown":
+        if testcase == "unknown" or testcase == "unknown_no_freshness":
             # click the trust button
             button = wait.until(EC.element_to_be_clickable((By.ID, "trust-measurement-button")))
             button.click()
