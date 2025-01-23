@@ -299,12 +299,12 @@ async function onStartup() {
         //     trusted: true
         // });
         // console.log("localhost config measurement is ", await storage.getConfigMeasurement("localhost"));
-        // await storage.setObjectProperties("i4epyc1.cs.fau.de", {
-        //     trustedSince: new Date(),
-        //     config_measurement: "e5699e0c270f3e5bfd7e2d9dc846231e99297d55d0f7c6f894469eb384b3402239b72c0c28a49e231e8a1a62314309b4",
-        //     trusted: true
-        // });
-        // console.log("i4epyc1.cs.fau.de config measurement is ", await storage.getConfigMeasurement("localhost"));
+        await storage.setObjectProperties("i4epyc1.cs.fau.de", {
+            trustedSince: new Date(),
+            config_measurement: "e5699e0c270f3e5bfd7e2d9dc846231e99297d55d0f7c6f894469eb384b3402239b72c0c28a49e231e8a1a62314309b4",
+            trusted: true
+        });
+        console.log("i4epyc1.cs.fau.de config measurement is ", await storage.getConfigMeasurement("localhost"));
 
         // acquire revocation list on startup // TODO: currently only for one architecture
         // AMD key server

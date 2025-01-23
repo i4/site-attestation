@@ -10,7 +10,7 @@ from selenium.webdriver.common.by import By
 # global config
 url = "https://i4epyc1.cs.fau.de"
 url_hostname = "i4epyc1.cs.fau.de"
-number_of_tests = 10
+number_of_tests = 5
 testcases = ["unknown", "raw", "known"]
 condition = EC.title_is("bRAwser")
 config_measurement = "e5699e0c270f3e5bfd7e2d9dc846231e99297d55d0f7c6f894469eb384b3402239b72c0c28a49e231e8a1a62314309b4"
@@ -22,17 +22,17 @@ custom_firefox_path = "/Users/luca/Dev/Firefox/obj-aarch64-apple-darwin24.0.0/di
 profile_path = "./profiles/evaluation-minica-profile"
 
 # Set the custom extension path
-unknown_extension_path = "./17840039dd4943e1851d-1.3.10.xpi"
-known_extension_path = "./17840039dd4943e1851d-1.3.12.xpi"
+unknown_extension_path = "./17840039dd4943e1851d-1.3.13.xpi"
+known_extension_path = "./17840039dd4943e1851d-1.3.14.xpi"
 
 service = Service("/opt/homebrew/bin/geckodriver", log_path="geckodriver.log")
 options = Options()
 
 options.binary_location = custom_firefox_path
-options.add_argument("--headless") # run in headless mode without UI
+# options.add_argument("--headless") # run in headless mode without UI
 
 # Set profile to start with
-options.profile = profile_path
+# options.profile = profile_path
 
 ### HELPERS ###
 def inject_config_measurement(driver):
@@ -61,14 +61,15 @@ for testcase in testcases:
             print(f"repetition: {repetition} of {number_of_tests}")
 
         driver = webdriver.Firefox(service=service, options=options)
-        wait = WebDriverWait(driver, timeout=20, poll_frequency=.000001)
+        wait = WebDriverWait(driver, timeout=20, poll_frequency=1/1000)
 
         if testcase == "unknown":
             driver.install_addon(unknown_extension_path, temporary=True)
-            time.sleep(2)
+            # time.sleep(2)
         elif testcase == "known":
             driver.install_addon(known_extension_path, temporary=True)
-            time.sleep(2)
+            # time.sleep(2)
+        time.sleep(2)
 
         start_time = time.time()
         driver.get(url)

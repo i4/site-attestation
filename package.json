@@ -1,6 +1,6 @@
 {
   "name": "ravm",
-  "version": "1.3.12",
+  "version": "1.3.14",
   "description": "Enables to perform remote attesation on AMD SEV-SNP secured Boundary Node virtual machine of the IC",
   "private": true,
   "scripts": {
