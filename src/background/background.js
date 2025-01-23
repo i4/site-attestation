@@ -200,7 +200,7 @@ async function listenerOnHandleTlsExtension(messageSSLHandshakeType, data, detai
         const configMeasurement = await storage.getConfigMeasurement(details.url);
         // can the already known host be trusted?
         const storedAR = await storage.getAttestationReport(details.url);
-        if (storedAR && // TODO: !!! nicht aussagekräftige Fehlermeldung !!! Wenn crypto Validierung fehlschlägt wird DIFFERS Dialog statt FAILED Dialog angezeigt!
+        if (storedAR &&
             arrayBufferToHex(hostAttestationInfo.attestationReport.measurement) === arrayBufferToHex(storedAR.measurement) &&
             await checkHost(hostAttestationInfo)) {
             // the measurement is correct and the host can be trusted
