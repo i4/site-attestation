@@ -1,6 +1,7 @@
 import time
 
 from selenium import webdriver
+from selenium.common import TimeoutException
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support.wait import WebDriverWait
@@ -58,41 +59,49 @@ for testcase in testcases:
     print(f'testing: {testcase}')
 
     loading_times[testcase] = []
-    for repetition in range(number_of_tests):
-        if repetition % (number_of_tests / 10) == 0:
-            print(f"repetition: {repetition} of {number_of_tests}")
+    repetition = 0
+    while repetition < number_of_tests:
+        driver = None
+        try:
+            if repetition % (number_of_tests / 10) == 0:
+                print(f"repetition: {repetition} of {number_of_tests}")
 
-        driver = webdriver.Firefox(service=service, options=options)
-        wait = WebDriverWait(driver, timeout=20, poll_frequency=1/1000)
+            driver = webdriver.Firefox(service=service, options=get_options(testcase))
+            wait = WebDriverWait(driver, timeout=5, poll_frequency=1/1000)
 
-        if testcase == "unknown":
-            driver.install_addon(unknown_extension_path, temporary=True)
-            # time.sleep(2)
-        elif testcase == "known":
-            driver.install_addon(known_extension_path, temporary=True)
-            # time.sleep(2)
-        elif testcase == "unknown_no_freshness":
-            driver.install_addon(unknown_no_freshness_extension_path, temporary=True)
-        elif testcase == "known_no_freshness":
-            driver.install_addon(known_no_freshness_extension_path, temporary=True)
-        time.sleep(2)
+            if testcase == "unknown":
+                driver.install_addon(unknown_extension_path, temporary=True)
+                # time.sleep(2)
+            elif testcase == "known":
+                driver.install_addon(known_extension_path, temporary=True)
+                # time.sleep(2)
+            elif testcase == "unknown_no_freshness":
+                driver.install_addon(unknown_no_freshness_extension_path, temporary=True)
+            elif testcase == "known_no_freshness":
+                driver.install_addon(known_no_freshness_extension_path, temporary=True)
+            time.sleep(2)
 
-        start_time = time.time()
-        driver.get(url)
+            start_time = time.time()
+            driver.get(url)
 
-        if testcase == "unknown" or testcase == "unknown_no_freshness":
-            # click the trust button
-            button = wait.until(EC.element_to_be_clickable((By.ID, "trust-measurement-button")))
-            button.click()
+            if testcase == "unknown" or testcase == "unknown_no_freshness":
+                # click the trust button
+                button = wait.until(EC.element_to_be_clickable((By.ID, "trust-measurement-button")))
+                button.click()
 
-        wait.until(condition)
+            wait.until(condition)
 
-        end_time = time.time()
-        load_time = end_time - start_time
-        loading_times[testcase].append(load_time * 1000)
+            end_time = time.time()
+            load_time = end_time - start_time
+            loading_times[testcase].append(load_time * 1000)
 
-        # clean up for next run
-        driver.quit()
+            repetition += 1
+        except TimeoutException:
+            print("Timeout exception")
+            continue
+        finally:
+            # clean up for next run
+            if driver: driver.quit()
 
 ### OUTPUT ###
 for testcase in testcases:
