@@ -12,7 +12,9 @@ from selenium.webdriver.common.by import By
 url = "https://i4epyc1.cs.fau.de"
 url_hostname = "i4epyc1.cs.fau.de"
 number_of_tests = 5
-testcases = ["unknown", "raw", "known", "unknown_no_freshness", "known_no_freshness"]
+testcases = ["unknown", "raw", "known",
+             "unknown_no_freshness", "known_no_freshness",
+             "raw_reload", "raw_reload_no_cash", "known_reload", "known_reload_no_cash"]
 condition = EC.title_is("bRAwser")
 config_measurement = "e5699e0c270f3e5bfd7e2d9dc846231e99297d55d0f7c6f894469eb384b3402239b72c0c28a49e231e8a1a62314309b4"
 
@@ -29,29 +31,20 @@ unknown_no_freshness_extension_path = "./17840039dd4943e1851d-1.3.15.xpi"
 known_no_freshness_extension_path = "./17840039dd4943e1851d-1.3.16.xpi"
 
 service = Service("/opt/homebrew/bin/geckodriver", log_path="geckodriver.log")
-options = Options()
 
-options.binary_location = custom_firefox_path
-# options.add_argument("--headless") # run in headless mode without UI
+def get_options(testcase):
+    options = Options()
+    options.binary_location = custom_firefox_path
+    # options.add_argument("--headless")    # run in headless mode without UI
+    # options.profile = profile_path        # Set profile to start with
 
-# Set profile to start with
-# options.profile = profile_path
+    if testcase.__contains__("no_cash"):
+        options.set_preference("browser.cache.disk.enable", False)  # Disable disk cache
+        options.set_preference("browser.cache.memory.enable", False)  # Disable memory cache
+        options.set_preference("browser.cache.offline.enable", False)  # Disable offline cache
+        options.set_preference("network.http.use-cache", False)  # Disable HTTP cache
 
-### HELPERS ###
-def inject_config_measurement(driver):
-    script = """
-    browser.runtime.sendMessage({{
-        type: "2",
-        url: "{url_hostname}",
-        config_measurement: "{config_measurement}"
-    }}).then(response => {{
-        console.log(response.status);
-    }}).catch(error => {{
-        console.error(error);
-    }});
-    """.format(url_hostname=url_hostname, config_measurement=config_measurement)
-    driver.execute_script(script)
-    time.sleep(10000)
+    return options
 
 ### MEASUREMENTS ###
 loading_times = {}
@@ -60,6 +53,7 @@ for testcase in testcases:
 
     loading_times[testcase] = []
     repetition = 0
+    reload_warmup = True
     while repetition < number_of_tests:
         driver = None
         try:
@@ -77,7 +71,7 @@ for testcase in testcases:
                 # time.sleep(2)
             elif testcase == "unknown_no_freshness":
                 driver.install_addon(unknown_no_freshness_extension_path, temporary=True)
-            elif testcase == "known_no_freshness":
+            elif testcase in ["known_no_freshness", "known_reload", "known_reload_no_cash"]:
                 driver.install_addon(known_no_freshness_extension_path, temporary=True)
             time.sleep(2)
 
@@ -93,15 +87,21 @@ for testcase in testcases:
 
             end_time = time.time()
             load_time = end_time - start_time
-            loading_times[testcase].append(load_time * 1000)
 
-            repetition += 1
+            if not testcase.__contains__("reload") or not reload_warmup:
+                reload_warmup = False
+                loading_times[testcase].append(load_time * 1000)
+                repetition += 1
         except TimeoutException:
             print("Timeout exception")
             continue
         finally:
             # clean up for next run
-            if driver: driver.quit()
+            if driver:
+                if testcase.__contains__("reload") and repetition == number_of_tests-1:
+                    driver.quit()
+                else:
+                    driver.quit()
 
 ### OUTPUT ###
 for testcase in testcases:
