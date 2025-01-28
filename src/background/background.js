@@ -299,12 +299,12 @@ async function onStartup() {
         //     trusted: true
         // });
         // console.log("localhost config measurement is ", await storage.getConfigMeasurement("localhost"));
-        await storage.setObjectProperties("i4epyc1.cs.fau.de", {
-            trustedSince: new Date(),
-            config_measurement: "e5699e0c270f3e5bfd7e2d9dc846231e99297d55d0f7c6f894469eb384b3402239b72c0c28a49e231e8a1a62314309b4",
-            trusted: true
-        });
-        console.log("i4epyc1.cs.fau.de config measurement is ", await storage.getConfigMeasurement("localhost"));
+        // await storage.setObjectProperties("i4epyc1.cs.fau.de", {
+        //     trustedSince: new Date(),
+        //     config_measurement: "e5699e0c270f3e5bfd7e2d9dc846231e99297d55d0f7c6f894469eb384b3402239b72c0c28a49e231e8a1a62314309b4",
+        //     trusted: true
+        // });
+        // console.log("i4epyc1.cs.fau.de config measurement is ", await storage.getConfigMeasurement("localhost"));
 
         // acquire revocation list on startup // TODO: currently only for one architecture
         // AMD key server
@@ -326,10 +326,30 @@ async function onStartup() {
     }
 }
 
+// async function trackTabUrls() {
+//     async function handleCreated(tab) {
+//         console.log("Created tab", tab.url);
+//     }
+//
+//     async function handleUpdated(tabId, changeInfo, tab) {
+//         console.log("Updated tab", tab.url, changeInfo.url);
+//     }
+//
+//     async function handleRemoved(tabId, removeInfo) {
+//         console.log("Removed tab");
+//     }
+//
+//     browser.tabs.onCreated.addListener(handleCreated);
+//     browser.tabs.onUpdated.addListener(handleUpdated);
+//     browser.tabs.onRemoved.addListener(handleRemoved);
+// }
+
+trackTabUrls();
 async function listenerOnBeforeRequest(details) {
     console.log("webrequest for ", details.url, " in tab ", details.tabId);
     await storage.setLastRequestTarget(details.tabId, details.url);
-    // TODO: better approach using tabs API: https://stackoverflow.com/a/46644672
+    // better approach using tabs API: https://stackoverflow.com/a/46644672 => does not work, changeInfo does not
+    // hold the new url
 }
 
 browser.webRequest.onBeforeRequest.addListener(
