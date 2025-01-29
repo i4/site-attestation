@@ -585,8 +585,6 @@ static int callbackParseExtensionRAServer(SSL *ssl, unsigned int extType,
                 snprintf(&(ctx->challenge[strlen(ctx->challenge)]), 2, "%s", &in[i]);
             }
 
-            printf("challenge: %s\n", ctx->challenge);
-
             return 1;
         }
     }
