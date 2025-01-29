@@ -12,9 +12,12 @@ from selenium.webdriver.common.by import By
 url = "https://i4epyc1.cs.fau.de"
 url_hostname = "i4epyc1.cs.fau.de"
 number_of_tests = 100
-testcases = [#"unknown", "raw", "known",
-             #"unknown_no_freshness", "known_no_freshness",
-             "raw_reload", "raw_reload_no_cash", "known_reload", "known_reload_no_cash"]
+testcases = [
+                 "unknown", "raw", "known",
+                 "unknown_no_freshness", "known_no_freshness",
+                 # "raw_reload", "known_reload",
+                 "raw_reload_no_cash", "known_reload_no_cash"
+            ]
 condition = EC.title_is("bRAwser")
 config_measurement = "e5699e0c270f3e5bfd7e2d9dc846231e99297d55d0f7c6f894469eb384b3402239b72c0c28a49e231e8a1a62314309b4"
 
