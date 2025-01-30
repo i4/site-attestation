@@ -84,29 +84,6 @@ conn_add_servers(void)
 }
 
 
-#ifdef HAVE_SSL
-
-#define EXT_RATLS 420
-
-static int callbackParseExtensionRA(SSL *ssl, unsigned int extType,
-                                    unsigned int context,
-                                    const unsigned char *in,
-                                    size_t inlen, X509 *x,
-                                    size_t chainidx,
-                                    int *al, void *parseArg) {}
-
-static void callbackFreeExtensionRA(SSL *ssl, unsigned int extType,
-                                    unsigned int context,
-                                    const unsigned char *out,
-                                    void *add_arg) {}
-
-static int callbackAddExtensionRA(SSL *ssl, unsigned int extType,
-                                  unsigned int context,
-                                  unsigned char** out,
-                                  size_t *outlen, X509 *x,
-                                  size_t chainidx,
-                                  int *al, void *addArg) {}
-#endif
 
 
 void
@@ -153,18 +130,6 @@ conn_init(Conn *conn)
         {
             SSL_set_tlsext_host_name(conn->ssl, param.tls_server_name);
         }
-
-        RA_SESSION_FLAG_INDEX = SSL_get_ex_new_index(0,
-                                "remote attestation session index", NULL, NULL, NULL);
-
-        SSL_CTX_add_custom_ext(conn->ssl->ctx
-                               , EXT_RATLS, SSL_EXT_CLIENT_HELLO | SSL_EXT_TLS1_3_CERTIFICATE
-                               , callbackAddExtensionRA
-                               , callbackFreeExtensionRA
-                               , param
-                               , callbackParseExtensionRA
-                               , NULL
-                              );
 
         if (param.ssl_cipher_list) {
             /* set order of ciphers */
