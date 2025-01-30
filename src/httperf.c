@@ -277,10 +277,10 @@ static int callbackAddExtensionRA(SSL *ssl, unsigned int extType,
 
         if (param.request_freshness) {
             RAND_priv_bytes(&nonce, 16);
-            printf("requesting report with random nonce");
+            /*printf("requesting report with random nonce");*/
         } else {
             nonce = "aaaaaaaaaaaaaaa";
-            printf("requesting report with static nonce");
+            /*printf("requesting report with static nonce");*/
         }
 
         *out = nonce;
