@@ -143,8 +143,8 @@ static struct option longopts[] = {
     {"session-cookies", no_argument, (int *) &param.session_cookies, 1},
 #ifdef HAVE_SSL
     {"ssl", no_argument, &param.use_ssl, 1},
-    {"use-ratls", no_argument, &param.use_ratls, 0},
-    {"request-freshness", no_argument, &param.request_freshness, 0},
+    {"use-ratls", no_argument, &param.use_ratls, 1},
+    {"request-freshness", no_argument, &param.request_freshness, 1},
     {"ssl-ciphers", required_argument, (int *) &param.ssl_cipher_list, 0},
     {"tls-server-name", required_argument, (int *) &param.tls_server_name, 0},
     {"ssl-no-reuse", no_argument, &param.ssl_reuse, 0},
@@ -246,7 +246,7 @@ static int callbackParseExtensionRA(SSL *ssl, unsigned int extType,
                                     size_t inlen, X509 *x,
                                     size_t chainidx,
                                     int *al, void *parseArg) {
-    return 0;
+    return 1;
 }
 
 static void callbackFreeExtensionRA(SSL *ssl, unsigned int extType,
@@ -277,10 +277,8 @@ static int callbackAddExtensionRA(SSL *ssl, unsigned int extType,
 
         if (param.request_freshness) {
             RAND_priv_bytes(&nonce, 16);
-            /*printf("requesting report with random nonce");*/
         } else {
             nonce = "aaaaaaaaaaaaaaa";
-            /*printf("requesting report with static nonce");*/
         }
 
         *out = nonce;
