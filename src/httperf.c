@@ -276,7 +276,7 @@ static int callbackAddExtensionRA(SSL *ssl, unsigned int extType,
         SSL_set_ex_data(ssl, RA_SESSION_FLAG_INDEX, nonce);
 
         if (param.request_freshness) {
-            RAND_priv_bytes(&nonce, 16);
+            RAND_priv_bytes(nonce, 16);
         } else {
             nonce = "aaaaaaaaaaaaaaa";
         }
