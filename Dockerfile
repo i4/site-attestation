@@ -2,11 +2,11 @@ FROM debian:buster
 
 RUN apt update; apt install -y automake libtool build-essential openssl libssl-dev
 
-RUN mkdir /app
+RUN mkdir -p /app
 COPY . /app
 WORKDIR /app
 
-RUN autoconf
+RUN autoconf || autoconf
 RUN libtoolize --force
 RUN autoreconf -i
 RUN automake
