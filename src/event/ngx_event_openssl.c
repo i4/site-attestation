@@ -330,7 +330,7 @@ static void create_report(RAContext* ctx) {
     pid_t pid = fork();
     if (pid == 0) { // child
 
-        execlp("/home/ubuntu/snpguest/target/debug/snpguest",
+        execlp("/home/ubuntu/snpguest/target/release/snpguest",
                "snpguest",
                "report",
                ctx->outfile,
@@ -349,6 +349,13 @@ static void create_report(RAContext* ctx) {
         exit(EXIT_FAILURE);
     }
 }
+
+/*static void create_report2(RAContext* ctx) {*/
+/*    // fopen("/dev/sev-guest")*/
+/*    // pub enum GuestIoctl { GetReport = nr = 0x0,*/
+/*    // dir = 0b11*/
+/*// ioctl()*/
+/*}*/
 
 // Just in case we need it.
 // static void create_vcek(RAContext* ctx) {
