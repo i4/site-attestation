@@ -72,7 +72,7 @@ print(f'Lowest: {min(combined_raw)}, highest: {max(combined_raw)}')
 plot_layered_histogram(
     "raw",
     datasets=[ravm_raw + ratls_raw],
-    labels=['plain'],
+    labels=['baseline'],
     bins=10,
     colors=['yellow'],
     alpha=0.5,  # Transparenz für schönes Aussehen (0 = unsichtbar, 1 = volle Deckkraft)
@@ -83,7 +83,7 @@ plot_layered_histogram(
 plot_layered_histogram(
     "unknown",
     datasets=[ravm_unknown, ratls_unknown_no_freshness, ratls_unknown],
-    labels=['RAVM', 'bRAwser', 'bRAwser (freshness AR)'],
+    labels=['RAVM', 'site attestation', 'site attestation (instant AR)'],
     bins=50,
     colors=['red', 'blue', 'green'],
     alpha=0.5,  # Transparenz für schönes Aussehen (0 = unsichtbar, 1 = volle Deckkraft)
@@ -94,7 +94,7 @@ plot_layered_histogram(
 plot_layered_histogram(
     "known",
     datasets=[ravm_known, ratls_known_no_freshness, ratls_known],
-    labels=['RAVM', 'bRAwser', 'bRAwser (freshness AR)'],
+    labels=['RAVM', 'site attestation', 'site attestation (instant AR)'],
     bins=50,
     colors=['red', 'blue', 'green'],
     alpha=0.5,  # Transparenz für schönes Aussehen (0 = unsichtbar, 1 = volle Deckkraft)
@@ -104,8 +104,8 @@ plot_layered_histogram(
 # reload
 plot_layered_histogram(
     "reload",
-    datasets=[ravm_known_reload_no_cash, ravm_raw_reload_no_cash, ratls_known_reload_no_cash],
-    labels=['RAVM', 'plain', 'bRAwser'],
+    datasets=[ravm_known_reload_no_cash, ratls_known_reload_no_cash, ravm_raw_reload_no_cash],
+    labels=['RAVM', 'site attestation', 'baseline'],
     bins=10,
     colors=['red', 'green', 'yellow'],
     alpha=0.5,  # Transparenz für schönes Aussehen (0 = unsichtbar, 1 = volle Deckkraft)
