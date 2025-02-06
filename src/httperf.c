@@ -1407,6 +1407,10 @@ bad_wset_param:
 #ifdef HAVE_SSL
     if (param.use_ssl)
         printf(" --ssl");
+    if (param.use_ratls)
+        printf(" --use-ratls");
+    if (param.request_freshness)
+        printf(" --request-freshness");
     if (param.ssl_cipher_list)
         printf(" --ssl-ciphers=%s", param.ssl_cipher_list);
     if (param.tls_server_name)

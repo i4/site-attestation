@@ -1,20 +1,23 @@
 #!/bin/sh
 
-let num_conns = 1000
-let num_calls = [1 100 10000]
+let num_conns = 10
+let num_calls = [1 2 3]
 
 let configs = [
     {
         name: "no-ratls",
-        args: "",
+        arg1: "",
+        arg2: "",
     }
     {
         name: "ratls-no-fresh",
-        args: "--use-ratls",
+        arg1: "--use-ratls",
+        arg2: "",
     }
     {
         name: "ratls-freshness",
-        args: "--use-ratls --request-freshness",
+        arg1: "--use-ratls",
+        arg2: "--request-freshness",
     }
 ]
 
@@ -30,7 +33,7 @@ $configs |
     flatten |
     each {|c|
         $c | insert rate (
-            docker run httperf httperf --server=i4epyc1.cs.fau.de --port=443 --ssl --ssl-protocol=TLSv1_3 --timeout=10000 --num-conns=$"($num_conns)" --num-calls=$"($c.num_calls)" ..$c.args |
+            docker run httperf httperf --server=i4epyc1.cs.fau.de --port=443 --ssl --ssl-protocol=TLSv1_3 --timeout=10000 --num-conns=$"($num_conns)" --num-calls=$"($c.num_calls)" $c.arg1 $c.arg2 |
             grep "Request rate:" |
             str substring 14..-1
         )
