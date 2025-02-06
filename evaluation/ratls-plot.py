@@ -2,11 +2,6 @@ import sys
 
 import matplotlib
 
-matplotlib.rcParams["font.family"] = "STIXGeneral"
-matplotlib.rcParams["mathtext.fontset"] = "stix"
-matplotlib.rcParams["mathtext.rm"] = "Bitstream Vera Sans"
-matplotlib.rcParams["mathtext.it"] = "Bitstream Vera Sans:italic"
-matplotlib.rcParams["mathtext.bf"] = "Bitstream Vera Sans:bold"
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,16 +14,20 @@ if saveToPGF:
     matplotlib.rcParams.update(
         {
             "pgf.texsystem": "pdflatex",
-            # "font.size": 100,  # Set the desired font size here
-            "axes.labelsize": 20,
-            "xtick.labelsize": 15,
-            "ytick.labelsize": 15,
-            "legend.fontsize": 20,
+            "font.size": 18,  # Set the desired font size here
+            "axes.labelsize": 18,
+            "xtick.labelsize": 18,
+            "ytick.labelsize": 18,
+            "legend.fontsize": 18,
             # "figure.titlesize": 100,
             # Additional settings to use LaTeX fonts
-            # "font.family": "serif",
-            # "text.usetex": True,
+            "font.family": "STIXGeneral",
+            "text.usetex": True,
             # "pgf.rcfonts": False,
+            "mathtext.fontset": "stix",
+            "mathtext.rm": "Bitstream Vera Sans",
+            "mathtext.it": "Bitstream Vera Sans:italic",
+            "mathtext.bf": "Bitstream Vera Sans:bold",
         }
     )
 
@@ -68,6 +67,46 @@ def plot_layered_histogram(
     plt.legend()
 
     output_plot(plt, name)
+
+
+def plot_bars():
+    num_requests = ("1", "10", "100")
+    req_per_sec = {
+        "baseline": (274.6, 1566.8, 3793.8),
+        "IF": (60.4, 474.2, 2674.3),
+        "CF": (283.8, 1498.4, 3672.3),
+    }
+
+    x = np.arange(len(num_requests))  # the label locations
+    width = 0.30  # the width of the bars
+    multiplier = 0
+
+    fig, ax = plt.subplots(layout="constrained")
+
+    color = ["red", "blue", "green"]
+
+    for i, (attribute, measurement) in enumerate(req_per_sec.items()):
+        offset = width * multiplier
+        rects = ax.bar(
+            x + offset,
+            measurement,
+            width,
+            label=attribute,
+            color=color[i],
+            alpha=0.5,
+            edgecolor="black",
+        )
+        ax.bar_label(rects, padding=3)
+        multiplier += 1
+
+    # Add some text for labels, title and custom x-axis tick labels, etc.
+    ax.set_ylabel("Requests per second")
+    ax.set_xticks(x + width, num_requests)
+    ax.legend(loc="upper left", ncols=1)
+    ax.set_ylim(0, 4100)
+
+    plt.show()
+    output_plot(plt, "httperf")
 
 
 # Datasets
@@ -1349,3 +1388,5 @@ plot_layered_histogram(
     alpha=0.5,  # Transparenz für schönes Aussehen (0 = unsichtbar, 1 = volle Deckkraft)
     edgecolor="black",
 )
+
+plot_bars()
