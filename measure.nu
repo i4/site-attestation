@@ -1,9 +1,7 @@
 #!/bin/sh
 
-let num_conns = 1
-let num_calls = [1 2 3]
-
-let shared_args = $"--server=i4epyc1.cs.fau.de --port=443 --ssl --ssl-protocol=TLSv1_3 --timeout=10 --num-conns=($num_conns)"
+let num_conns = 1000
+let num_calls = [1 100 10000]
 
 let configs = [
     {
@@ -32,9 +30,10 @@ $configs |
     flatten |
     each {|c|
         $c | insert rate (
-            docker run httperf httperf ..$shared_args --num-calls=$"($c.num_calls)" ..$c.args |
+            docker run httperf httperf --server=i4epyc1.cs.fau.de --port=443 --ssl --ssl-protocol=TLSv1_3 --timeout=10000 --num-conns=$"($num_conns)" --num-calls=$"($c.num_calls)" ..$c.args |
             grep "Request rate:" |
             str substring 14..-1
         )
     } |
+    select name rate |
     to csv
