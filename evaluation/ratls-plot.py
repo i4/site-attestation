@@ -33,16 +33,25 @@ if saveToPGF:
 def output_plot(plt, name):
     if saveToPGF:
         plt.tight_layout()
-
+        # plt.legend(
+        #     fontsize=18,
+        #     borderpad=.7,
+        # )
         plt.savefig(f"{plot_path}{name}.pgf")
     else:
         plt.show()
 
 
 def plot_layered_histogram(
-    name, datasets, labels, colors, bins=10, alpha=1.0, edgecolor=None
+    name, datasets, labels, colors, bins=10, alpha=1.0, edgecolor=None, height_factor=1.
 ):
     plt.figure()
+
+    fig = plt.gcf()
+    width, _ = fig.get_size_inches()
+
+    scaled_height = width * height_factor
+    fig.set_size_inches(width, scaled_height)
 
     # calculate bar borders
     if isinstance(bins, int):
@@ -57,7 +66,7 @@ def plot_layered_histogram(
             edgecolor=edgecolor,
             color=colors[i],
             alpha=alpha,
-            zorder=i,
+            zorder=i
         )
 
     plt.xlabel("Duration (ms)")
@@ -81,6 +90,10 @@ def plot_bars():
 
     fig, ax = plt.subplots(layout="constrained")
 
+    # width, _ = fig.get_size_inches()
+    # scaled_height = width * .7
+    # fig.set_size_inches(width, scaled_height)
+
     color = ["red", "blue", "green"]
 
     for i, (attribute, measurement) in enumerate(req_per_sec.items()):
@@ -103,7 +116,6 @@ def plot_bars():
     ax.legend(loc="upper left", ncols=1)
     ax.set_ylim(0, 4100)
 
-    plt.show()
     output_plot(plt, "httperf")
 
 
@@ -1348,6 +1360,7 @@ plot_layered_histogram(
     colors=["yellow"],
     alpha=0.5,  # Transparenz für schönes Aussehen (0 = unsichtbar, 1 = volle Deckkraft)
     edgecolor="black",
+    height_factor=.5
 )
 
 # unknown
@@ -1359,6 +1372,7 @@ plot_layered_histogram(
     colors=["red", "blue", "green"],
     alpha=0.5,  # Transparenz für schönes Aussehen (0 = unsichtbar, 1 = volle Deckkraft)
     edgecolor="black",
+    height_factor=.6
 )
 
 # known
@@ -1370,6 +1384,7 @@ plot_layered_histogram(
     colors=["red", "blue", "green"],
     alpha=0.5,  # Transparenz für schönes Aussehen (0 = unsichtbar, 1 = volle Deckkraft)
     edgecolor="black",
+    height_factor=.6
 )
 
 # reload
@@ -1385,6 +1400,7 @@ plot_layered_histogram(
     colors=["red", "green", "yellow"],
     alpha=0.5,  # Transparenz für schönes Aussehen (0 = unsichtbar, 1 = volle Deckkraft)
     edgecolor="black",
+    height_factor=.6
 )
 
 plot_bars()
