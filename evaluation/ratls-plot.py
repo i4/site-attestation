@@ -99,6 +99,7 @@ def plot_bars():
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_ylabel("Requests per second")
+    ax.set_xlabel("HTTP requests per TLS connection")
     ax.set_xticks(x + width, num_requests)
     ax.legend(loc="upper left", ncols=1)
     ax.set_ylim(0, 4100)
