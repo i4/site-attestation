@@ -95,6 +95,7 @@ def plot_bars():
     # fig.set_size_inches(width, scaled_height)
 
     color = ["red", "blue", "green"]
+    patterns = ("/", "O", ".", "o", "x", "+", "-")
 
     for i, (attribute, measurement) in enumerate(req_per_sec.items()):
         offset = width * multiplier
@@ -106,6 +107,7 @@ def plot_bars():
             color=color[i],
             alpha=0.5,
             edgecolor="black",
+            hatch=patterns[i],
         )
         ax.bar_label(rects, padding=3)
         multiplier += 1
