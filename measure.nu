@@ -1,7 +1,7 @@
 #!/bin/sh
 
-let num_conns = 10
-let num_calls = [1 2 3]
+let num_conns = 1000
+let num_calls = [1 10 100]
 
 let configs = [
     {
