@@ -1,0 +1,11 @@
+{
+  "ravm@fau.de": {
+    "permissions": [
+      "<all_urls>"
+    ],
+    "origins": [
+      "<all_urls>",
+      "*://transparent-vm.net/*"
+    ]
+  }
+}

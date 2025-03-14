@@ -1,0 +1,202 @@
+[
+  {
+    "name": "onBeforeRequest",
+    "entryType": "mark",
+    "startTime": 2076,
+    "duration": 0,
+    "detail": {
+      "url": "https://transparent-vm.net:8080/",
+      "requestId": "2043"
+    }
+  },
+  {
+    "name": "onHeadersReceived-start",
+    "entryType": "mark",
+    "startTime": 2079,
+    "duration": 0,
+    "detail": {
+      "url": "https://transparent-vm.net:8080/",
+      "requestId": "2043"
+    }
+  },
+  {
+    "name": "onBeforeRequest",
+    "entryType": "mark",
+    "startTime": 2099,
+    "duration": 0,
+    "detail": {
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "2044"
+    }
+  },
+  {
+    "name": "onHeadersReceived-start",
+    "entryType": "mark",
+    "startTime": 2104,
+    "duration": 0,
+    "detail": {
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "2044"
+    }
+  },
+  {
+    "name": "onHeadersReceived-end:meta-request",
+    "entryType": "mark",
+    "startTime": 2118,
+    "duration": 0,
+    "detail": {
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "2044"
+    }
+  },
+  {
+    "name": "onHeadersReceived-start",
+    "entryType": "mark",
+    "startTime": 2118,
+    "duration": 0,
+    "detail": {
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "2044"
+    }
+  },
+  {
+    "name": "onHeadersReceived-end:meta-request",
+    "entryType": "mark",
+    "startTime": 2122,
+    "duration": 0,
+    "detail": {
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "2044"
+    }
+  },
+  {
+    "name": "onCompleted",
+    "entryType": "mark",
+    "startTime": 2123,
+    "duration": 0,
+    "detail": {
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "2044"
+    }
+  },
+  {
+    "name": "onHeadersReceived-end:success:known-ssl",
+    "entryType": "mark",
+    "startTime": 2125,
+    "duration": 0,
+    "detail": {
+      "url": "https://transparent-vm.net:8080/",
+      "requestId": "2043"
+    }
+  },
+  {
+    "name": "onCompleted",
+    "entryType": "mark",
+    "startTime": 2127,
+    "duration": 0,
+    "detail": {
+      "url": "https://transparent-vm.net:8080/",
+      "requestId": "2043"
+    }
+  },
+  {
+    "name": "onBeforeRequest",
+    "entryType": "mark",
+    "startTime": 2135,
+    "duration": 0,
+    "detail": {
+      "url": "https://transparent-vm.net:8080/favicon.ico",
+      "requestId": "2045"
+    }
+  },
+  {
+    "name": "onHeadersReceived-start",
+    "entryType": "mark",
+    "startTime": 2135,
+    "duration": 0,
+    "detail": {
+      "url": "https://transparent-vm.net:8080/favicon.ico",
+      "requestId": "2045"
+    }
+  },
+  {
+    "name": "onBeforeRequest",
+    "entryType": "mark",
+    "startTime": 2140,
+    "duration": 0,
+    "detail": {
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "2046"
+    }
+  },
+  {
+    "name": "onHeadersReceived-start",
+    "entryType": "mark",
+    "startTime": 2141,
+    "duration": 0,
+    "detail": {
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "2046"
+    }
+  },
+  {
+    "name": "onHeadersReceived-end:meta-request",
+    "entryType": "mark",
+    "startTime": 2144,
+    "duration": 0,
+    "detail": {
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "2046"
+    }
+  },
+  {
+    "name": "onHeadersReceived-start",
+    "entryType": "mark",
+    "startTime": 2154,
+    "duration": 0,
+    "detail": {
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "2046"
+    }
+  },
+  {
+    "name": "onHeadersReceived-end:meta-request",
+    "entryType": "mark",
+    "startTime": 2156,
+    "duration": 0,
+    "detail": {
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "2046"
+    }
+  },
+  {
+    "name": "onCompleted",
+    "entryType": "mark",
+    "startTime": 2157,
+    "duration": 0,
+    "detail": {
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "2046"
+    }
+  },
+  {
+    "name": "onHeadersReceived-end:success:known-ssl",
+    "entryType": "mark",
+    "startTime": 2159,
+    "duration": 0,
+    "detail": {
+      "url": "https://transparent-vm.net:8080/favicon.ico",
+      "requestId": "2045"
+    }
+  },
+  {
+    "name": "onCompleted",
+    "entryType": "mark",
+    "startTime": 2160,
+    "duration": 0,
+    "detail": {
+      "url": "https://transparent-vm.net:8080/favicon.ico",
+      "requestId": "2045"
+    }
+  }
+]

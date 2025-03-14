@@ -1,0 +1,80 @@
+.attestation-grid {
+    display: grid;
+    grid-template-columns: [start] auto auto auto [end];
+    grid-template-rows: [start] auto auto 10px auto auto [end];
+    margin: 20px;
+}
+
+#attestation-icon {
+    grid-row-start: 1;
+    grid-row-end: span 2;
+    grid-column: 1;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    width: 75px;
+    height: 75px;
+}
+
+#attestation-header {
+    grid-row: 1;
+    grid-column-start: 2;
+    grid-column-end: span 3;
+    text-align: left;
+    font-size: 30px;
+    margin-top: auto;
+    margin-bottom: 0;
+}
+
+#attestation-url {
+    grid-row: 2;
+    grid-column-start: 2;
+    grid-column-end: span 3;
+    text-align: left;
+    color: grey;
+    margin-top: 0;
+    margin-bottom: auto;
+}
+
+#attestation-info {
+    grid-row: 4;
+    grid-column-start: 1;
+    grid-column-end: span 2;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+}
+
+#button-remove-trust {
+    grid-row: 4;
+    grid-column: 4;
+    justify-self: end;
+}
+
+#button-settings {
+    grid-column-start: 1;
+    grid-column-end: span 4;
+    grid-row: 5;
+    margin-top: 10px;
+    justify-self: end;
+    font-size: smaller;
+}
+
+/* from https://hg.mozilla.org/mozilla-central/raw-file/a445f1762c895000bcdabd9d95697522359d41ed/browser/components/extensions/extension.css */
+body {
+    background: transparent;
+    box-sizing: border-box;
+    color: #222426;
+    cursor: default;
+    display: flex;
+    flex-direction: column;
+    font: caption;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+body * {
+    box-sizing: border-box;
+    text-align: start;
+}

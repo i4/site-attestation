@@ -1,0 +1,40 @@
+{
+  "name": "ravm",
+  "version": "1.3.16",
+  "description": "Enables to perform remote attesation on AMD SEV-SNP secured Boundary Node virtual machine of the IC",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "webpack --watch --progress",
+    "browser": "cd ./build && web-ext run --url https://localhost --bc -p ../firefox-profile/ --profile-create-if-missing --firefox=/Users/luca/Dev/Firefox/obj-aarch64-apple-darwin24.0.0/dist/Nightly.app/Contents/MacOS/firefox",
+    "http": "cd ./demo-site && http-server -C cert.pem -K key.pem -S",
+    "lint": "npx eslint src",
+    "lint:fix": "npx eslint --fix src",
+    "build": "webpack build",
+    "debug": "cd ./build && web-ext run --url https://localhost --devtools -p ../firefox-profile/ --profile-create-if-missing --firefox=/Users/luca/Dev/Firefox/obj-aarch64-apple-darwin24.0.0/dist/Nightly.app/Contents/MacOS/firefox",
+    "sign": "cd ./build && web-ext sign --channel=unlisted --api-key=$AMO_JWT_ISSUER --api-secret=$AMO_JWT_SECRET",
+    "bd": "cd ./build && web-ext run --url https://localhost --devtools --bc -p ../firefox-profile/ --profile-create-if-missing --firefox=/Users/luca/Dev/Firefox/obj-aarch64-apple-darwin24.0.0/dist/Nightly.app/Contents/MacOS/firefox"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "copy-webpack-plugin": "^11.0.0",
+    "css-loader": "^6.7.3",
+    "html-loader": "^4.2.0",
+    "html-webpack-plugin": "^5.5.0",
+    "source-map-loader": "^4.0.1",
+    "style-loader": "^3.3.1",
+    "transform-json-webpack-plugin": "^0.0.2",
+    "webpack": "^5.76.0",
+    "webpack-cli": "^5.0.1"
+  },
+  "dependencies": {
+    "asn1js": "^3.0.5",
+    "base64-arraybuffer": "^1.0.2",
+    "install": "^0.13.0",
+    "lodash": "^4.17.21",
+    "node-forge": "^1.3.1",
+    "pkijs": "^3.0.5"
+  }
+}

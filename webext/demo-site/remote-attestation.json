@@ -1,0 +1,7 @@
+{
+    "version": "0",
+    "path": "/guest_report.bin",
+    "vendor": "AMD",
+    "technology": "AMD-SEV-SNP",
+    "measurement_repo": "https://raw.githubusercontent.com/luca-preibsch/ravm/main/measurement-repo/measurements.json"
+}

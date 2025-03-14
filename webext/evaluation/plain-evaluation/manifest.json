@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "version": "1",
+  "name": "test",
+  "permissions": [
+    "webRequest",
+    "webRequestBlocking"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  }
+}

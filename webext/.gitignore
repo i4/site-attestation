@@ -1,0 +1,8 @@
+build/
+node_modules/
+jsconfig.json
+.DS_STORE
+demo-site/
+/.idea/
+/firefox-profile/
+/evaluation/.idea

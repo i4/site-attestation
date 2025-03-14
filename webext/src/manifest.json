@@ -1,0 +1,61 @@
+{
+
+  "manifest_version": 3,
+  "name": "check-vm",
+  "homepage_url": "https://gitlab.com/ruediger.kapitza/twebload",
+  "icons": {
+    "48": "ravm.svg"
+  },
+
+  "permissions": [
+    "storage",
+    "webRequest",
+    "webRequestBlocking",
+    "activeTab",
+    "scripting",
+    "tabs",
+    "tlsExt"
+  ],
+
+  "host_permissions": ["https://*/*"],
+
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "ravm@fau.de",
+      "strict_min_version": "109.0"
+    }
+  },
+
+  "page_action": {
+    "default_icon": "hazard-sign.svg",
+    "default_title": "Attestation Popup",
+    "default_popup": "popup.html",
+    "browser_style": false
+  },
+
+  "options_ui": {
+    "page": "settings.html",
+    "browser_style": false
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources" : [
+        "new-remote-attestation.html",
+        "blocked-remote-attestation.html",
+        "missing-remote-attestation.html",
+        "differs-remote-attestation.html"
+      ],
+      "matches" : [ "https://*/*" ]
+    }
+  ]
+
+}
+  
+

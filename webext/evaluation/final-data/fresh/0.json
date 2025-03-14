@@ -1,0 +1,233 @@
+[
+  {
+    "name": "webRequest259",
+    "entryType": "measure",
+    "startTime": 102721,
+    "duration": 289,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://134.169.35.116/",
+      "requestId": "259"
+    }
+  },
+  {
+    "name": "onHeadersReceived:dialog:NEW_ATTESTATION_PAGE259",
+    "entryType": "measure",
+    "startTime": 102821,
+    "duration": 189,
+    "detail": {
+      "name": "onHeadersReceived:dialog:NEW_ATTESTATION_PAGE",
+      "url": "https://134.169.35.116/",
+      "requestId": "259"
+    }
+  },
+  {
+    "name": "webRequest260",
+    "entryType": "measure",
+    "startTime": 102851,
+    "duration": 132,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://134.169.35.116/remote-attestation.json",
+      "requestId": "260"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request260",
+    "entryType": "measure",
+    "startTime": 102942,
+    "duration": 7,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://134.169.35.116/remote-attestation.json",
+      "requestId": "260"
+    }
+  },
+  {
+    "name": "webRequest261",
+    "entryType": "measure",
+    "startTime": 102984,
+    "duration": 26,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://134.169.35.116/guest_report.bin",
+      "requestId": "261"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request261",
+    "entryType": "measure",
+    "startTime": 103005,
+    "duration": 3,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://134.169.35.116/guest_report.bin",
+      "requestId": "261"
+    }
+  },
+  {
+    "name": "dialog",
+    "entryType": "measure",
+    "startTime": 103010,
+    "duration": 860,
+    "detail": {
+      "name": "dialog",
+      "url": "https://134.169.35.116/",
+      "requestId": ""
+    }
+  },
+  {
+    "name": "webRequest262",
+    "entryType": "measure",
+    "startTime": 103063,
+    "duration": 25,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://134.169.35.116/guest_report.bin",
+      "requestId": "262"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request262",
+    "entryType": "measure",
+    "startTime": 103084,
+    "duration": 3,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://134.169.35.116/guest_report.bin",
+      "requestId": "262"
+    }
+  },
+  {
+    "name": "webRequest263",
+    "entryType": "measure",
+    "startTime": 103088,
+    "duration": 767,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://kdsintf.amd.com/vcek/v1/Milan/6186b39de2289d9986bfc728f91754f1d5bb92df4d0c0e56edee2e2a4086fced842401bd99b0da85328bf25193466727c75fa28fcf4f1ce79e03e35cec8ce5dc?blSPL=02&teeSPL=00&snpSPL=06&ucodeSPL=115",
+      "requestId": "263"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request263",
+    "entryType": "measure",
+    "startTime": 103813,
+    "duration": 14,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://kdsintf.amd.com/vcek/v1/Milan/6186b39de2289d9986bfc728f91754f1d5bb92df4d0c0e56edee2e2a4086fced842401bd99b0da85328bf25193466727c75fa28fcf4f1ce79e03e35cec8ce5dc?blSPL=02&teeSPL=00&snpSPL=06&ucodeSPL=115",
+      "requestId": "263"
+    }
+  },
+  {
+    "name": "webRequest265",
+    "entryType": "measure",
+    "startTime": 103872,
+    "duration": 66,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://134.169.35.116/",
+      "requestId": "265"
+    }
+  },
+  {
+    "name": "onHeadersReceived:success:known-ssl265",
+    "entryType": "measure",
+    "startTime": 103893,
+    "duration": 38,
+    "detail": {
+      "name": "onHeadersReceived:success:known-ssl",
+      "url": "https://134.169.35.116/",
+      "requestId": "265"
+    }
+  },
+  {
+    "name": "webRequest266",
+    "entryType": "measure",
+    "startTime": 103898,
+    "duration": 31,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://134.169.35.116/remote-attestation.json",
+      "requestId": "266"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request266",
+    "entryType": "measure",
+    "startTime": 103919,
+    "duration": 3,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://134.169.35.116/remote-attestation.json",
+      "requestId": "266"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request266",
+    "entryType": "measure",
+    "startTime": 103926,
+    "duration": 2,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://134.169.35.116/remote-attestation.json",
+      "requestId": "266"
+    }
+  },
+  {
+    "name": "webRequest267",
+    "entryType": "measure",
+    "startTime": 103947,
+    "duration": 70,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://134.169.35.116/favicon.ico",
+      "requestId": "267"
+    }
+  },
+  {
+    "name": "onHeadersReceived:success:known-ssl267",
+    "entryType": "measure",
+    "startTime": 103968,
+    "duration": 49,
+    "detail": {
+      "name": "onHeadersReceived:success:known-ssl",
+      "url": "https://134.169.35.116/favicon.ico",
+      "requestId": "267"
+    }
+  },
+  {
+    "name": "webRequest268",
+    "entryType": "measure",
+    "startTime": 103972,
+    "duration": 44,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://134.169.35.116/remote-attestation.json",
+      "requestId": "268"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request268",
+    "entryType": "measure",
+    "startTime": 103994,
+    "duration": 1,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://134.169.35.116/remote-attestation.json",
+      "requestId": "268"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request268",
+    "entryType": "measure",
+    "startTime": 104012,
+    "duration": 3,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://134.169.35.116/remote-attestation.json",
+      "requestId": "268"
+    }
+  }
+]

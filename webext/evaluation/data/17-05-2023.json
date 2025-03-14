@@ -1,0 +1,332 @@
+[
+  {
+    "name": "webRequest67",
+    "entryType": "measure",
+    "startTime": 6222,
+    "duration": 1032,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://transparent-vm.net:8080/",
+      "requestId": "67"
+    }
+  },
+  {
+    "name": "onHeadersReceived:dialog:NEW_ATTESTATION_PAGE67",
+    "entryType": "measure",
+    "startTime": 6231,
+    "duration": 1023,
+    "detail": {
+      "name": "onHeadersReceived:dialog:NEW_ATTESTATION_PAGE",
+      "url": "https://transparent-vm.net:8080/",
+      "requestId": "67"
+    }
+  },
+  {
+    "name": "webRequest68",
+    "entryType": "measure",
+    "startTime": 6250,
+    "duration": 57,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "68"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request68",
+    "entryType": "measure",
+    "startTime": 6259,
+    "duration": 7,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "68"
+    }
+  },
+  {
+    "name": "webRequest69",
+    "entryType": "measure",
+    "startTime": 6312,
+    "duration": 10,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://transparent-vm.net:8080/guest_report.bin",
+      "requestId": "69"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request69",
+    "entryType": "measure",
+    "startTime": 6316,
+    "duration": 5,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://transparent-vm.net:8080/guest_report.bin",
+      "requestId": "69"
+    }
+  },
+  {
+    "name": "webRequest70",
+    "entryType": "measure",
+    "startTime": 6323,
+    "duration": 771,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://kdsintf.amd.com/vcek/v1/Milan/7e05dff583426bb46dfe76…0d1d3cf8043f9fccb8a?blSPL=02&teeSPL=00&snpSPL=06&ucodeSPL=68",
+      "requestId": "70"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request70",
+    "entryType": "measure",
+    "startTime": 7055,
+    "duration": 13,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://kdsintf.amd.com/vcek/v1/Milan/7e05dff583426bb46dfe76…0d1d3cf8043f9fccb8a?blSPL=02&teeSPL=00&snpSPL=06&ucodeSPL=68",
+      "requestId": "70"
+    }
+  },
+  {
+    "name": "webRequest72",
+    "entryType": "measure",
+    "startTime": 7104,
+    "duration": 147,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://kdsintf.amd.com/vcek/v1/Milan/crl",
+      "requestId": "72"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request72",
+    "entryType": "measure",
+    "startTime": 7242,
+    "duration": 6,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://kdsintf.amd.com/vcek/v1/Milan/crl",
+      "requestId": "72"
+    }
+  },
+  {
+    "name": "webRequest73",
+    "entryType": "measure",
+    "startTime": 7337,
+    "duration": 365,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://raw.githubusercontent.com/luca-preibsch/ravm/main/measurement-repo/measurements.json",
+      "requestId": "73"
+    }
+  },
+  {
+    "name": "onHeadersReceived:new-unsupported73",
+    "entryType": "measure",
+    "startTime": 7533,
+    "duration": 144,
+    "detail": {
+      "name": "onHeadersReceived:new-unsupported",
+      "url": "https://raw.githubusercontent.com/luca-preibsch/ravm/main/measurement-repo/measurements.json",
+      "requestId": "73"
+    }
+  },
+  {
+    "name": "webRequest74",
+    "entryType": "measure",
+    "startTime": 7544,
+    "duration": 158,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://raw.githubusercontent.com/remote-attestation.json",
+      "requestId": "74"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request74",
+    "entryType": "measure",
+    "startTime": 7665,
+    "duration": 9,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://raw.githubusercontent.com/remote-attestation.json",
+      "requestId": "74"
+    }
+  },
+  {
+    "name": "webRequest75",
+    "entryType": "measure",
+    "startTime": 7702,
+    "duration": 8,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://transparent-vm.net:8080/guest_report.bin",
+      "requestId": "75"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request75",
+    "entryType": "measure",
+    "startTime": 7704,
+    "duration": 4,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://transparent-vm.net:8080/guest_report.bin",
+      "requestId": "75"
+    }
+  },
+  {
+    "name": "webRequest76",
+    "entryType": "measure",
+    "startTime": 7711,
+    "duration": 798,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://kdsintf.amd.com/vcek/v1/Milan/7e05dff583426bb46dfe76…0d1d3cf8043f9fccb8a?blSPL=02&teeSPL=00&snpSPL=06&ucodeSPL=68",
+      "requestId": "76"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request76",
+    "entryType": "measure",
+    "startTime": 8472,
+    "duration": 23,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://kdsintf.amd.com/vcek/v1/Milan/7e05dff583426bb46dfe76…0d1d3cf8043f9fccb8a?blSPL=02&teeSPL=00&snpSPL=06&ucodeSPL=68",
+      "requestId": "76"
+    }
+  },
+  {
+    "name": "webRequest77",
+    "entryType": "measure",
+    "startTime": 8519,
+    "duration": 161,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://kdsintf.amd.com/vcek/v1/Milan/crl",
+      "requestId": "77"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request77",
+    "entryType": "measure",
+    "startTime": 8667,
+    "duration": 10,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://kdsintf.amd.com/vcek/v1/Milan/crl",
+      "requestId": "77"
+    }
+  },
+  {
+    "name": "webRequest78",
+    "entryType": "measure",
+    "startTime": 8694,
+    "duration": 34,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://transparent-vm.net:8080/",
+      "requestId": "78"
+    }
+  },
+  {
+    "name": "onHeadersReceived:success:known-ssl78",
+    "entryType": "measure",
+    "startTime": 8696,
+    "duration": 23,
+    "detail": {
+      "name": "onHeadersReceived:success:known-ssl",
+      "url": "https://transparent-vm.net:8080/",
+      "requestId": "78"
+    }
+  },
+  {
+    "name": "webRequest79",
+    "entryType": "measure",
+    "startTime": 8704,
+    "duration": 13,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "79"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request79",
+    "entryType": "measure",
+    "startTime": 8706,
+    "duration": 4,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "79"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request79",
+    "entryType": "measure",
+    "startTime": 8711,
+    "duration": 4,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "79"
+    }
+  },
+  {
+    "name": "webRequest80",
+    "entryType": "measure",
+    "startTime": 8737,
+    "duration": 48,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://transparent-vm.net:8080/favicon.ico",
+      "requestId": "80"
+    }
+  },
+  {
+    "name": "onHeadersReceived:success:known-ssl80",
+    "entryType": "measure",
+    "startTime": 8739,
+    "duration": 40,
+    "detail": {
+      "name": "onHeadersReceived:success:known-ssl",
+      "url": "https://transparent-vm.net:8080/favicon.ico",
+      "requestId": "80"
+    }
+  },
+  {
+    "name": "webRequest81",
+    "entryType": "measure",
+    "startTime": 8751,
+    "duration": 26,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "81"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request81",
+    "entryType": "measure",
+    "startTime": 8767,
+    "duration": 4,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "81"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request81",
+    "entryType": "measure",
+    "startTime": 8772,
+    "duration": 3,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "81"
+    }
+  }
+]

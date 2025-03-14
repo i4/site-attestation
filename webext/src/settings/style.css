@@ -1,0 +1,124 @@
+html, body {
+    min-height: 300px;
+}
+
+.invisible {
+    display: none;
+}
+
+#buttonContainer {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+}
+
+/* table */
+table {
+    width: 100%;
+}
+
+#end-of-page {
+    margin-bottom: 65px;
+}
+
+td, th {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.moreInfoButton {
+    float: right;
+}
+
+#author-key-table {
+    font-size: xx-small;
+    user-select: text;
+    word-wrap: anywhere;
+}
+
+/* collapsible */
+.collapsible {
+    background-color: #eee;
+    color: #444;
+    cursor: pointer;
+    padding: 5px 18px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 15px;
+}
+
+.active, .collapsible:hover {
+    background-color: #ccc;
+}
+
+.collapsible-content {
+    padding: 0 18px;
+    display: none;
+    overflow: hidden;
+}
+
+.collapsible:after {
+    content: '\02795';
+    font-size: 13px;
+    color: white;
+    float: right;
+    margin-left: 5px;
+}
+
+.active:after {
+    content: "\2796";
+}
+
+/* modal */
+.modal {
+    max-width: 50ch;
+    border: 2px solid grey;
+    border-radius: 10px;
+    background: #e6e6e6;
+}
+
+.modalContent {
+    display: grid;
+    grid-template-columns: auto;
+}
+
+.modal::backdrop {
+    background: transparent;
+}
+
+.infoMethodContainer {
+    font-size: smaller;
+    word-wrap: anywhere;
+}
+
+#infoDescription {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    padding-bottom: 15px;
+}
+
+#addNewHostButton, .modalContent label {
+    margin-top: 10px;
+}
+
+/* from https://hg.mozilla.org/mozilla-central/raw-file/a445f1762c895000bcdabd9d95697522359d41ed/browser/components/extensions/extension.css */
+body {
+    background: transparent;
+    box-sizing: border-box;
+    color: #222426;
+    cursor: default;
+    display: flex;
+    flex-direction: column;
+    font: caption;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+body * {
+    box-sizing: border-box;
+    text-align: start;
+}

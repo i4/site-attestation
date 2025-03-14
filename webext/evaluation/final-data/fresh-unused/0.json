@@ -1,0 +1,255 @@
+[
+  {
+    "name": "webRequest143",
+    "entryType": "measure",
+    "startTime": 13877,
+    "duration": 285,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://134.169.35.116/",
+      "requestId": "143"
+    }
+  },
+  {
+    "name": "onHeadersReceived:dialog:NEW_ATTESTATION_PAGE143",
+    "entryType": "measure",
+    "startTime": 13977,
+    "duration": 184,
+    "detail": {
+      "name": "onHeadersReceived:dialog:NEW_ATTESTATION_PAGE",
+      "url": "https://134.169.35.116/",
+      "requestId": "143"
+    }
+  },
+  {
+    "name": "webRequest144",
+    "entryType": "measure",
+    "startTime": 14000,
+    "duration": 135,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://134.169.35.116/remote-attestation.json",
+      "requestId": "144"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request144",
+    "entryType": "measure",
+    "startTime": 14093,
+    "duration": 7,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://134.169.35.116/remote-attestation.json",
+      "requestId": "144"
+    }
+  },
+  {
+    "name": "webRequest145",
+    "entryType": "measure",
+    "startTime": 14136,
+    "duration": 26,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://134.169.35.116/guest_report.bin",
+      "requestId": "145"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request145",
+    "entryType": "measure",
+    "startTime": 14158,
+    "duration": 3,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://134.169.35.116/guest_report.bin",
+      "requestId": "145"
+    }
+  },
+  {
+    "name": "dialog",
+    "entryType": "measure",
+    "startTime": 14162,
+    "duration": 1000,
+    "detail": {
+      "name": "dialog",
+      "url": "https://134.169.35.116/",
+      "requestId": ""
+    }
+  },
+  {
+    "name": "webRequest146",
+    "entryType": "measure",
+    "startTime": 14208,
+    "duration": 34,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://134.169.35.116/guest_report.bin",
+      "requestId": "146"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request146",
+    "entryType": "measure",
+    "startTime": 14235,
+    "duration": 5,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://134.169.35.116/guest_report.bin",
+      "requestId": "146"
+    }
+  },
+  {
+    "name": "webRequest147",
+    "entryType": "measure",
+    "startTime": 14251,
+    "duration": 732,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://kdsintf.amd.com/vcek/v1/Milan/6186b39de2289d9986bfc728f91754f1d5bb92df4d0c0e56edee2e2a4086fced842401bd99b0da85328bf25193466727c75fa28fcf4f1ce79e03e35cec8ce5dc?blSPL=02&teeSPL=00&snpSPL=06&ucodeSPL=115",
+      "requestId": "147"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request147",
+    "entryType": "measure",
+    "startTime": 14938,
+    "duration": 14,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://kdsintf.amd.com/vcek/v1/Milan/6186b39de2289d9986bfc728f91754f1d5bb92df4d0c0e56edee2e2a4086fced842401bd99b0da85328bf25193466727c75fa28fcf4f1ce79e03e35cec8ce5dc?blSPL=02&teeSPL=00&snpSPL=06&ucodeSPL=115",
+      "requestId": "147"
+    }
+  },
+  {
+    "name": "webRequest149",
+    "entryType": "measure",
+    "startTime": 14992,
+    "duration": 162,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://kdsintf.amd.com/vcek/v1/Milan/crl",
+      "requestId": "149"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request149",
+    "entryType": "measure",
+    "startTime": 15141,
+    "duration": 8,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://kdsintf.amd.com/vcek/v1/Milan/crl",
+      "requestId": "149"
+    }
+  },
+  {
+    "name": "webRequest150",
+    "entryType": "measure",
+    "startTime": 15164,
+    "duration": 89,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://134.169.35.116/",
+      "requestId": "150"
+    }
+  },
+  {
+    "name": "onHeadersReceived:success:known-ssl150",
+    "entryType": "measure",
+    "startTime": 15190,
+    "duration": 35,
+    "detail": {
+      "name": "onHeadersReceived:success:known-ssl",
+      "url": "https://134.169.35.116/",
+      "requestId": "150"
+    }
+  },
+  {
+    "name": "webRequest151",
+    "entryType": "measure",
+    "startTime": 15194,
+    "duration": 30,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://134.169.35.116/remote-attestation.json",
+      "requestId": "151"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request151",
+    "entryType": "measure",
+    "startTime": 15218,
+    "duration": 2,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://134.169.35.116/remote-attestation.json",
+      "requestId": "151"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request151",
+    "entryType": "measure",
+    "startTime": 15221,
+    "duration": 2,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://134.169.35.116/remote-attestation.json",
+      "requestId": "151"
+    }
+  },
+  {
+    "name": "webRequest152",
+    "entryType": "measure",
+    "startTime": 15254,
+    "duration": 56,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://134.169.35.116/favicon.ico",
+      "requestId": "152"
+    }
+  },
+  {
+    "name": "onHeadersReceived:success:known-ssl152",
+    "entryType": "measure",
+    "startTime": 15273,
+    "duration": 36,
+    "detail": {
+      "name": "onHeadersReceived:success:known-ssl",
+      "url": "https://134.169.35.116/favicon.ico",
+      "requestId": "152"
+    }
+  },
+  {
+    "name": "webRequest153",
+    "entryType": "measure",
+    "startTime": 15277,
+    "duration": 29,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://134.169.35.116/remote-attestation.json",
+      "requestId": "153"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request153",
+    "entryType": "measure",
+    "startTime": 15300,
+    "duration": 3,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://134.169.35.116/remote-attestation.json",
+      "requestId": "153"
+    }
+  },
+  {
+    "name": "onHeadersReceived:meta-request153",
+    "entryType": "measure",
+    "startTime": 15303,
+    "duration": 2,
+    "detail": {
+      "name": "onHeadersReceived:meta-request",
+      "url": "https://134.169.35.116/remote-attestation.json",
+      "requestId": "153"
+    }
+  }
+]

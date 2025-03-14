@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Remote Attestation</title>
+</head>
+<body>
+<div class="container">
+    <h1 id="title">Warning: Remote Attestation missing!</h1>
+    <div id="domain"></div>
+    <div id="description">
+        This host previously supported remote attestation and has been trusted.
+        Though, support for remote attestation seems to have been removed.
+        <br>&nbsp;<br>
+        <b>This could be a malicious attack.</b>
+        <br>&nbsp;<br>
+        If you remove the record, this host will be treated like a non-remote-attestation
+        host from now on.
+    </div>
+    <div id="button-container">
+        <button id="remove-record-button" class="action button-red invisible">Remove Record</button>
+    </div>
+</div>
+</body>
+<script src="./missing-attestation.js"></script>
+</html>

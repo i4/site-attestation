@@ -1,0 +1,55 @@
+.invisible {
+    display: none;
+}
+
+.container {
+    justify-content: center;
+    margin-top: 5%;
+    display: grid;
+    grid-template-columns: [start] auto [end];
+    grid-template-rows: [start] auto auto auto auto auto auto [end];
+}
+
+.container * {
+    max-width: 600px;
+    word-wrap: break-word;
+}
+
+#title {
+    margin: 0;
+}
+
+#domain {
+    margin-bottom: 20px;
+    color: grey;
+    margin-top: 0;
+}
+
+#description {
+    margin-bottom: 20px;
+}
+
+.info-container {
+    grid-row: auto;
+    margin-bottom: 20px;
+    border-radius: 25px;
+    border: 2px solid grey;
+    padding: 15px;
+    background-color: #e6e6e6;
+}
+
+.measurement, #author-key {
+    font-style: italic;
+    text-decoration: underline;
+}
+
+.button-container {
+    grid-row: auto;
+    justify-self: end;
+    align-self: end;
+    margin-bottom: 5px;
+}
+
+body {
+    font-family: "Open Sans", sans-serif;
+}

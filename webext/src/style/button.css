@@ -1,0 +1,59 @@
+button.action {
+  padding: 10px 20px;
+  margin: 0;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  transition-duration: 0.4s;
+  cursor: pointer;
+  user-select: none;
+}
+
+button.link {
+  background: none;
+  border: none;
+  color: grey;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+  user-select: none;
+}
+
+button.invisible {
+  display: none;
+}
+
+.button-black {
+  background-color: white;
+  border: 2px solid black;
+  color: black;
+}
+
+.button-black:hover {
+  background-color: black;
+  color: white;
+}
+
+.button-red {
+  background-color: white;
+  border: 2px solid red;
+  color: red;
+}
+
+.button-red:hover {
+  background-color: red;
+  color: white;
+}
+
+.button-grey {
+  background-color: white;
+  border: 2px solid grey;
+  color: grey;
+}
+
+.button-grey:hover {
+  background-color: grey;
+  color: white;
+}

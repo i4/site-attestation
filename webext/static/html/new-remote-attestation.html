@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Remote Attestation</title>
+</head>
+<body>
+<div class="container">
+    <h1 id="title">Remote Attestation</h1>
+    <div id="domain"></div>
+    <div id="description">PENDING</div>
+    <div class="invisible info-container">Author Key: <span class="measurement" id="author-key"></span></div>
+    <div class="invisible info-container">Measurement Repository:<br><a id="measurement-repo" target="_blank"></a></div>
+    <div class="invisible info-container">Measurement: <span class="measurement" id="measurement">PENDING</span></div>
+    <div class="button-container">
+        <button id="trust-measurement-button" class="action button-red invisible">trust Measurement</button>
+        <button id="trust-repo-button" class="action button-red invisible">trust Repository</button>
+        <button id="trust-author-key-button" class="action button-red invisible">trust Author Key</button>
+    </div>
+    <div class="button-container">
+        <button id="ignore-button" class="action button-red invisible">ignore</button>
+        <button id="do-not-trust-button" class="action button-red invisible">block</button>
+    </div>
+</div>
+</body>
+<script src="./new-attestation.js"></script>
+</html>

@@ -1,0 +1,112 @@
+[
+  {
+    "name": "webRequest1797",
+    "entryType": "measure",
+    "startTime": 3573,
+    "duration": 95,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://transparent-vm.net:8080/",
+      "requestId": "1797"
+    }
+  },
+  {
+    "name": "onHeadersReceived-end:success:known-ssl1797",
+    "entryType": "measure",
+    "startTime": 3584,
+    "duration": 41,
+    "detail": {
+      "name": "onHeadersReceived-end:success:known-ssl",
+      "url": "https://transparent-vm.net:8080/",
+      "requestId": "1797"
+    }
+  },
+  {
+    "name": "webRequest1798",
+    "entryType": "measure",
+    "startTime": 3601,
+    "duration": 21,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "1798"
+    }
+  },
+  {
+    "name": "onHeadersReceived-end:meta-request1798",
+    "entryType": "measure",
+    "startTime": 3608,
+    "duration": 7,
+    "detail": {
+      "name": "onHeadersReceived-end:meta-request",
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "1798"
+    }
+  },
+  {
+    "name": "onHeadersReceived-end:meta-request1798",
+    "entryType": "measure",
+    "startTime": 3615,
+    "duration": 5,
+    "detail": {
+      "name": "onHeadersReceived-end:meta-request",
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "1798"
+    }
+  },
+  {
+    "name": "onHeadersReceived-end:success:known-ssl1797",
+    "entryType": "measure",
+    "startTime": 3626,
+    "duration": 32,
+    "detail": {
+      "name": "onHeadersReceived-end:success:known-ssl",
+      "url": "https://transparent-vm.net:8080/",
+      "requestId": "1797"
+    }
+  },
+  {
+    "name": "webRequest1799",
+    "entryType": "measure",
+    "startTime": 3634,
+    "duration": 22,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "1799"
+    }
+  },
+  {
+    "name": "onHeadersReceived-end:meta-request1799",
+    "entryType": "measure",
+    "startTime": 3641,
+    "duration": 4,
+    "detail": {
+      "name": "onHeadersReceived-end:meta-request",
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "1799"
+    }
+  },
+  {
+    "name": "onHeadersReceived-end:meta-request1799",
+    "entryType": "measure",
+    "startTime": 3649,
+    "duration": 5,
+    "detail": {
+      "name": "onHeadersReceived-end:meta-request",
+      "url": "https://transparent-vm.net:8080/remote-attestation.json",
+      "requestId": "1799"
+    }
+  },
+  {
+    "name": "webRequest1800",
+    "entryType": "measure",
+    "startTime": 3669,
+    "duration": 2,
+    "detail": {
+      "name": "webRequest",
+      "url": "https://transparent-vm.net:8080/favicon.ico",
+      "requestId": "1800"
+    }
+  }
+]

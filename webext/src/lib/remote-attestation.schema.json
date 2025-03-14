@@ -1,0 +1,39 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "$id": "https://example.com/attestation-report.schema.json",
+    "title": "Remote Attestation Meta Data",
+    "description": "This document includes meta data about the remote attestation feature of this system, needed for the ravm web extension.",
+    "type": "object",
+    "properties": {
+        "version": {
+            "description": "Version of the format the JSON file uses.",
+            "type": "integer",
+            "minimum": 0
+        },
+        "path": {
+            "description": "Absolute path to the actual report file.",
+            "type": "string"
+        },
+        "vendor": {
+            "description": "The vendor of the technology used to generate the attestation report.",
+            "type": "string",
+            "enum": [ "Intel", "AMD" ]
+        },
+        "technology": {
+            "description": "The base technology used to generate the attestation report.",
+            "type": "string",
+            "enum": [
+                "AMD-SEV",
+                "AMD-SEV-ES",
+                "AMD-SEV-SNP",
+                "Intel-SGX"
+            ]
+        }
+    },
+    "required": [
+        "version",
+        "path",
+        "vendor",
+        "technology"
+    ]
+}

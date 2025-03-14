@@ -1,0 +1,7 @@
+{
+  "version": "required",
+  "path": "required",
+  "vendor": "required",
+  "technology": "required",
+  "measurement_repo": "optional"
+}

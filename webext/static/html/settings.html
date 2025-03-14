@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Settings</title>
+</head>
+<body>
+<button type="button" class="collapsible">Trusted Hosts</button>
+<div class="collapsible-content">
+    <table>
+        <thead>
+        <tr>
+            <th>Domain</th>
+            <th>Trusted Since</th>
+            <th>Last Trusted</th>
+        </tr>
+        </thead>
+        <tbody id="measurement-table"></tbody>
+    </table>
+</div>
+
+<button type="button" class="collapsible">Trusted Measurement Repositories</button>
+    <table class="collapsible-content">
+        <thead>
+        <tr>
+            <th>Repository Domain</th>
+        </tr>
+        </thead>
+        <tbody id="repo-table"></tbody>
+    </table>
+
+<button type="button" class="collapsible">Trusted Author Keys</button>
+    <table class="collapsible-content">
+        <thead>
+        <tr>
+            <th>Author Key</th>
+        </tr>
+        </thead>
+        <tbody id="author-key-table"></tbody>
+    </table>
+
+<button type="button" class="collapsible">Unsupported Hosts</button>
+    <table class="collapsible-content">
+        <thead>
+        <tr>
+            <th>Domain</th>
+        </tr>
+        </thead>
+        <tbody id="unsupported-table"></tbody>
+    </table>
+
+<div id="end-of-page"></div>
+
+<div id="buttonContainer">
+    <button id="addButton" class="action button-red">add host</button>
+    <button id="removeButton" class="action button-red">remove selected</button>
+</div>
+
+<dialog class="modal" id="infoModal">
+    <div class="modalContent">
+        <h3 id="infoTitle"></h3>
+        <div class="infoMethodContainer">Trust Method:<br><div id="infoTrustMethod"></div></div>
+        <div id="infoDescription"></div>
+    </div>
+</dialog>
+
+<dialog class="modal" id="addModal">
+    <div class="modalContent">
+        <h3>Add a new Host:</h3>
+        <label for="addHostUrl">Host Address:</label>
+        <input type="url" name="addHostUrl" id="addHostUrl"
+               placeholder="example.com"
+               size="30"
+               required>
+        <label for="addHostMeasurement">Host Measurement as Hex:</label>
+        <input type="text" id="addHostMeasurement" name="addHostMeasurement"
+               size="30"
+               minlength="1"
+               required>
+        <button id="addNewHostButton">add trusted host</button>
+    </div>
+</dialog>
+
+<script src="./settings.js"></script>
+</body>
+</html>
