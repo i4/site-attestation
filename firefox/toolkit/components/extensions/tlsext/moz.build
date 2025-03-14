@@ -1,0 +1,37 @@
+
+XPIDL_SOURCES += [
+    "nsITlsExtensionService.idl",
+]
+
+XPIDL_MODULE = "webextensions"
+
+UNIFIED_SOURCES += [
+    "TlsAuthCertObserverRunnable.cpp",
+    "TlsAuthCertPromiseHandler.cpp",
+    "TlsExtensionService.cpp",
+    "TlsExtObserverRunnable.cpp",
+    "TlsExtPromiseHandler.cpp",
+    "TlsExtUtil.cpp"
+]
+
+EXPORTS.mozilla.extensions += [
+    "TlsAuthCertificateObserverInfo.h",
+    "TlsAuthCertObserverRunnable.h",
+    "TlsAuthCertPromiseHandler.h",
+    "TlsExtensionService.h",
+    "TlsExtObserverInfo.h",
+    "TlsExtObserverRunnable.h",
+    "TlsExtPromiseHandler.h",
+    "TlsExtUtil.h"
+]
+
+XPCOM_MANIFESTS += [
+    "components.conf",
+]
+
+EXTRA_JS_MODULES += [
+    # "TlsExtensionObserver.sys.mjs",
+]
+
+# Necessary for the .cpp implementation to be compiled
+FINAL_LIBRARY = "xul"

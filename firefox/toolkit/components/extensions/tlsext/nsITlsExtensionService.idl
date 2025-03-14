@@ -1,0 +1,98 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+// This is the base include which defines nsISupports. This class defines
+// the QueryInterface method.
+#include "nsISupports.idl"
+#include "nsrootidl.idl"
+
+typedef unsigned short PRUint16;
+
+[scriptable, uuid(d4834e5a-41db-4f97-a45d-d4dc53057553)]
+interface nsITlsExtensionObserver : nsISupports {
+  // from NSS sslt.h
+  cenum SSLHandshakeType : 16 {
+    ssl_hs_hello_request = 0,
+    ssl_hs_client_hello = 1,
+    ssl_hs_server_hello = 2,
+    ssl_hs_hello_verify_request = 3,
+    ssl_hs_new_session_ticket = 4,
+    ssl_hs_end_of_early_data = 5,
+    ssl_hs_hello_retry_request = 6,
+    ssl_hs_encrypted_extensions = 8,
+    ssl_hs_certificate = 11,
+    ssl_hs_server_key_exchange = 12,
+    ssl_hs_certificate_request = 13,
+    ssl_hs_server_hello_done = 14,
+    ssl_hs_certificate_verify = 15,
+    ssl_hs_client_key_exchange = 16,
+    ssl_hs_finished = 20,
+    ssl_hs_certificate_status = 22,
+    ssl_hs_key_update = 24,
+    ssl_hs_next_proto = 67,
+    ssl_hs_message_hash = 254,           /* Not a real message. */
+    ssl_hs_ech_outer_client_hello = 257, /* Not a real message. */
+  };
+};
+
+[scriptable, function, uuid(d2f656a4-6bc7-4d2e-92f2-d3a6ad05b0d1)]
+interface nsITlsExtensionWriterObserver : nsITlsExtensionObserver {
+  // Promise<string> // TODO: Rebuild this, so that AString is used instead of string for the return type. Like this, binary data cannot be transferred.
+  Promise onWriteTlsExtension(  in PRUint16 extension,  // TODO return value should be unsigned
+                                in string tlsSessionId,
+                                in string url,
+                                in nsITlsExtensionObserver_SSLHandshakeType messageType,
+                                in unsigned long maxDataLen);
+};
+
+[scriptable, function, uuid(09be1269-301d-469d-99d9-bf9721571aa9)]
+interface nsITlsExtensionHandlerObserver : nsITlsExtensionObserver {
+  // Promise<SECStatus>
+  Promise onHandleTlsExtension( in PRUint16 extension,
+                                in string tlsSessionId,
+                                in string url,
+                                in nsITlsExtensionObserver_SSLHandshakeType messageType,
+                                in AString data,
+                                in AString tlsCertString);
+};
+
+[scriptable, function, uuid(7b30af2d-1fa7-4fb7-90d9-40fea7afd887)]
+interface nsITlsAuthCertificateObserver : nsISupports {
+  // Promise<SECStatus>
+  Promise onAuthCertificate(    in string tlsSessionId);
+};
+
+// `scriptable` designates that this object will be used with JavaScript
+/**
+ * ... documentation
+ */
+[scriptable, builtinclass, uuid(2b7491bc-5188-4018-a093-e792b7b5e07d)]
+interface nsITlsExtensionService : nsISupports {
+  const PRUint16 DEFAULT_EXTENSION = 420;
+
+  // Although SSLExtensionSupport is provided by "sslexp.h", it is implemented as an enum in order to be scriptable.
+  // from NSS sslexp.h
+  cenum SSLExtensionSupport : 8 {
+    ssl_ext_none        = 0,
+    ssl_ext_native      = 1,
+    ssl_ext_native_only = 2
+  };
+
+  nsITlsExtensionService_SSLExtensionSupport getExtensionSupport(in PRUint16 extension);
+
+  void addWriterObserver(in string urlPattern, in PRUint16 extension, in nsITlsExtensionWriterObserver observer);
+  void removeWriterObserver(in PRUint16 extension);
+  boolean hasWriterObserver(in PRUint16 extension);
+
+  void addHandlerObserver(in string urlPattern, in PRUint16 extension, in nsITlsExtensionHandlerObserver observer);
+  void removeHandlerObserver(in PRUint16 extension);
+  boolean hasHandlerObserver(in PRUint16 extension);
+
+  void addAuthCertificateObserver(in string tlsSessionId, in nsITlsAuthCertificateObserver observer);
+  void removeAuthCertificateObserver(in string tlsSessionId);
+  boolean hasAuthCertificateObserver(in string tlsSessionId);
+
+  // for debugging
+  // void callWriterObserver(in PRUint16 extension);
+};
