@@ -39,6 +39,7 @@ def output_plot(plt, name):
         # )
         plt.savefig(f"{plot_path}{name}.pgf")
     else:
+        plt.tight_layout()
         plt.show()
 
 
